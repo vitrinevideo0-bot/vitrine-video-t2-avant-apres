@@ -1,6 +1,6 @@
 # T2 — exemplaire historique complet voix française + musique B
 
-> **Archive v0.5.** La piste B est désormais rejetée pour la production courante en raison de son badge Content ID Registered. La sélection approuvée est D — Afrofire ; voir [T2_AFROFIRE_INTEGRATION_V0_7.md](T2_AFROFIRE_INTEGRATION_V0_7.md). La Release historique n’est pas modifiée.
+> **Archive v0.5.** Cette ancienne piste B reste rejetée en raison de son badge Content ID Registered. D — Afrofire lui a succédé dans l’exemplaire historique v0.7, puis le runtime courant v1 l’a remplacée par le pool final `300340 → 293956 → 300333 → 328624`. Les Releases historiques ne sont pas modifiées.
 
 ## Portée historique
 

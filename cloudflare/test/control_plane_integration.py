@@ -158,11 +158,17 @@ def main() -> None:
     )[0])
     assert mismatch["code"] == "T2_INVALID_CALLBACK_PAYLOAD"
 
+    completed_event = {
+        "status": "COMPLETED",
+        "github_run_id": "123",
+        "github_run_url": "https://github.com/example/actions/runs/123",
+        "result": result,
+    }
     completed = as_json(call(
         args.base,
         f"/v1/jobs/{job_id}/events",
         method="POST",
-        body=json.dumps({"status": "COMPLETED", "github_run_id": "123", "github_run_url": "https://github.com/example/actions/runs/123", "result": result}).encode(),
+        body=json.dumps(completed_event).encode(),
         headers={**auth, "content-type": "application/json"},
     )[0])
     assert completed == {"job_id": job_id, "status": "COMPLETED"}
@@ -172,6 +178,16 @@ def main() -> None:
     assert music_state["last_successful_music_id"] == job["audio_plan"]["music"]["selected_candidate_id"]
     assert music_state["last_successful_render_job_id"] == job_id
     assert music_state["successful_render_count"] == 1
+    assert music_state["successful_render_jobs"] == {job_id: "A"}
+    replayed_success = as_json(call(
+        args.base,
+        f"/v1/jobs/{job_id}/events",
+        method="POST",
+        body=json.dumps(completed_event).encode(),
+        headers={**auth, "content-type": "application/json"},
+    )[0])
+    assert replayed_success == completed
+    assert as_json(call(args.base, "/v1/music-state", headers=auth)[0]) == music_state
 
     def prepare_explicit(music_id: str, *, expected_dispatch: int = 202) -> tuple[str, str, dict[str, Any] | None, dict[str, Any]]:
         idem = f"integration-{music_id.lower()}-{time.time_ns()}"
@@ -211,13 +227,21 @@ def main() -> None:
         return prepared_id, idem, prepared_job, dispatch_payload
 
     selected_id = job["audio_plan"]["music"]["selected_candidate_id"]
+    assert selected_id == "A"
     _, _, _, repeat_error = prepare_explicit(selected_id, expected_dispatch=400)
     assert repeat_error["code"] == "T2_INVALID_REQUEST"
     assert as_json(call(args.base, "/v1/music-state", headers=auth)[0]) == music_state
 
-    alternative_id = next(candidate for candidate in ("A", "B", "C", "D") if candidate != selected_id)
-    failed_id, _, failed_job, _ = prepare_explicit(alternative_id)
-    assert failed_job is not None and failed_job["audio_plan"]["music"]["selected_candidate_id"] == alternative_id
+    cycle = ("A", "B", "C", "D")
+    skipped_id = cycle[(cycle.index(selected_id) + 2) % len(cycle)]
+    _, _, _, skip_error = prepare_explicit(skipped_id, expected_dispatch=400)
+    assert skip_error["code"] == "T2_INVALID_REQUEST"
+    assert "cycle T2 strict attend B" in skip_error["message"]
+    assert as_json(call(args.base, "/v1/music-state", headers=auth)[0]) == music_state
+
+    successor_id = cycle[(cycle.index(selected_id) + 1) % len(cycle)]
+    failed_id, _, failed_job, _ = prepare_explicit(successor_id)
+    assert failed_job is not None and failed_job["audio_plan"]["music"]["selected_candidate_id"] == successor_id
     render_error = json.loads((ROOT / "fixtures/t2-avant-apres/render_error.unsupported_media.json").read_text())
     render_error["job_id"] = failed_id
     failed_callback = as_json(call(
@@ -230,7 +254,7 @@ def main() -> None:
     assert failed_callback["status"] == "FAILED"
     assert as_json(call(args.base, "/v1/music-state", headers=auth)[0]) == music_state
 
-    concurrent_jobs = [prepare_explicit(alternative_id), prepare_explicit(alternative_id)]
+    concurrent_jobs = [prepare_explicit(successor_id), prepare_explicit(successor_id)]
 
     def result_for(prepared_id: str, idem: str, prepared_job: dict[str, Any]) -> dict[str, Any]:
         prepared_result = json.loads((ROOT / "fixtures/t2-avant-apres/render_result.valid.json").read_text())
@@ -267,9 +291,63 @@ def main() -> None:
     conflict = next(payload for status, payload in concurrent_results if status == 409)
     assert conflict["code"] == "T2_MUSIC_STATE_CONFLICT"
     final_music_state = as_json(call(args.base, "/v1/music-state", headers=auth)[0])
-    assert final_music_state["last_successful_music_id"] == alternative_id
+    assert final_music_state["last_successful_music_id"] == successor_id
     assert final_music_state["successful_render_count"] == 2
-    print("T2_CLOUDFLARE_CONTROL_PLANE_INTEGRATION_OK", job_id)
+
+    observed_cycle = [selected_id, successor_id]
+    for expected_music_id in ("C", "D", "A"):
+        prepared_id, idem, prepared_job, _ = prepare_explicit(expected_music_id)
+        assert prepared_job is not None
+        prepared_music = prepared_job["audio_plan"]["music"]
+        assert prepared_music["selected_candidate_id"] == expected_music_id
+        assert prepared_music["previous_candidate_id"] == observed_cycle[-1]
+        event = {
+            "status": "COMPLETED",
+            "github_run_id": prepared_id,
+            "github_run_url": f"https://github.com/example/actions/runs/{prepared_id}",
+            "result": result_for(prepared_id, idem, prepared_job),
+        }
+        completed_step = as_json(call(
+            args.base,
+            f"/v1/jobs/{prepared_id}/events",
+            method="POST",
+            body=json.dumps(event).encode(),
+            headers={**auth, "content-type": "application/json"},
+        )[0])
+        assert completed_step == {"job_id": prepared_id, "status": "COMPLETED"}
+        observed_cycle.append(expected_music_id)
+        final_music_state = as_json(call(args.base, "/v1/music-state", headers=auth)[0])
+        assert final_music_state["last_successful_music_id"] == expected_music_id
+        assert final_music_state["last_successful_render_job_id"] == prepared_id
+        assert final_music_state["successful_render_count"] == len(observed_cycle)
+
+    assert observed_cycle == ["A", "B", "C", "D", "A"]
+    assert len(final_music_state["successful_render_jobs"]) == 5
+    assert final_music_state["successful_render_jobs"][job_id] == "A"
+
+    old_success_replay = as_json(call(
+        args.base,
+        f"/v1/jobs/{job_id}/events",
+        method="POST",
+        body=json.dumps(completed_event).encode(),
+        headers={**auth, "content-type": "application/json"},
+    )[0])
+    assert old_success_replay == {"job_id": job_id, "status": "COMPLETED"}
+    assert as_json(call(args.base, "/v1/music-state", headers=auth)[0]) == final_music_state
+
+    mutated_old_event = json.loads(json.dumps(completed_event))
+    mutated_old_event["result"]["output"]["sha256"] = "f" * 64
+    immutable_terminal = as_json(call(
+        args.base,
+        f"/v1/jobs/{job_id}/events",
+        method="POST",
+        body=json.dumps(mutated_old_event).encode(),
+        headers={**auth, "content-type": "application/json"},
+        expected=409,
+    )[0])
+    assert immutable_terminal["code"] == "T2_TERMINAL_JOB"
+    assert as_json(call(args.base, "/v1/music-state", headers=auth)[0]) == final_music_state
+    print("T2_CLOUDFLARE_CONTROL_PLANE_STRICT_ROTATION_OK", "→".join(observed_cycle))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_id": "B",
+  "pixabay_id": 293956,
+  "title": "Savanna Beats",
+  "artist": "DPStudioMusic",
+  "official_page": "https://pixabay.com/music/afrobeat-savanna-beats-293956/",
+  "official_content_url": "https://cdn.pixabay.com/audio/2025/01/28/audio_2803db62bb.mp3",
+  "source_sha256": "9d803e54f0833de5537334890b8edbd85ed9f384257d943beaaf3ccedee73740",
+  "source_bytes": 4481280,
+  "source_duration_s": 140.04,
+  "content_id_registered_label_observed": false,
+  "ai_generated_badge": "displayed",
+  "verified_on": "2026-11-19",
+  "owner_approved": true,
+  "production_eligible": true,
+  "license": "https://pixabay.com/service/license-summary/"
+}

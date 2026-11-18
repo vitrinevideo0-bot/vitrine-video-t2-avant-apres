@@ -42,11 +42,11 @@ STAGES: dict[str, dict[str, Any]] = {
     },
     "complete_voice_music_render": {
         "job_prefix": "t2-complete",
-        "release_version": "v0.6.0-unified-runtime",
+        "release_version": "v1.0.0-music-rotation",
         "execution_profile": "T2_GITHUB_ACTIONS_COMPLETE",
         "render_business_text": True,
         "text_motion_config": "config/T2_text_motion_v0_3_0.json",
-        "output_uri": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+        "output_uri": "output/runtime/pending/VIDEO_T2_COMPLET_VOIX_MUSIQUE_PENDING.mp4",
     },
 }
 
@@ -103,13 +103,21 @@ def build_job(
     if stage not in STAGES:
         raise ValueError(f"Étape inconnue : {stage}")
     stage_spec = dict(STAGES[stage])
-    if stage == "complete_voice_music_render" and historical_exemplar and requested_music == "D":
-        stage_spec.update(
-            {
-                "release_version": "v0.7.0-afrofire-voice-mix",
-                "output_uri": "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4",
-            }
-        )
+    if stage == "complete_voice_music_render" and historical_exemplar:
+        if requested_music == "D":
+            stage_spec.update(
+                {
+                    "release_version": "v0.7.0-afrofire-voice-mix",
+                    "output_uri": "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4",
+                }
+            )
+        elif requested_music == "B":
+            stage_spec.update(
+                {
+                    "release_version": "v0.6.0-unified-runtime",
+                    "output_uri": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+                }
+            )
     questions = _read(QUESTIONS)
     manifest = _read(MANIFEST)
     answers = normalize_answers(raw_answers, questions)

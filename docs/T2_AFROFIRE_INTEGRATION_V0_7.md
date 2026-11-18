@@ -1,6 +1,8 @@
 # T2 — intégration Afrofire v0.7
 
-## Décision
+> **Archive historique.** Ce document décrit l’exemplaire v0.7 D/Afrofire. Le runtime courant v1 utilise le pool `300340 → 293956 → 300333 → 328624` et le cycle strict A → B → C → D → A ; Afrofire 300338 n’est plus un actif de production courant.
+
+## Décision historique v0.7
 
 La piste historique **B — Afro Pop Vlog Sunshine** est rejetée pour la production courante parce que sa page Pixabay affiche **Content ID Registered**.
 
@@ -83,14 +85,8 @@ npm run test --prefix cloudflare
 
 Le code Python refuse le rendu complet si `GITHUB_ACTIONS != true`.
 
-## Publication
+## Publication historique
 
-Le workflow `.github/workflows/server-render-unified.yml` utilise explicitement `--music D`. La publication d’une Release est désactivée par défaut. Si elle est demandée ultérieurement, le workflow :
+Dans la version v0.7 décrite ici, le workflow utilisait explicitement `--music D`, exigeait `VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4` comme unique MP4, refusait tout audio autonome, vérifiait les checksums et refusait d’écraser une Release existante.
 
-1. rend et valide sur GitHub Actions ;
-2. exige `VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4` comme unique MP4 ;
-3. refuse tout fichier audio autonome ;
-4. vérifie les checksums ;
-5. refuse d’écraser un tag ou une Release v0.7 déjà existants.
-
-L’intégration du code et des contrats ne crée à elle seule aucun nouveau rendu vidéo et n’altère aucune Release stable.
+Le workflow courant n’utilise plus ce parcours fixe : il construit un job v1 avec `--music auto`, applique le pool final et ne propose qu’une pré-Release additive désactivée par défaut. Les contrats et fixtures v0.7 restent néanmoins byte-stables et testables comme archives.

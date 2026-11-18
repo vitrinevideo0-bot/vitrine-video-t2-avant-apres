@@ -2,45 +2,67 @@
   "schema_version": "1.0.0",
   "id": "T2_music_pool_approval_2026_11_18",
   "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
-  "decision": "approve_A_B_C_with_retained_D",
-  "decision_source": "explicit_owner_selection_after_four_comparable_auditions",
+  "decision": "approve_A_B_C_and_replace_D_afrofire_with_328624",
+  "decision_source": "explicit_owner_selection_after_validated_comparison; immediate integration authorized",
   "approved_on": "2026-11-18",
-  "approved_candidate_ids": ["A", "B", "C", "D"],
+  "approved_candidate_ids": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ],
   "candidates": [
     {
       "id": "A",
+      "choice": "1",
+      "pixabay_id": 300340,
       "title": "Naija Flow",
       "artist": "DPStudioMusic",
-      "audition": "music/auditions/v1/T2_AUDITION_A_NAIJA_FLOW.m4a",
-      "audition_sha256": "ea5e8256afb83dc4e330871a9343dd6e099e8970e2081d2d77a1fb39a382a272"
+      "clean_instrumental": "audio/music/t2-afrobeat-v1/t2_300340_naija_flow_30s.mp3",
+      "clean_instrumental_sha256": "d6f9c2e1c03bcda34e758958546c768114b3d2da84a1ac14e1bde3c26d1d940b",
+      "duration_s": 30.0,
+      "contains_voice": false
     },
     {
       "id": "B",
+      "choice": "2",
+      "pixabay_id": 293956,
       "title": "Savanna Beats",
       "artist": "DPStudioMusic",
-      "audition": "music/auditions/v1/T2_AUDITION_B_SAVANNA_BEATS.m4a",
-      "audition_sha256": "82e6ecc0d3785d26dfef0bde544360d842e225792f3a12a4ac03e4ca9d674845"
+      "clean_instrumental": "audio/music/t2-afrobeat-v1/t2_293956_savanna_beats_30s.mp3",
+      "clean_instrumental_sha256": "820ba48c5ebe01de9e67da26e521112eedf558f67b506b7a85737cd112625e50",
+      "duration_s": 30.0,
+      "contains_voice": false
     },
     {
       "id": "C",
+      "choice": "3",
+      "pixabay_id": 300333,
       "title": "Vibe Republic",
       "artist": "DPStudioMusic",
-      "audition": "music/auditions/v1/T2_AUDITION_C_VIBE_REPUBLIC.m4a",
-      "audition_sha256": "921af7e3fb441c303f6491303bf2b85d869e25e1f0bb94f8c683787f15112840"
+      "clean_instrumental": "audio/music/t2-afrobeat-v1/t2_300333_vibe_republic_30s.mp3",
+      "clean_instrumental_sha256": "1f78562b2bd6b169824afcddefc1764717f26221187574491c823e5f721c92b8",
+      "duration_s": 30.0,
+      "contains_voice": false
     },
     {
       "id": "D",
-      "title": "Afrofire",
-      "artist": "DPStudioMusic",
-      "audition": "music/auditions/v1/T2_AUDITION_D_AFROFIRE.m4a",
-      "audition_sha256": "3ae4167d3a32dfc2c8f1f4d9d2b71265943f79a17245acae8459484cb804c573"
+      "choice": "4",
+      "pixabay_id": 328624,
+      "title": "Adolescence — Afro Pop x Afrobeat, Guitar & Brass",
+      "artist": "47643651",
+      "clean_instrumental": "audio/music/t2-afrobeat-v1/t2_328624_adolescence_30s.mp3",
+      "clean_instrumental_sha256": "96d43530088ce467547c4bda2993f3c58292feedcf62fcfc6d8666ce9bfee6e7",
+      "duration_s": 30.0,
+      "contains_voice": false
     }
   ],
   "historical_protection": {
     "historical_shortlist": "music/T2_music_shortlist_v0_4_0.json",
-    "historical_A_B_C_are_not_reactivated": true,
-    "new_A_B_C_have_distinct_source_pages_and_hashes": true,
-    "D_is_retained_without_rewriting_its_prior_approval": true
+    "historical_auditions_remain_audit_only": true,
+    "historical_auditions_are_not_production_assets": true,
+    "replaced_pixabay_id": 300338,
+    "replacement_pixabay_id": 328624
   },
   "activation_authorized": true
 }

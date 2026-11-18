@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 — instrumentales propres et cycle strict
+
+- remplacement de la piste D Afrofire 300338 par la piste approuvée 328624 ;
+- quatre instrumentales propres de 30 secondes embarquées, sans voix d’audition ;
+- recalage validé de 328624 à 1,83 s dans la source originale ;
+- rotation persistante stricte A → B → C → D → A, avancée uniquement après succès/QC validé ;
+- registre persistant `successful_render_jobs` : rejeu idempotent même après un tour complet, échec sans mutation et rejet des commits concurrents hors cycle ;
+- contrats Python, Cloudflare, schémas, provenance et tests mis à jour.
+
 ## 0.7.0 — préparation Afrofire approuvée
 
 - remplacement de la sélection courante B rejetée par le candidat existant D — **Afrofire · DPStudioMusic** ;

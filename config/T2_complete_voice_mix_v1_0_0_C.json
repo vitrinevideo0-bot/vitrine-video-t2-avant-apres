@@ -49,7 +49,16 @@
     "program_target_lufs": -17.0,
     "program_true_peak_dbtp_max": -1.0,
     "fade_in_s": 0.35,
-    "fade_out_s": 0.8
+    "fade_out_s": 0.8,
+    "program_file": "audio/music/t2-afrobeat-v1/t2_300333_vibe_republic_30s.mp3",
+    "program_sha256": "1f78562b2bd6b169824afcddefc1764717f26221187574491c823e5f721c92b8",
+    "program_bytes": 721196,
+    "program_sample_rate_hz": 48000,
+    "program_channels": 2,
+    "program_bitrate_kbps": 192,
+    "program_integrated_lufs": -17.31,
+    "program_true_peak_dbtp": -1.74,
+    "program_contains_voice": false
   },
   "voice": {
     "provider": "Arena.ai Agent Mode",

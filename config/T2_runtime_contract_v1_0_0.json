@@ -13,7 +13,7 @@
     "music_changed": true,
     "voice_speed_changed": false,
     "runtime_v0_6": "config/T2_runtime_contract_v0_6_0.json",
-    "music_change_reason": "owner approved Naija Flow, Savanna Beats and Vibe Republic with retained Afrofire; historical A/B/C remain rejected",
+    "music_change_reason": "owner approved 328624 to replace Afrofire 300338; production pool is 300340→293956→300333→328624 with clean 30-second instrumentals",
     "runtime_v0_7": "config/T2_runtime_contract_v0_7_0.json"
   },
   "reference": {
@@ -199,12 +199,16 @@
       "D"
     ],
     "default_music_request": "auto",
+    "initial_music_id": "A",
+    "explicit_selection_policy": "exact_successor_only",
     "no_immediate_repeat": true,
     "state_key": "last_successful_music_id",
+    "idempotency_ledger_key": "successful_render_jobs",
     "state_schema": "schemas/T2_music_selection_state.schema.json",
     "state_update_policy": "after_success_only",
     "failed_render_state_policy": "unchanged",
-    "music_sources_contract": "config/T2_music_pool_v1_0_0.json"
+    "music_sources_contract": "config/T2_music_pool_v1_0_0.json",
+    "automatic_cycle": "A→B→C→D→A; advance after successful validated RenderResult only"
   },
   "server_handoff": {
     "control_planes": [
@@ -212,7 +216,7 @@
       "cloudflare_worker"
     ],
     "render_plane": "GitHub Actions only",
-    "cloudflare_role": "validate, store captures and jobs, select A-D excluding the last success, enforce idempotency, dispatch GitHub, validate callback, commit music state after success only",
+    "cloudflare_role": "validate, store captures and jobs, select the strict next A→B→C→D track, enforce idempotency, dispatch GitHub, validate callback, commit music state after success only",
     "cloudflare_never_renders_video": true,
     "workflow": ".github/workflows/server-render-unified.yml",
     "security": {
@@ -220,7 +224,7 @@
       "github_callback_and_materialization": "Bearer CALLBACK_TOKEN",
       "capture_integrity": "client SHA-256 checked by R2 then checked again on GitHub",
       "idempotency": "conditional R2 claim by Idempotency-Key",
-      "music_state": "R2 conditional ETag compare-and-swap; idempotent successful callbacks; duplicate adjacent success rejected"
+      "music_state": "R2 conditional ETag compare-and-swap; successful_render_jobs idempotency ledger; duplicate or out-of-sequence success rejected"
     },
     "result_contract": "schemas/render_result.schema.json",
     "error_contract": "schemas/render_error.schema.json"
@@ -228,10 +232,10 @@
   "acceptance_gates": [
     "the complete mixer receives the same RenderJob that supplied merchant_payload and captures",
     "visual rendering is rebuilt from that job and remains exactly 900 frames",
-    "the selected music belongs to owner-approved A/B/C/D and differs from last_successful_music_id",
+    "the selected music is the strict next owner-approved A→B→C→D track after last_successful_music_id",
     "historical B/D exemplar contracts and their approved video references remain immutable",
     "captured audio, when selected, remains at identity speed 1x",
-    "selected music source hash is checked before mixing",
+    "selected clean 30-second instrumental hash is checked before mixing; original source hash remains provenance",
     "music state advances only after a validated successful RenderResult and never after RenderError",
     "RenderResult contains the job hash and all input hashes",
     "one MP4 and no standalone source audio are published",

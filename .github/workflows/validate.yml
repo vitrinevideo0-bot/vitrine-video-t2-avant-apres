@@ -21,7 +21,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Compiler les sources Python
         run: python -m compileall -q engine tools tests
-      - name: Reconstruire les trois RenderJobs depuis les mêmes réponses
+      - name: Reconstruire les RenderJobs historiques et le job courant de rotation
         run: |
           python tools/build_render_job.py \
             --answers demo/reponses_demo.json \
@@ -42,11 +42,28 @@ jobs:
             --control-plane github_actions_manual \
             --output /tmp/render_job_complete.json
           cmp demo/render_job_complete_demo.json /tmp/render_job_complete.json
+          python tools/build_render_job.py \
+            --answers demo/reponses_textes_demo.json \
+            --stage complete_voice_music_render \
+            --music auto \
+            --voice-mode registered_voice_clips \
+            --control-plane github_actions_manual \
+            --output /tmp/render_job_rotation.json
+          python - <<'PY'
+          import json
+          job=json.load(open('/tmp/render_job_rotation.json'))
+          music=job['audio_plan']['music']
+          assert job['runtime_contract']=='config/T2_runtime_contract_v1_0_0.json'
+          assert job['idempotency_key'].startswith('t2-avant-apres-v1.0.0-music-rotation-')
+          assert music['selected_candidate_id']=='A'
+          assert music['last_successful_music_id'] is None
+          assert music['selection_mode']=='strict_success_cycle'
+          PY
       - name: Verrous de non-régression
         run: |
           python tools/verify_existing_tests_unchanged.py
           python tools/verify_visual_pipeline.py
-      - name: Contrats RenderResult, RenderError et Afrofire
+      - name: Contrats RenderResult, RenderError, rotation v1 et archive Afrofire
         run: |
           python - <<'PY'
           import json

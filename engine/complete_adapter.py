@@ -11,6 +11,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -46,39 +47,56 @@ def select_music_candidate(
     requested_candidate_id: str = "auto",
     previous_candidate_id: str | None = None,
 ) -> dict[str, Any]:
-    """Select one owner-approved T2 track without an adjacent repeat."""
+    """Select one owner-approved T2 track in the strict A → B → C → D cycle."""
     candidates = pool.get("candidates", [])
     contract = pool.get("selection_contract", {})
     if [item.get("id") for item in candidates] != ["A", "B", "C", "D"]:
         raise ValueError("Le pool T2 doit contenir exactement A/B/C/D dans cet ordre.")
     if contract.get("allowed_candidate_ids") != ["A", "B", "C", "D"]:
         raise ValueError("Le contrat de sélection T2 ne couvre pas exactement A/B/C/D.")
-    if contract.get("no_immediate_repeat") is not True or contract.get("state_update_policy") != "after_success_only":
-        raise ValueError("Le pool T2 doit interdire la répétition et avancer seulement après succès.")
+    if (
+        contract.get("automatic_algorithm") != "strict approved order A→B→C→D→A from last successful music"
+        or contract.get("explicit_selection_policy") != "exact_successor_only"
+        or contract.get("no_immediate_repeat") is not True
+        or contract.get("state_update_policy") != "after_success_only"
+        or contract.get("idempotency_ledger_key") != "successful_render_jobs"
+        or contract.get("failed_render_state_policy") != "unchanged"
+        or contract.get("first_render_pool") != "candidate_A_only"
+        or contract.get("subsequent_pool_size") != 1
+    ):
+        raise ValueError("Le pool T2 doit imposer le successeur exact et avancer seulement après succès.")
     if any(
         not item.get("owner_approved")
         or not item.get("production_eligible")
         or item.get("content_id_status") != "not_displayed_on_source_page"
+        or item.get("contains_voice") is not False
+        or item.get("duration_s") != 30.0
         for item in candidates
     ):
-        raise ValueError("Les quatre pistes T2 doivent être approuvées et éligibles à la production.")
+        raise ValueError("Les quatre instrumentales T2 doivent être approuvées, propres et éligibles à la production.")
+    for item in candidates:
+        program = ROOT / item["file"]
+        if not program.is_file() or digest(program) != item["sha256"] or program.stat().st_size != item["bytes"]:
+            raise ValueError(f"L’instrumentale T2 {item['id']} ne correspond pas à son verrou local.")
     by_id = {item["id"]: item for item in candidates}
     if previous_candidate_id is not None and previous_candidate_id not in by_id:
         raise ValueError(f"Candidat précédent inconnu : {previous_candidate_id}")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{7,127}", render_job_id):
+        raise ValueError("render_job_id est obligatoire et doit être valide pour la sélection cyclique.")
+    previous_index = -1 if previous_candidate_id is None else contract["allowed_candidate_ids"].index(previous_candidate_id)
+    expected = candidates[(previous_index + 1) % len(candidates)]
     if requested_candidate_id != "auto":
         if requested_candidate_id not in by_id:
             raise ValueError(f"Candidat musical inconnu : {requested_candidate_id}")
-        if requested_candidate_id == previous_candidate_id:
-            raise ValueError("Répétition musicale immédiate interdite.")
-        selected = by_id[requested_candidate_id]
+        if requested_candidate_id != expected["id"]:
+            raise ValueError(
+                f"Le cycle T2 strict attend {expected['id']} ; {requested_candidate_id} ne peut pas le contourner."
+            )
+        selected = expected
         mode = "explicit_user_choice"
     else:
-        if not render_job_id:
-            raise ValueError("render_job_id est obligatoire pour la sélection déterministe.")
-        eligible = [item for item in candidates if item["id"] != previous_candidate_id]
-        value = int.from_bytes(hashlib.sha256(render_job_id.encode("utf-8")).digest()[:8], "big")
-        selected = eligible[value % len(eligible)]
-        mode = "deterministic_no_immediate_repeat"
+        selected = expected
+        mode = "strict_success_cycle"
     return {
         **copy.deepcopy(selected),
         "selection_mode": mode,
@@ -97,6 +115,7 @@ def load_music_selection_state(state_path: Path) -> dict[str, Any]:
             "last_successful_music_id": None,
             "last_successful_render_job_id": None,
             "successful_render_count": 0,
+            "successful_render_jobs": {},
         }
     state = load_json(state_path)
     required = {
@@ -104,6 +123,7 @@ def load_music_selection_state(state_path: Path) -> dict[str, Any]:
         "last_successful_music_id",
         "last_successful_render_job_id",
         "successful_render_count",
+        "successful_render_jobs",
     }
     if set(state) != required or state["schema_version"] != MUSIC_STATE_SCHEMA_VERSION:
         raise ValueError("État persistant de rotation T2 invalide.")
@@ -111,8 +131,17 @@ def load_music_selection_state(state_path: Path) -> dict[str, Any]:
         raise ValueError("Dernière musique réussie T2 inconnue.")
     if not isinstance(state["successful_render_count"], int) or state["successful_render_count"] < 0:
         raise ValueError("Compteur de réussites T2 invalide.")
+    receipts = state["successful_render_jobs"]
+    if (
+        not isinstance(receipts, dict)
+        or any(not isinstance(job_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{7,127}", job_id) or music_id not in {"A", "B", "C", "D"} for job_id, music_id in receipts.items())
+        or len(receipts) != state["successful_render_count"]
+    ):
+        raise ValueError("Registre idempotent des réussites T2 invalide.")
     if (state["last_successful_music_id"] is None) != (state["last_successful_render_job_id"] is None):
         raise ValueError("L'état T2 doit associer musique et job réussis.")
+    if state["last_successful_render_job_id"] is not None and receipts.get(state["last_successful_render_job_id"]) != state["last_successful_music_id"]:
+        raise ValueError("La dernière réussite T2 doit être présente dans le registre idempotent.")
     return state
 
 
@@ -142,22 +171,28 @@ def _record_music_render_result_unlocked(
 ) -> dict[str, Any]:
     selected_pool = pool or load_json(MUSIC_POOL)
     allowed = set(selected_pool["selection_contract"]["allowed_candidate_ids"])
-    if not render_job_id or selected_music_id not in allowed:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{7,127}", render_job_id) or selected_music_id not in allowed:
         raise ValueError("Résultat musical T2 invalide.")
     current = load_music_selection_state(state_path)
     if not succeeded:
         return current
-    if current["last_successful_render_job_id"] == render_job_id:
-        if current["last_successful_music_id"] != selected_music_id:
+    if render_job_id in current["successful_render_jobs"]:
+        if current["successful_render_jobs"][render_job_id] != selected_music_id:
             raise ValueError("Un callback T2 rejoué ne peut pas changer de musique.")
         return current
-    if current["last_successful_music_id"] == selected_music_id:
-        raise ValueError("Répétition musicale immédiate interdite lors du succès T2.")
+    ordered_ids = list(selected_pool["selection_contract"]["allowed_candidate_ids"])
+    previous_id = current["last_successful_music_id"]
+    expected_id = ordered_ids[0] if previous_id is None else ordered_ids[(ordered_ids.index(previous_id) + 1) % len(ordered_ids)]
+    if selected_music_id != expected_id:
+        raise ValueError(
+            f"Le succès T2 doit respecter le cycle strict : {expected_id} attendu, {selected_music_id} reçu."
+        )
     updated = {
         "schema_version": MUSIC_STATE_SCHEMA_VERSION,
         "last_successful_music_id": selected_music_id,
         "last_successful_render_job_id": render_job_id,
         "successful_render_count": current["successful_render_count"] + 1,
+        "successful_render_jobs": {**current["successful_render_jobs"], render_job_id: selected_music_id},
     }
     state_path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temporary_name = tempfile.mkstemp(prefix=f".{state_path.name}.", dir=state_path.parent)
@@ -253,6 +288,20 @@ def attach_music_track(
             raise ValueError(f"La source musicale {selected['id']} diverge du contrat : {key}")
     if "source_bytes" in config_selection and selected["source_bytes"] != config_selection["source_bytes"]:
         raise ValueError(f"La taille de la source musicale {selected['id']} diverge du contrat.")
+    if rotation_contract:
+        program_bindings = {
+            "file": "program_file",
+            "sha256": "program_sha256",
+            "bytes": "program_bytes",
+            "duration_s": "program_duration_s",
+            "sample_rate_hz": "program_sample_rate_hz",
+            "channels": "program_channels",
+            "bitrate_kbps": "program_bitrate_kbps",
+            "contains_voice": "program_contains_voice",
+        }
+        for pool_key, config_key in program_bindings.items():
+            if selected[pool_key] != config_selection[config_key]:
+                raise ValueError(f"L’instrumentale locale {selected['id']} diverge du contrat : {pool_key}")
     music_plan = {
         "selection_mode": selected["selection_mode"],
         "requested_candidate_id": selected["requested_candidate_id"],
@@ -270,6 +319,13 @@ def attach_music_track(
         music_plan.update(
             {
                 "source_bytes": selected["source_bytes"],
+                "file": selected["file"],
+                "sha256": selected["sha256"],
+                "bytes": selected["bytes"],
+                "duration_s": selected["duration_s"],
+                "sample_rate_hz": selected["sample_rate_hz"],
+                "channels": selected["channels"],
+                "contains_voice": selected["contains_voice"],
                 "owner_approved": selected["owner_approved"],
                 "last_successful_music_id": selected["previous_candidate_id"],
                 "state_update_policy": "after_success_only",

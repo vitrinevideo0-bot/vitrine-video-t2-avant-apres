@@ -572,7 +572,14 @@
                   "owner_approved",
                   "last_successful_music_id",
                   "state_update_policy",
-                  "source_bytes"
+                  "source_bytes",
+                  "file",
+                  "sha256",
+                  "bytes",
+                  "duration_s",
+                  "sample_rate_hz",
+                  "channels",
+                  "contains_voice"
                 ],
                 "properties": {
                   "owner_approved": {
@@ -596,6 +603,9 @@
                   },
                   "content_id_status": {
                     "const": "not_displayed_on_source_page"
+                  },
+                  "contains_voice": {
+                    "const": false
                   }
                 }
               }
@@ -1130,7 +1140,7 @@
             "selection_mode": {
               "enum": [
                 "explicit_user_choice",
-                "deterministic_no_immediate_repeat"
+                "strict_success_cycle"
               ]
             },
             "requested_candidate_id": {
@@ -1206,6 +1216,30 @@
               "enum": [
                 "after_success_only"
               ]
+            },
+            "file": {
+              "type": "string",
+              "pattern": "^audio/music/t2-afrobeat-v1/.*_30s\\.mp3$"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 100000
+            },
+            "duration_s": {
+              "const": 30.0
+            },
+            "sample_rate_hz": {
+              "const": 48000
+            },
+            "channels": {
+              "const": 2
+            },
+            "contains_voice": {
+              "const": false
             }
           }
         },
@@ -1350,7 +1384,7 @@
           "then": {
             "properties": {
               "config_sha256": {
-                "const": "2c3889d822facc2111ab1d9b88f279a09a6545bea081beba39310c894e0c2c95"
+                "const": "93b363a01da2aadada9979039f658ee23db555612bfa5044316de2e2397feb92"
               }
             }
           }
@@ -1369,7 +1403,7 @@
           "then": {
             "properties": {
               "config_sha256": {
-                "const": "7af3455f33dbf615ae08c6c29e455980ec8af3534f51f3de2b99d2b0828df68b"
+                "const": "03e6877384e4f8f291fdf3142211bba3b09fa76a681899a63b9eb6b74985d9be"
               }
             }
           }
@@ -1388,7 +1422,7 @@
           "then": {
             "properties": {
               "config_sha256": {
-                "const": "f17243f55055c8313c29bad52532204069e03960ee77ebc34708f6e6779cce11"
+                "const": "a959805b6a624095444829a28b8e23d98de63f450d7a1d65d814ea62f3bfcf36"
               }
             }
           }
@@ -1407,7 +1441,7 @@
           "then": {
             "properties": {
               "config_sha256": {
-                "const": "d870f7ba9b34d48d193d4b1b03b4a9a14775e222004b510805c68c5f458e86a4"
+                "const": "e0466f228ed99c7c5ac6ab66a074788b53344c08adc738a0fdb4e7bb9396131f"
               }
             }
           }

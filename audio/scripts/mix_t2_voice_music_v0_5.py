@@ -605,8 +605,14 @@ def validate_source_config(config: dict[str, Any]) -> None:
     candidate_id = config["music_selection"]["candidate_id"]
     if candidate_id not in {"A", "B", "C", "D"}:
         raise ValueError("Le mixeur de production accepte uniquement A, B, C ou D.")
-    if config["music_selection"]["template_default_selection"] is not False:
+    selection = config["music_selection"]
+    if selection["template_default_selection"] is not False:
         raise ValueError("La piste sélectionnée ne doit pas devenir un défaut du gabarit.")
+    if selection["program_contains_voice"] is not False or selection["program_duration_s"] != TOTAL_S:
+        raise ValueError("La production T2 exige une instrumentale locale propre de 30 secondes.")
+    program = ROOT / selection["program_file"]
+    if not program.is_file() or sha256(program) != selection["program_sha256"] or program.stat().st_size != selection["program_bytes"]:
+        raise ValueError("L’instrumentale locale T2 ne correspond pas à son verrou SHA-256.")
 
 
 def validate_unified_job(job: dict[str, Any], config: dict[str, Any], config_path: Path) -> None:
@@ -633,6 +639,13 @@ def validate_unified_job(job: dict[str, Any], config: dict[str, Any], config_pat
         "content_id_status": selection["content_id_status"],
         "template_default_selection": selection["template_default_selection"],
         "source_audio_publish": selection["source_audio_publish"],
+        "file": selection["program_file"],
+        "sha256": selection["program_sha256"],
+        "bytes": selection["program_bytes"],
+        "duration_s": selection["program_duration_s"],
+        "sample_rate_hz": selection["program_sample_rate_hz"],
+        "channels": selection["program_channels"],
+        "contains_voice": selection["program_contains_voice"],
     }
     for key, expected in expected_music.items():
         if music[key] != expected:
@@ -754,7 +767,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="t2-complete-voice-mix-") as temporary_name:
         temporary = Path(temporary_name)
         candidate_id = selection["candidate_id"]
-        music_source = temporary / f"pixabay_candidate_{candidate_id}_source.mp3"
+        music_source = (ROOT / selection["program_file"]).resolve()
         if args.visual_source:
             visual = args.visual_source.resolve()
             if not visual.is_file():
@@ -776,11 +789,23 @@ def main() -> None:
                 "mode": "approved_release_asset_downloaded_by_mixer",
                 **download(config["visual_source"]["url"], visual),
             }
-        music_download = download(selection["source_audio_url"], music_source)
-        if music_download["sha256"] != selection["source_sha256"]:
+        if not music_source.is_file():
+            raise FileNotFoundError(f"Instrumentale T2 locale absente : {music_source}")
+        observed_program_sha256 = sha256(music_source)
+        if observed_program_sha256 != selection["program_sha256"] or music_source.stat().st_size != selection["program_bytes"]:
             raise RuntimeError(
-                f"Le SHA-256 de la source musicale {candidate_id} ne correspond pas au contrat chargé."
+                f"L’instrumentale propre de 30 s {candidate_id} ne correspond pas au contrat chargé."
             )
+        music_download = {
+            "mode": "bundled_adapted_30s_instrumental",
+            "path": str(music_source.relative_to(ROOT)),
+            "bytes": music_source.stat().st_size,
+            "sha256": observed_program_sha256,
+            "original_source_url": selection["source_audio_url"],
+            "original_source_sha256": selection["source_sha256"],
+            "published_as_standalone_asset": False,
+            "contains_voice": False,
+        }
 
         visual_probe = probe(visual)
         visual_video = only_streams(visual_probe, "video")
@@ -811,14 +836,27 @@ def main() -> None:
         if len(source_audio_streams) != 1:
             raise RuntimeError("Une unique source musicale est attendue.")
         source_duration = float(music_probe["format"]["duration"])
-        required_music_duration = float(selection["source_start_s"]) + float(selection["program_duration_s"])
+        required_music_duration = float(selection["program_duration_s"])
         if source_duration + 0.05 < required_music_duration:
-            raise RuntimeError(f"La source musicale est trop courte: {source_duration:.3f} s")
+            raise RuntimeError(f"L’instrumentale locale est trop courte: {source_duration:.3f} s")
 
-        faded_music = temporary / f"music_{candidate_id}_faded_30s.wav"
-        music_program_file = temporary / f"music_{candidate_id}_program_master_30s.wav"
-        music_before, music_after = prepare_music_program(
-            music_source, faded_music, music_program_file, selection
+        music_program_file = temporary / f"music_{candidate_id}_program_30s.wav"
+        run(
+            [
+                "ffmpeg", "-y", "-v", "error", "-i", str(music_source), "-map", "0:a:0",
+                "-t", str(TOTAL_S), "-ar", str(SR), "-ac", "2", "-map_metadata", "-1",
+                "-c:a", "pcm_s24le", str(music_program_file),
+            ]
+        )
+        music_before = loudness_stats(
+            music_source,
+            float(selection["program_target_lufs"]),
+            float(selection["program_true_peak_dbtp_max"]),
+        )
+        music_after = loudness_stats(
+            music_program_file,
+            float(selection["program_target_lufs"]),
+            float(selection["program_true_peak_dbtp_max"]),
         )
         music_program = decode_audio(music_program_file, 2)
         if len(music_program) < N:

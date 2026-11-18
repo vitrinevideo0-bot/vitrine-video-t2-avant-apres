@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "generated_on": "2026-11-18",
+  "status": "PASS",
+  "track_count": 4,
+  "source_full_tracks_committed": false,
+  "voice_or_audition_audio_in_derivatives": false,
+  "derivatives": [
+    {
+      "candidate_id": "A",
+      "pixabay_id": 300340,
+      "file": "audio/music/t2-afrobeat-v1/t2_300340_naija_flow_30s.mp3",
+      "sha256": "d6f9c2e1c03bcda34e758958546c768114b3d2da84a1ac14e1bde3c26d1d940b",
+      "bytes": 721196,
+      "decoded_duration_s": 30.0,
+      "integrated_lufs": -17.21,
+      "true_peak_dbtp": -4.52,
+      "contains_voice": false,
+      "status": "PASS"
+    },
+    {
+      "candidate_id": "B",
+      "pixabay_id": 293956,
+      "file": "audio/music/t2-afrobeat-v1/t2_293956_savanna_beats_30s.mp3",
+      "sha256": "820ba48c5ebe01de9e67da26e521112eedf558f67b506b7a85737cd112625e50",
+      "bytes": 721196,
+      "decoded_duration_s": 30.0,
+      "integrated_lufs": -17.27,
+      "true_peak_dbtp": -3.07,
+      "contains_voice": false,
+      "status": "PASS"
+    },
+    {
+      "candidate_id": "C",
+      "pixabay_id": 300333,
+      "file": "audio/music/t2-afrobeat-v1/t2_300333_vibe_republic_30s.mp3",
+      "sha256": "1f78562b2bd6b169824afcddefc1764717f26221187574491c823e5f721c92b8",
+      "bytes": 721196,
+      "decoded_duration_s": 30.0,
+      "integrated_lufs": -17.31,
+      "true_peak_dbtp": -1.74,
+      "contains_voice": false,
+      "status": "PASS"
+    },
+    {
+      "candidate_id": "D",
+      "pixabay_id": 328624,
+      "file": "audio/music/t2-afrobeat-v1/t2_328624_adolescence_30s.mp3",
+      "sha256": "96d43530088ce467547c4bda2993f3c58292feedcf62fcfc6d8666ce9bfee6e7",
+      "bytes": 721196,
+      "decoded_duration_s": 30.0,
+      "integrated_lufs": -17.01,
+      "true_peak_dbtp": -1.73,
+      "contains_voice": false,
+      "status": "PASS"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0
+  }
+}

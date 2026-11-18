@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "generated_on": "2026-11-18",
+  "provider": "Pixabay",
+  "license": "Pixabay Content License",
+  "license_url": "https://pixabay.com/service/license-summary/",
+  "approved_order": [
+    300340,
+    293956,
+    300333,
+    328624
+  ],
+  "full_original_sources_bundled": false,
+  "adapted_30s_instrumentals_bundled": true,
+  "instrumentals_contain_voice": false,
+  "tracks": [
+    {
+      "id": "A",
+      "choice": "1",
+      "pixabay_id": 300340,
+      "source": {
+        "official_page": "https://pixabay.com/music/afrobeat-naija-flow-300340/",
+        "official_content_url": "https://cdn.pixabay.com/audio/2025/02/12/audio_e74682b4b5.mp3",
+        "sha256": "a7f990fb3891aee07e55ae144ed8f7dd65aa549c10c1bf9e4247ddb522c6d943",
+        "bytes": 7680768,
+        "duration_s": 240.024,
+        "source_start_s": 0.0,
+        "bundled": false
+      },
+      "derivative": {
+        "file": "audio/music/t2-afrobeat-v1/t2_300340_naija_flow_30s.mp3",
+        "sha256": "d6f9c2e1c03bcda34e758958546c768114b3d2da84a1ac14e1bde3c26d1d940b",
+        "bytes": 721196,
+        "duration_s": 30.0,
+        "sample_rate_hz": 48000,
+        "channels": 2,
+        "bitrate_kbps": 192,
+        "integrated_lufs": -17.21,
+        "true_peak_dbtp": -4.52,
+        "contains_voice": false
+      },
+      "evidence_file": "audio/music/t2-afrobeat-v1/evidence/A_300340.json"
+    },
+    {
+      "id": "B",
+      "choice": "2",
+      "pixabay_id": 293956,
+      "source": {
+        "official_page": "https://pixabay.com/music/afrobeat-savanna-beats-293956/",
+        "official_content_url": "https://cdn.pixabay.com/audio/2025/01/28/audio_2803db62bb.mp3",
+        "sha256": "9d803e54f0833de5537334890b8edbd85ed9f384257d943beaaf3ccedee73740",
+        "bytes": 4481280,
+        "duration_s": 140.04,
+        "source_start_s": 0.0,
+        "bundled": false
+      },
+      "derivative": {
+        "file": "audio/music/t2-afrobeat-v1/t2_293956_savanna_beats_30s.mp3",
+        "sha256": "820ba48c5ebe01de9e67da26e521112eedf558f67b506b7a85737cd112625e50",
+        "bytes": 721196,
+        "duration_s": 30.0,
+        "sample_rate_hz": 48000,
+        "channels": 2,
+        "bitrate_kbps": 192,
+        "integrated_lufs": -17.27,
+        "true_peak_dbtp": -3.07,
+        "contains_voice": false
+      },
+      "evidence_file": "audio/music/t2-afrobeat-v1/evidence/B_293956.json"
+    },
+    {
+      "id": "C",
+      "choice": "3",
+      "pixabay_id": 300333,
+      "source": {
+        "official_page": "https://pixabay.com/music/afrobeat-vibe-republic-300333/",
+        "official_content_url": "https://cdn.pixabay.com/audio/2025/02/12/audio_ed4aff38b8.mp3",
+        "sha256": "71b20e916467d79ff4c59a674a2e3d66695cb613ddca76342cc02177fb629fec",
+        "bytes": 7680768,
+        "duration_s": 240.024,
+        "source_start_s": 0.0,
+        "bundled": false
+      },
+      "derivative": {
+        "file": "audio/music/t2-afrobeat-v1/t2_300333_vibe_republic_30s.mp3",
+        "sha256": "1f78562b2bd6b169824afcddefc1764717f26221187574491c823e5f721c92b8",
+        "bytes": 721196,
+        "duration_s": 30.0,
+        "sample_rate_hz": 48000,
+        "channels": 2,
+        "bitrate_kbps": 192,
+        "integrated_lufs": -17.31,
+        "true_peak_dbtp": -1.74,
+        "contains_voice": false
+      },
+      "evidence_file": "audio/music/t2-afrobeat-v1/evidence/C_300333.json"
+    },
+    {
+      "id": "D",
+      "choice": "4",
+      "pixabay_id": 328624,
+      "source": {
+        "official_page": "https://pixabay.com/music/afrobeat-afro-pop-x-afrobeat-guitar-amp-brass-rema-style-adolescence-328624/",
+        "official_content_url": "https://cdn.pixabay.com/download/audio/2025/04/17/audio_d452869f0e.mp3?filename=47643651-afro-pop-x-afrobeat-guitar-amp-brass-rema-style-adolescence-328624.mp3",
+        "sha256": "b5a928c000a7943b845271f2fd8eba1c635cccb6e5487e80f6f14c53b0c2e8d0",
+        "bytes": 7256607,
+        "duration_s": 226.768969,
+        "source_start_s": 1.83,
+        "bundled": false
+      },
+      "derivative": {
+        "file": "audio/music/t2-afrobeat-v1/t2_328624_adolescence_30s.mp3",
+        "sha256": "96d43530088ce467547c4bda2993f3c58292feedcf62fcfc6d8666ce9bfee6e7",
+        "bytes": 721196,
+        "duration_s": 30.0,
+        "sample_rate_hz": 48000,
+        "channels": 2,
+        "bitrate_kbps": 192,
+        "integrated_lufs": -17.01,
+        "true_peak_dbtp": -1.73,
+        "contains_voice": false
+      },
+      "evidence_file": "audio/music/t2-afrobeat-v1/evidence/D_328624.json"
+    }
+  ]
+}

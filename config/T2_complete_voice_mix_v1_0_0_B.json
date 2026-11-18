@@ -49,7 +49,16 @@
     "program_target_lufs": -17.0,
     "program_true_peak_dbtp_max": -1.0,
     "fade_in_s": 0.35,
-    "fade_out_s": 0.8
+    "fade_out_s": 0.8,
+    "program_file": "audio/music/t2-afrobeat-v1/t2_293956_savanna_beats_30s.mp3",
+    "program_sha256": "820ba48c5ebe01de9e67da26e521112eedf558f67b506b7a85737cd112625e50",
+    "program_bytes": 721196,
+    "program_sample_rate_hz": 48000,
+    "program_channels": 2,
+    "program_bitrate_kbps": 192,
+    "program_integrated_lufs": -17.27,
+    "program_true_peak_dbtp": -3.07,
+    "program_contains_voice": false
   },
   "voice": {
     "provider": "Arena.ai Agent Mode",

@@ -49,7 +49,16 @@
     "program_target_lufs": -17.0,
     "program_true_peak_dbtp_max": -1.0,
     "fade_in_s": 0.35,
-    "fade_out_s": 0.8
+    "fade_out_s": 0.8,
+    "program_file": "audio/music/t2-afrobeat-v1/t2_300340_naija_flow_30s.mp3",
+    "program_sha256": "d6f9c2e1c03bcda34e758958546c768114b3d2da84a1ac14e1bde3c26d1d940b",
+    "program_bytes": 721196,
+    "program_sample_rate_hz": 48000,
+    "program_channels": 2,
+    "program_bitrate_kbps": 192,
+    "program_integrated_lufs": -17.21,
+    "program_true_peak_dbtp": -4.52,
+    "program_contains_voice": false
   },
   "voice": {
     "provider": "Arena.ai Agent Mode",

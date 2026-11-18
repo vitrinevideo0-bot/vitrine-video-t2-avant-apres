@@ -13,7 +13,7 @@ T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31
 3. Le décompte 3–2–1 est transitoire et ne crée pas un treizième écran.
 4. Chaque scène demande caméra et microphone, s’arrête automatiquement après 6, 8, 7 ou 9 secondes, puis se relit **avec le son à vitesse 1×**.
 5. `REFAIRE` détruit la prise locale. L’acceptation calcule son SHA-256 et l’envoie à R2.
-6. Après S4, le Worker lit `music/t2-last-success.json`, choisit `auto` parmi A–D en excluant la dernière réussite (ou valide un choix explicite non répétitif), produit un `RenderJob` complet `1.1.0` et déclenche `repository_dispatch` sur GitHub.
+6. Après S4, le Worker lit `music/t2-last-success.json` et impose le successeur exact du dernier succès dans le cycle **A → B → C → D → A**. Sans état, A est obligatoire ; un choix explicite n’est accepté que s’il désigne ce même successeur. Le Worker produit ensuite un `RenderJob` complet `1.1.0` et déclenche `repository_dispatch` sur GitHub.
 7. GitHub télécharge les quatre captures avec vérification SHA-256 et valide les médias. Un job commerçant dynamique reconstruit ses 900 images depuis ce même job. Pour l’exemplaire historique explicitement verrouillé, GitHub matérialise plutôt le master de la Release v0.3 et exige à la fois son SHA-256 de fichier et son SHA-256 de flux H.264 avant de mixer voix et musique.
 8. Le ducking conserve −3 dB hors parole, −10 dB sous parole, attaque 120 ms et relâchement 450 ms.
 9. Le QC indépendant produit `RenderResult` ou `RenderError`, puis GitHub rappelle le Worker. L’état musical est écrit par CAS R2 uniquement après un `COMPLETED` conforme ; un échec ne l’avance jamais.
@@ -43,13 +43,13 @@ Le parcours navigateur demande `captured_or_registered_fallback`. Le garde de pa
 
 ## Musique
 
-Le pool de production est exactement **A — Naija Flow / B — Savanna Beats / C — Vibe Republic / D — Afrofire**, toutes par DPStudioMusic et toutes approuvées après quatre auditions comparables. Les identifiants A/B/C historiques restent dans `music/T2_music_shortlist_v0_4_0.json` avec leur statut Content ID et ne sont jamais promus par le nouveau catalogue.
+Le pool de production est exactement **A — Naija Flow (300340) / B — Savanna Beats (293956) / C — Vibe Republic (300333) / D — Adolescence (328624)**. La piste D approuvée remplace Afrofire 300338. Les identifiants A/B/C historiques restent dans `music/T2_music_shortlist_v0_4_0.json` avec leur statut Content ID et ne sont jamais promus par le nouveau catalogue.
 
-`config/T2_music_pool_v1_0_0.json` verrouille pour chaque piste la page, l’URL CDN, le SHA-256, la taille, le contrat de mixage et le dérivé d’audition. `auto` est la valeur par défaut. L’algorithme SHA-256 est déterministe parmi les trois pistes différentes de `last_successful_music_id`; un choix explicite égal à cette valeur est rejeté. Une piste peut revenir après une piste différente.
+`config/T2_music_pool_v1_0_0.json` verrouille pour chaque piste la page, l’URL CDN, le SHA-256 et la taille de la source, le contrat de mixage ainsi que l’instrumentale locale de 30 secondes. `auto` est la valeur par défaut. La sélection ne dépend ni d’un hash de job ni d’un tirage : état vide → A, puis A → B, B → C, C → D et D → A. Une sélection explicite différente du successeur attendu est rejetée avant dispatch.
 
-Le Worker conserve l’état conforme à `schemas/T2_music_selection_state.schema.json` dans l’objet R2 `music/t2-last-success.json`. Les écritures sont conditionnelles sur l’ETag : un callback rejoué est idempotent, deux callbacks concurrents ne peuvent pas perdre une mise à jour, et deux succès adjacents ne peuvent pas valider la même piste. `FAILED` ne crée ni ne modifie cet état.
+Le Worker conserve l’état conforme à `schemas/T2_music_selection_state.schema.json` dans l’objet R2 `music/t2-last-success.json`. Le registre `successful_render_jobs` associe chaque job déjà validé à sa piste : même après un tour complet, son callback rejoué ne peut donc pas avancer une seconde fois. Les écritures sont conditionnelles sur l’ETag, deux callbacks concurrents ne peuvent pas perdre une mise à jour et un succès hors séquence est refusé. `FAILED` ne crée ni ne modifie cet état.
 
-Lors du contrôle daté du 2026-11-19, les quatre pages affichaient le badge AI generated et aucun badge Content ID. Cette observation n’est pas une garantie juridique absolue. Les sources Pixabay complètes restent éphémères et ne sont jamais publiées comme fichiers autonomes ; seuls les dérivés voix + musique nécessaires à l’audition sont conservés.
+Les dates et observations de contrôle des pages source sont archivées dans le manifeste et les preuves du pack. L’absence observée de badge Content ID ne constitue pas une garantie juridique absolue. Les sources Pixabay complètes restent hors dépôt et ne sont jamais publiées ; seules les quatre éditions instrumentales propres de 30 secondes, sans voix, sont embarquées comme actifs de production.
 
 ## API Worker
 
@@ -123,10 +123,10 @@ Dans un second terminal :
 python cloudflare/test/control_plane_integration.py
 ```
 
-Ce test couvre le formulaire canonique, le contrat des 12 écrans, le pool musical, l’authentification, l’idempotence, MP4/WebM, R2, le RenderJob strict, le dispatch, le téléchargement GitHub, les callbacks invalides/valides et la persistance musicale après succès seulement. Il ne produit aucune vidéo locale.
+Ce test couvre le formulaire canonique, le contrat des 12 écrans, le pool musical, l’authentification, l’idempotence, MP4/WebM, R2, le RenderJob strict, le dispatch, le téléchargement GitHub, les callbacks invalides/valides, l’échec sans mutation, le conflit concurrent et le cycle complet **A → B → C → D → A**. Il ne produit aucune vidéo locale.
 
 ## Rendu de référence unique
 
-Le workflow `.github/workflows/server-render-unified.yml` peut être lancé manuellement sur GitHub. Pour l’exemplaire canonique D/Afrofire, il matérialise le master v0.3 de sa Release publique, exige le SHA-256 exact du fichier et du flux H.264, prouve les verrous historiques et visuels, exécute les tests, puis rend une seule vidéo. Cette voie évite qu’un changement de génération de runner GitHub tente de réencoder différemment un visuel déjà approuvé. L’option `publish_release` est désactivée par défaut.
+Le workflow `.github/workflows/server-render-unified.yml` peut être lancé manuellement sur GitHub. Ce parcours construit désormais un job courant avec `--music auto` et, en l’absence d’un état Cloudflare, vérifie que la première piste est A. Comme la fixture emploie les quatre captures canoniques, le moteur matérialise le master v0.3 de sa Release et vérifie le SHA-256 du fichier et du flux H.264 ; les jobs commerçants Cloudflare reconstruisent au contraire leur propre visuel dynamique. Le workflow vérifie ensuite l’instrumentale locale sélectionnée, exécute les tests et le QC, puis produit une seule vidéo. Il ne fixe plus D/Afrofire comme musique du parcours manuel.
 
-Si une Release v0.7 est demandée explicitement, le workflow refuse d’écraser un tag existant et publie exactement un MP4, les rapports et les checksums — jamais la source musicale seule. Les jobs Cloudflare utilisent le même workflow par `repository_dispatch`, mais publient un artefact GitHub privé plutôt qu’une nouvelle Release publique à chaque commerçant.
+L’option `publish_prerelease` est désactivée par défaut. Le package reproductible contient exactement un MP4, le RenderJob, le RenderResult, les rapports, le contrat de mixage sélectionné, les schémas, le manifeste/provenance musicale et les checksums, mais aucun MP3/WAV ni rush brut. Si la publication est demandée explicitement, le workflow crée une pré-Release additive au tag unique et refuse d’écraser un tag existant. Les jobs Cloudflare utilisent le même workflow par `repository_dispatch`, publient un artefact GitHub privé et rappellent le Worker ; seul ce callback conforme peut faire avancer l’état persistant.

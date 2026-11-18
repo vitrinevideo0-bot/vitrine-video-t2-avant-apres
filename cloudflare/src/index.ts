@@ -74,6 +74,7 @@ interface MusicState {
   last_successful_music_id: MusicId | null;
   last_successful_render_job_id: string | null;
   successful_render_count: number;
+  successful_render_jobs: Record<string, MusicId>;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -115,7 +116,7 @@ function idemKey(key: string): string { return `idempotency/${key}.txt`; }
 function captureKey(jobId: string, slot: CaptureSlot): string { return `jobs/${jobId}/captures/${slot}.bin`; }
 
 function initialMusicState(): MusicState {
-  return { schema_version: "1.0.0", last_successful_music_id: null, last_successful_render_job_id: null, successful_render_count: 0 };
+  return { schema_version: "1.0.0", last_successful_music_id: null, last_successful_render_job_id: null, successful_render_count: 0, successful_render_jobs: {} };
 }
 
 function validateMusicState(state: MusicState): MusicState {
@@ -124,7 +125,13 @@ function validateMusicState(state: MusicState): MusicState {
     || (state.last_successful_music_id !== null && !MUSIC_IDS.includes(state.last_successful_music_id))
     || !Number.isInteger(state.successful_render_count)
     || state.successful_render_count < 0
+    || !state.successful_render_jobs
+    || typeof state.successful_render_jobs !== "object"
+    || Array.isArray(state.successful_render_jobs)
+    || Object.keys(state.successful_render_jobs).length !== state.successful_render_count
+    || Object.entries(state.successful_render_jobs).some(([jobId, musicId]) => !validId(jobId) || !MUSIC_IDS.includes(musicId))
     || ((state.last_successful_music_id === null) !== (state.last_successful_render_job_id === null))
+    || (state.last_successful_render_job_id !== null && state.successful_render_jobs[state.last_successful_render_job_id] !== state.last_successful_music_id)
   ) throw new Error("État musical T2 persistant invalide.");
   return state;
 }
@@ -135,38 +142,53 @@ async function readMusicState(env: Env): Promise<MusicState> {
 }
 
 async function selectMusic(jobId: string, requested: "auto" | MusicId, last: MusicId | null): Promise<any> {
+  if (!jobId) throw new Error("render_job_id est obligatoire.");
+  const contract = MUSIC_POOL_CONTRACT.selection_contract;
+  if (
+    contract.allowed_candidate_ids.join("") !== MUSIC_IDS.join("")
+    || contract.automatic_algorithm !== "strict approved order A→B→C→D→A from last successful music"
+    || contract.explicit_selection_policy !== "exact_successor_only"
+    || contract.state_update_policy !== "after_success_only"
+    || contract.idempotency_ledger_key !== "successful_render_jobs"
+    || contract.failed_render_state_policy !== "unchanged"
+    || contract.first_render_pool !== "candidate_A_only"
+    || contract.subsequent_pool_size !== 1
+  ) throw new Error("Le contrat musical T2 ne garantit pas le cycle strict.");
   const candidates = MUSIC_POOL_CONTRACT.candidates;
-  let selected: (typeof candidates)[number];
-  let mode: string;
-  if (requested !== "auto") {
-    if (requested === last) throw new Error("Répétition musicale immédiate interdite.");
-    const found = candidates.find((candidate) => candidate.id === requested);
-    if (!found) throw new Error("Musique T2 demandée inconnue.");
-    selected = found;
-    mode = "explicit_user_choice";
-  } else {
-    const eligible = candidates.filter((candidate) => candidate.id !== last);
-    const digest = await sha256Text(jobId);
-    selected = eligible[Number(BigInt(`0x${digest.slice(0, 16)}`) % BigInt(eligible.length))];
-    mode = "deterministic_no_immediate_repeat";
+  const previousIndex = last === null ? -1 : MUSIC_IDS.indexOf(last);
+  const expected = candidates[(previousIndex + 1) % candidates.length];
+  if (requested !== "auto" && requested !== expected.id) {
+    throw new Error(`Le cycle T2 strict attend ${expected.id}; ${requested} ne peut pas le contourner.`);
   }
-  return { ...selected, selection_mode: mode, requested_candidate_id: requested, previous_candidate_id: last };
+  return {
+    ...expected,
+    selection_mode: requested === "auto" ? "strict_success_cycle" : "explicit_user_choice",
+    requested_candidate_id: requested,
+    previous_candidate_id: last,
+  };
 }
 
 async function commitMusicSuccess(env: Env, jobId: string, selected: MusicId): Promise<void> {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const object = await env.T2_MEDIA.get(MUSIC_STATE_KEY);
     const current = object ? validateMusicState(await object.json<MusicState>()) : initialMusicState();
-    if (current.last_successful_render_job_id === jobId) {
-      if (current.last_successful_music_id !== selected) throw new Error("Un callback T2 rejoué ne peut pas changer de musique.");
+    if (Object.prototype.hasOwnProperty.call(current.successful_render_jobs, jobId)) {
+      if (current.successful_render_jobs[jobId] !== selected) throw new Error("Un callback T2 rejoué ne peut pas changer de musique.");
       return;
     }
-    if (current.last_successful_music_id === selected) throw new Error("Répétition musicale immédiate interdite au commit.");
+    const previousIndex = current.last_successful_music_id === null
+      ? -1
+      : MUSIC_IDS.indexOf(current.last_successful_music_id);
+    const expected = MUSIC_IDS[(previousIndex + 1) % MUSIC_IDS.length];
+    if (selected !== expected) {
+      throw new Error(`Le succès T2 doit respecter le cycle strict : ${expected} attendu, ${selected} reçu.`);
+    }
     const updated: MusicState = {
       schema_version: "1.0.0",
       last_successful_music_id: selected,
       last_successful_render_job_id: jobId,
       successful_render_count: current.successful_render_count + 1,
+      successful_render_jobs: { ...current.successful_render_jobs, [jobId]: selected },
     };
     const written = await env.T2_MEDIA.put(MUSIC_STATE_KEY, JSON.stringify(updated), {
       onlyIf: object ? { etagMatches: object.etag } : { etagDoesNotMatch: "*" },
@@ -253,6 +275,13 @@ async function buildRenderJob(state: StoredJob, env: Env): Promise<Record<string
     source_sha256: selectedMusic.source_sha256,
     source_bytes: selectedMusic.source_bytes,
     content_id_status: selectedMusic.content_id_status,
+    file: selectedMusic.file,
+    sha256: selectedMusic.sha256,
+    bytes: selectedMusic.bytes,
+    duration_s: selectedMusic.duration_s,
+    sample_rate_hz: selectedMusic.sample_rate_hz,
+    channels: selectedMusic.channels,
+    contains_voice: selectedMusic.contains_voice,
     owner_approved: true,
     template_default_selection: false,
     source_audio_publish: false,
@@ -383,6 +412,15 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const object = value as Record<string, unknown>;
+    return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(object[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "null";
+}
+
 function validateCallbackPayload(state: StoredJob, status: string, body: Record<string, unknown>): string | null {
   if (status === "COMPLETED") {
     const result = record(body.result);
@@ -423,6 +461,12 @@ async function callback(request: Request, env: Env, jobId: string): Promise<Resp
   if ((status === "COMPLETED" || status === "FAILED") && !["QUEUED", "RUNNING", "FAILED", "COMPLETED"].includes(state.status)) return fail(409, "T2_INVALID_STATUS_TRANSITION", `Transition ${state.status} → ${status} interdite.`);
   const invalid = validateCallbackPayload(state, status, body);
   if (invalid) return fail(422, "T2_INVALID_CALLBACK_PAYLOAD", invalid);
+  if (state.status === "COMPLETED" && status === "COMPLETED") {
+    if (canonicalJson(state.result) !== canonicalJson(body.result)) {
+      return fail(409, "T2_TERMINAL_JOB", "Un callback terminé rejoué ne peut pas modifier le RenderResult.");
+    }
+    return json({ job_id: jobId, status: state.status });
+  }
   state.status = status as JobStatus;
   state.github = { run_id: body.github_run_id, run_url: body.github_run_url };
   if (status === "COMPLETED") {

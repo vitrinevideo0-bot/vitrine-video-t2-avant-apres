@@ -1,10 +1,10 @@
-name: Rendu T2 unifié — Afrofire approuvé
+name: Rendu T2 unifié — rotation musicale stricte A→B→C→D→A
 
 on:
   workflow_dispatch:
     inputs:
-      publish_release:
-        description: Publier une nouvelle Release v0.7 Afrofire (jamais par défaut)
+      publish_prerelease:
+        description: Publier le rendu vérifié dans une pré-Release additive (jamais par défaut)
         required: true
         type: boolean
         default: false
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
-      OUTPUT_DIR: output/t2-complete-v0.7.0
+      OUTPUT_DIR: output/runtime/unresolved
       JOB_FILE: runtime/render_job_complete.json
     steps:
       - name: Checkout T2
@@ -37,6 +37,7 @@ jobs:
 
       - name: Install FFmpeg and locked Python dependencies
         run: |
+          set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg
           python -m pip install -r requirements.txt
@@ -45,6 +46,7 @@ jobs:
 
       - name: Verify locked T1 mechanics read-only
         run: |
+          set -euo pipefail
           git clone --filter=blob:none --no-checkout \
             https://github.com/j9028379-hue/vitrine-video-t1-pilot /tmp/t1-reference
           git -C /tmp/t1-reference sparse-checkout init --cone
@@ -55,13 +57,24 @@ jobs:
       - name: Prove all pre-v0.6 tests are byte-identical
         run: python tools/verify_existing_tests_unchanged.py
 
-      - name: Compile and validate all contracts
+      - name: Compile and validate contracts, music assets and generated Worker data
         run: |
+          set -euo pipefail
           python -m compileall -q engine tools tests audio/scripts
           python tools/validate_contract.py
           cp config/T2_capture_flow_v1_0_0.json /tmp/capture-flow.json
           python tools/build_capture_flow_contract.py
           cmp /tmp/capture-flow.json config/T2_capture_flow_v1_0_0.json
+          cp cloudflare/src/render_job_template.ts /tmp/render_job_template.ts
+          cp cloudflare/src/capture_flow_contract.ts /tmp/capture_flow_contract.ts
+          cp cloudflare/src/form_contract.ts /tmp/form_contract.ts
+          cp cloudflare/src/music_pool_contract.ts /tmp/music_pool_contract.ts
+          python tools/build_cloudflare_contracts.py
+          cmp /tmp/render_job_template.ts cloudflare/src/render_job_template.ts
+          cmp /tmp/capture_flow_contract.ts cloudflare/src/capture_flow_contract.ts
+          cmp /tmp/form_contract.ts cloudflare/src/form_contract.ts
+          cmp /tmp/music_pool_contract.ts cloudflare/src/music_pool_contract.ts
+          (cd audio/music/t2-afrobeat-v1 && sha256sum --check --strict SHA256SUMS.txt)
           python - <<'PY'
           import json
           from jsonschema import Draft202012Validator
@@ -81,8 +94,9 @@ jobs:
           Draft202012Validator.check_schema(json.load(open('schemas/T2_music_selection_state.schema.json')))
           PY
 
-      - name: Rebuild historical RenderJobs without changing them
+      - name: Rebuild historical visual RenderJobs without changing them
         run: |
+          set -euo pipefail
           python tools/build_render_job.py --answers demo/reponses_demo.json \
             --stage silent_transition_validation --output /tmp/render_job_silent.json
           cmp demo/input_demo.json /tmp/render_job_silent.json
@@ -90,13 +104,14 @@ jobs:
             --stage dynamic_text_validation --output /tmp/render_job_textes.json
           cmp demo/render_job_textes_demo.json /tmp/render_job_textes.json
 
-      - name: Materialize the unified job and its captures
+      - name: Obtain the Cloudflare job or build the current rotation fixture
         env:
           CF_JOB_ID: ${{ github.event.client_payload.job_id }}
           CF_API_BASE: ${{ github.event.client_payload.api_base }}
           CF_EXPECTED_API_BASE: ${{ vars.T2_PUBLIC_API_BASE }}
           CF_CALLBACK_TOKEN: ${{ secrets.CLOUDFLARE_CALLBACK_TOKEN }}
         run: |
+          set -euo pipefail
           mkdir -p runtime
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             test -n "$CF_JOB_ID" && test -n "$CF_API_BASE" && test -n "$CF_EXPECTED_API_BASE" && test -n "$CF_CALLBACK_TOKEN"
@@ -110,35 +125,46 @@ jobs:
             python tools/build_render_job.py \
               --answers demo/reponses_textes_demo.json \
               --stage complete_voice_music_render \
-              --music D \
-              --historical-exemplar \
+              --music auto \
               --voice-mode registered_voice_clips \
               --control-plane github_actions_manual \
               --output "$JOB_FILE"
-            # Historical manual output remains VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4.
-            cmp demo/render_job_complete_demo.json "$JOB_FILE"
           fi
-          JOB_OUTPUT_DIR="$(python -c 'import json,sys,pathlib; print(pathlib.PurePosixPath(json.load(open(sys.argv[1]))["output"]["uri"]).parent)' "$JOB_FILE")"
-          test -n "$JOB_OUTPUT_DIR"
-          mkdir -p "$JOB_OUTPUT_DIR"
-          echo "OUTPUT_DIR=$JOB_OUTPUT_DIR" >> "$GITHUB_ENV"
-          echo "T2_JOB_OUTPUT_DIR=$JOB_OUTPUT_DIR"
+          python - <<'PY'
+          import json, os
+          from pathlib import PurePosixPath
+          job = json.load(open(os.environ['JOB_FILE']))
+          music = job['audio_plan']['music']
+          output = PurePosixPath(job['output']['uri'])
+          assert job['runtime_contract'] == 'config/T2_runtime_contract_v1_0_0.json'
+          assert music['selected_candidate_id'] in {'A', 'B', 'C', 'D'}
+          assert music['state_update_policy'] == 'after_success_only'
+          assert music['contains_voice'] is False
+          assert output.parts[:2] == ('output', 'runtime') and '..' not in output.parts
+          if os.environ['GITHUB_EVENT_NAME'] == 'workflow_dispatch':
+              assert music['requested_candidate_id'] == 'auto'
+              assert music['selection_mode'] == 'strict_success_cycle'
+              assert music['selected_candidate_id'] == 'A'
+              assert music['last_successful_music_id'] is None
+          output_dir = str(output.parent)
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as stream:
+              stream.write(f'OUTPUT_DIR={output_dir}\n')
+          print('T2_CURRENT_ROTATION_JOB_OK', job['job_id'], music['selected_candidate_id'], output_dir)
+          PY
 
-      - name: Run existing and additional tests
+      - name: Run existing and rotation tests
         run: python -m unittest discover -s tests -v
 
-      - name: Materialize locked visual, mix voice and Afrofire, then run QC
+      - name: Render the selected approved instrumental with voices, then run QC
         run: |
+          set -euo pipefail
           python tools/render_complete_job.py --job "$JOB_FILE" --output-dir "$OUTPUT_DIR"
-          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V1_0_0.json"
-          else
-            cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V0_7_0.json"
-          fi
+          cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V1_0_0.json"
           find "$OUTPUT_DIR" -maxdepth 1 -type f -printf '%f\n' | sort
 
-      - name: Enforce one MP4 and no standalone audio
+      - name: Enforce one MP4, no standalone audio and reproducible checksums
         run: |
+          set -euo pipefail
           python - <<'PY'
           import json, os
           from pathlib import Path
@@ -154,14 +180,43 @@ jobs:
           (cd "$OUTPUT_DIR" && find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS.txt)
           (cd "$OUTPUT_DIR" && sha256sum -c SHA256SUMS.txt)
 
+      - name: Assemble the reproducible package without source audio or raw captures
+        run: |
+          set -euo pipefail
+          rm -rf release
+          mkdir release
+          cp "$OUTPUT_DIR"/* release/
+          MIX_CONFIG="$(python -c 'import json,os; print(json.load(open(os.environ["JOB_FILE"]))["audio_plan"]["config"])')"
+          case "$MIX_CONFIG" in config/T2_complete_voice_mix_v1_0_0_[ABCD].json) ;; *) echo "Contrat de mixage courant interdit: $MIX_CONFIG" >&2; exit 1;; esac
+          cp "$MIX_CONFIG" release/
+          cp config/T2_music_pool_v1_0_0.json release/
+          cp config/T2_runtime_contract_v1_0_0.json release/
+          cp approvals/T2_MUSIC_POOL_APPROVAL_2026-11-18.json release/
+          cp audio/music/t2-afrobeat-v1/source_manifest.json release/T2_MUSIC_SOURCE_MANIFEST.json
+          cp audio/music/t2-afrobeat-v1/BUILD_PROVENANCE.json release/T2_MUSIC_BUILD_PROVENANCE.json
+          cp schemas/T2_complete_voice_mix_v1_0_0.schema.json release/
+          cp schemas/T2_music_pool_v1_0_0.schema.json release/
+          cp schemas/T2_music_selection_state.schema.json release/
+          cp schemas/render_job.schema.json release/
+          cp schemas/render_result.schema.json release/
+          cp schemas/render_error.schema.json release/
+          cp docs/T2_UNIFIED_RUNTIME_CLOUDFLARE.md release/
+          test "$(find release -maxdepth 1 -type f -name '*.mp4' | wc -l)" -eq 1
+          if find release -maxdepth 1 -type f \( -name '*.wav' -o -name '*.mp3' -o -name '*.m4a' -o -name '*.aac' -o -name '*.flac' -o -name '*.ogg' -o -name '*.opus' -o -name '*.mov' -o -name '*.webm' \) | grep -q .; then
+            echo 'Audio autonome ou capture brute interdits dans le package T2' >&2
+            exit 1
+          fi
+          (cd release && find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS.txt)
+          (cd release && sha256sum -c SHA256SUMS.txt)
+
       - name: Upload private GitHub Actions artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: T2-unified-${{ github.event.client_payload.job_id || github.run_id }}
+          name: T2-strict-rotation-${{ github.event.client_payload.job_id || github.run_id }}
           path: |
-            output/t2-complete-v0.7.0/
-            output/runtime/
+            release/
+            output/runtime/**/T2_RENDER_ERROR.json
           if-no-files-found: warn
           retention-days: 30
 
@@ -173,14 +228,13 @@ jobs:
           CF_EXPECTED_API_BASE: ${{ vars.T2_PUBLIC_API_BASE }}
           CF_CALLBACK_TOKEN: ${{ secrets.CLOUDFLARE_CALLBACK_TOKEN }}
         run: |
+          set -euo pipefail
           test -n "$CF_EXPECTED_API_BASE" && test "$CF_API_BASE" = "$CF_EXPECTED_API_BASE"
           case "$CF_API_BASE" in https://*) ;; *) echo 'Origine Cloudflare non HTTPS' >&2; exit 1;; esac
           python - <<'PY'
           import json, os
           from pathlib import Path
           root=Path(os.environ['OUTPUT_DIR'])
-          # The manual historical path still produces T2_RENDER_RESULT_V0_7_0.json;
-          # runtime pool jobs produce T2_RENDER_RESULT_V1_0_0_<ID>.json.
           results=sorted(root.glob('T2_RENDER_RESULT_*.json'))
           error=root/'T2_RENDER_ERROR.json'
           if len(results) == 1:
@@ -194,38 +248,43 @@ jobs:
             --api-base "$CF_API_BASE" --token "$CF_CALLBACK_TOKEN" \
             --job-id "$CF_JOB_ID" --event /tmp/cloudflare-event.json
 
-      - name: Write reference Release notes
-        if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_release
+      - name: Write strict-rotation candidate notes
+        if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_prerelease
         run: |
-          cat > /tmp/release-notes.md <<'EOF'
-          # T2 Avant / Après — runtime unifié v0.7.0, Afrofire approuvé
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          job = json.load(open(os.environ['JOB_FILE']))
+          music = job['audio_plan']['music']
+          notes = f'''# T2 Avant / Après — candidat rotation musicale stricte v1
 
-          Production effectuée exclusivement sur GitHub Actions depuis un seul RenderJob : réponses commerçant, quatre captures, visuel dynamique, quatre voix et Afrofire — DPStudioMusic, ducking, QC et RenderResult.
+          Ce rendu utilise **{music['selected_candidate_id']} — {Path(music['file']).stem}** dans le cycle immuable **A → B → C → D → A**.
 
-          - domaine T2 Avant / Après inchangé ;
-          - visuel v0.3, 900 images et textes dynamiques inchangés ;
-          - pour cet exemplaire canonique, master v0.3 matérialisé depuis sa Release puis vérifié par SHA-256 du fichier et du flux H.264 ;
-          - quatre voix v0.5 à vitesse 1× inchangées ;
-          - Afrofire (candidat D) remplace B ; les réglages −3/−10 dB restent inchangés ;
-          - source musicale vérifiée avant mixage par SHA-256 ;
-          - exactement un MP4, aucune source audio autonome ;
-          - contrat exécutable des 12 écrans et métadonnées complètes des captures ;
-          - RenderJob, RenderResult, QC et empreintes inclus.
+          - première sélection sans état : A ; chaque succès suivant impose exactement le successeur ;
+          - un échec ne modifie jamais l’état et le rejeu d’un même succès est idempotent ;
+          - quatre instrumentales approuvées de 30 secondes, sans voix, sont verrouillées par SHA-256 ;
+          - visuel T2, quatre voix à vitesse 1× et ducking −3/−10 dB inchangés ;
+          - RenderJob, RenderResult, QC et empreintes sont inclus ;
+          - exactement un MP4 et aucune source audio autonome ne sont publiés.
 
-          La page Pixabay Afrofire montrait le badge AI generated et aucun badge Content ID lors de la vérification datée du 2026-11-19. Cette observation n’est pas une garantie juridique absolue. La source musicale n’est jamais publiée seule.
-          EOF
+          Cette pré-Release est additive et ne remplace aucune Release historique.
+          '''
+          Path('/tmp/release-notes.md').write_text(notes, encoding='utf-8')
+          PY
 
-      - name: Publish new Release v0.7.0 without overwriting history
-        if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_release
+      - name: Publish an additive strict-rotation pre-release
+        if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG=t2-avant-apres-v0.7.0-afrofire-voice-mix
+          set -euo pipefail
+          TAG="t2-strict-music-rotation-v1-candidate-${GITHUB_RUN_NUMBER}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "La Release $TAG existe déjà : refus de l’écraser." >&2
             exit 1
           fi
-          gh release create "$TAG" "$OUTPUT_DIR"/* \
+          gh release create "$TAG" release/* \
             --target "$GITHUB_SHA" \
-            --title "T2 Avant / Après — Afrofire approuvé v0.7.0" \
-            --notes-file /tmp/release-notes.md
+            --title "T2 Avant / Après — rotation musicale stricte v1 #${GITHUB_RUN_NUMBER}" \
+            --notes-file /tmp/release-notes.md \
+            --prerelease

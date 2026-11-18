@@ -152,6 +152,15 @@
         "template_default_selection",
         "source_audio_publish",
         "source_start_s",
+        "program_file",
+        "program_sha256",
+        "program_bytes",
+        "program_sample_rate_hz",
+        "program_channels",
+        "program_bitrate_kbps",
+        "program_integrated_lufs",
+        "program_true_peak_dbtp",
+        "program_contains_voice",
         "program_duration_s",
         "program_target_lufs",
         "program_true_peak_dbtp_max",
@@ -172,7 +181,8 @@
           "minLength": 1
         },
         "artist": {
-          "const": "DPStudioMusic"
+          "type": "string",
+          "minLength": 1
         },
         "source_page": {
           "type": "string",
@@ -193,7 +203,8 @@
           "minimum": 100000
         },
         "source_page_checked_on": {
-          "const": "2026-11-19"
+          "type": "string",
+          "format": "date"
         },
         "license": {
           "const": "Pixabay Content License"
@@ -220,7 +231,8 @@
           "const": false
         },
         "source_start_s": {
-          "const": 0.0
+          "type": "number",
+          "minimum": 0
         },
         "program_duration_s": {
           "const": 30.0
@@ -239,6 +251,39 @@
         },
         "ai_generated_badge": {
           "const": "displayed"
+        },
+        "program_file": {
+          "type": "string",
+          "pattern": "^audio/music/t2-afrobeat-v1/.*_30s\\.mp3$"
+        },
+        "program_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "program_bytes": {
+          "type": "integer",
+          "minimum": 100000
+        },
+        "program_sample_rate_hz": {
+          "const": 48000
+        },
+        "program_channels": {
+          "const": 2
+        },
+        "program_bitrate_kbps": {
+          "const": 192
+        },
+        "program_integrated_lufs": {
+          "type": "number",
+          "minimum": -17.7,
+          "maximum": -16.3
+        },
+        "program_true_peak_dbtp": {
+          "type": "number",
+          "maximum": -0.7
+        },
+        "program_contains_voice": {
+          "const": false
         }
       }
     },

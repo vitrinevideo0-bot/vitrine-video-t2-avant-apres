@@ -124,13 +124,17 @@ class T2AfrofireIntegrationTest(unittest.TestCase):
 
     def test_workflow_never_overwrites_release_or_publishes_source_audio(self) -> None:
         workflow = (ROOT / ".github/workflows/server-render-unified.yml").read_text(encoding="utf-8")
-        self.assertIn("--music D", workflow)
-        self.assertIn("T2_RENDER_RESULT_V0_7_0.json", workflow)
-        self.assertIn("VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4", workflow)
+        self.assertIn("--music auto", workflow)
+        self.assertNotIn("--music D", workflow)
+        self.assertIn("T2_RENDER_JOB_V1_0_0.json", workflow)
+        self.assertIn("A → B → C → D → A", workflow)
+        self.assertIn("Assemble the reproducible package", workflow)
         self.assertIn("gh release view", workflow)
+        self.assertIn('gh release create "$TAG" release/*', workflow)
         self.assertNotIn("gh release delete", workflow)
         self.assertIn("assert audio == []", workflow)
         worker = (ROOT / "cloudflare/src/index.ts").read_text(encoding="utf-8")
+        self.assertIn("requested !== expected.id", worker)
         self.assertIn("inputs.music_source_sha256 !== expectedMusic.source_sha256", worker)
         self.assertIn("output.uri !== expectedOutput.uri", worker)
 

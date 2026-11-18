@@ -110,7 +110,8 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
         self.assertIn("repository_dispatch", workflow)
         self.assertIn("tools/render_complete_job.py", workflow)
         self.assertIn("tools/cloudflare_runtime.py fetch", workflow)
-        self.assertIn("T2_RENDER_RESULT_V0_7_0.json", workflow)
+        self.assertIn("T2_RENDER_JOB_V1_0_0.json", workflow)
+        self.assertIn("T2_RENDER_RESULT_*.json", workflow)
 
     def test_browser_webm_and_mobile_mp4_are_accepted_additively(self) -> None:
         schema = load("schemas/render_job.schema.json")
@@ -213,9 +214,9 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
 
     def test_cloudflare_runtime_never_publishes_audio_sources(self) -> None:
         workflow = (ROOT / ".github/workflows/server-render-unified.yml").read_text(encoding="utf-8")
-        self.assertIn("Enforce one MP4 and no standalone audio", workflow)
+        self.assertIn("Enforce one MP4, no standalone audio", workflow)
         self.assertIn("assert audio == []", workflow)
-        runtime = load("config/T2_runtime_contract_v0_7_0.json")
+        runtime = load("config/T2_runtime_contract_v1_0_0.json")
         self.assertFalse(runtime["audio_handoff"]["source_audio_publish"])
         self.assertTrue(runtime["server_handoff"]["cloudflare_never_renders_video"])
 

@@ -4,9 +4,9 @@ Dépôt public indépendant du gabarit **Restaurants / Maquis — T2**. T1 reste
 
 ## État actuel : pool A–D approuvé et rotation persistante v1
 
-Après quatre auditions comparables de 30 secondes, le propriétaire a approuvé le pool **A — Naija Flow / B — Savanna Beats / C — Vibe Republic / D — Afrofire**. Les nouvelles A/B/C ne réactivent pas les anciennes pistes A/B/C de la présélection v0.4 : celles-ci restent archivées avec leur statut historique `Content ID Registered`. D — Afrofire est conservée.
+Le propriétaire a validé le pool final **A — Naija Flow / B — Savanna Beats / C — Vibe Republic / D — Adolescence (Pixabay 328624)**. La piste D remplace Afrofire 300338. Les anciennes auditions voix + musique restent uniquement des preuves historiques : les quatre actifs de production sont désormais des **instrumentales propres de 30 secondes, sans voix** dans `audio/music/t2-afrobeat-v1/`.
 
-Le runtime choisit `auto` par défaut parmi les quatre pistes approuvées en excluant `last_successful_music_id`. Un choix explicite ne peut pas contourner la règle : `selected_music_id != last_successful_music_id`. L’état n’avance qu’après un callback `COMPLETED` validé ; `FAILED` le laisse inchangé. Cloudflare le stocke dans R2 sous `music/t2-last-success.json` avec écriture conditionnelle, idempotence et protection contre les callbacks concurrents. Le writer local équivalent est `tools/record_t2_music_result.py`.
+Le runtime `auto` suit exclusivement le cycle persistant **A → B → C → D → A**. Le premier succès utilise A ; un callback `COMPLETED` validé avance d’un seul cran ; `FAILED` ou un QC refusé laisse l’état inchangé ; le rejeu d’un même succès reste idempotent même après un tour complet. Cloudflare stocke l’état et le registre `successful_render_jobs` dans R2 sous `music/t2-last-success.json`, avec écriture conditionnelle et protection contre les callbacks concurrents. Le writer local équivalent est `tools/record_t2_music_result.py`.
 
 Cette évolution ne modifie pas la création approuvée :
 
@@ -16,20 +16,21 @@ Cette évolution ne modifie pas la création approuvée :
 - les douze écrans, les six champs commerçant, le visuel v0.3 et ses liaisons dynamiques restent inchangés ;
 - les quatre voix restent à vitesse naturelle `1×` ;
 - le ducking reste à −3 dB hors parole et −10 dB sous parole, attaque 120 ms, relâchement 450 ms ;
-- aucune source Pixabay complète ni stem musical autonome n’est publié ; seuls les dérivés d’audition voix + musique nécessaires sont conservés.
+- aucune source Pixabay complète n’est publiée ; quatre éditions instrumentales adaptées de 30 s sont embarquées comme actifs du gabarit, sans voix d’audition.
 
-Aucun nouveau MP4 n’est publié par ce changement de code. Tout rendu de production reste exclusivement exécuté par GitHub Actions.
+Tout rendu vidéo de production reste exclusivement exécuté par GitHub Actions.
 
 ## Sources de vérité du pool v1
 
 - `config/T2_music_pool_v1_0_0.json` — catalogue approuvé, provenance, hashes et contrat de sélection ;
-- `approvals/T2_MUSIC_POOL_APPROVAL_2026-11-18.json` — décision propriétaire A/B/C avec D ;
+- `approvals/T2_MUSIC_POOL_APPROVAL_2026-11-18.json` — décision propriétaire et remplacement de 300338 par 328624 ;
+- `audio/music/t2-afrobeat-v1/` — quatre instrumentales propres de 30 s, preuves, provenance et sommes SHA-256 ;
 - `config/T2_complete_voice_mix_v1_0_0_A.json` à `D.json` — mixages homogènes des quatre pistes ;
 - `config/T2_runtime_contract_v1_0_0.json` — liaisons runtime et stockage après succès ;
 - `schemas/T2_music_pool_v1_0_0.schema.json` et `schemas/T2_music_selection_state.schema.json` — contrats stricts ;
 - `engine/complete_adapter.py` — sélection, état persistant local et compatibilité historique explicite ;
 - `cloudflare/src/music_pool_contract.ts` et `cloudflare/src/index.ts` — pool runtime, stockage après succès et dispatch GitHub ;
-- `music/auditions/v1/` — quatre dérivés d’écoute approuvés, sans MP3 Pixabay complet ;
+- `music/auditions/v1/` — anciennes comparaisons voix + musique, conservées uniquement pour audit et jamais utilisées en production ;
 - `music/T2_music_shortlist_v0_4_0.json` — preuve historique séparée, jamais réactivée par le pool v1 ;
 - `demo/render_job_complete_demo.json` et `config/T2_complete_voice_mix_v0_7_0.json` — exemplaire D historique immuable ;
 - [Architecture et plan de contrôle Cloudflare](docs/T2_UNIFIED_RUNTIME_CLOUDFLARE.md).
@@ -41,21 +42,21 @@ Aucun nouveau MP4 n’est publié par ce changement de code. Tout rendu de produ
 | A | Naija Flow — DPStudioMusic | `a7f990fb3891aee07e55ae144ed8f7dd65aa549c10c1bf9e4247ddb522c6d943` |
 | B | Savanna Beats — DPStudioMusic | `9d803e54f0833de5537334890b8edbd85ed9f384257d943beaaf3ccedee73740` |
 | C | Vibe Republic — DPStudioMusic | `71b20e916467d79ff4c59a674a2e3d66695cb613ddca76342cc02177fb629fec` |
-| D | Afrofire — DPStudioMusic | `24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61` |
+| D | Adolescence — 47643651 (Pixabay 328624) | `b5a928c000a7943b845271f2fd8eba1c635cccb6e5487e80f6f14c53b0c2e8d0` |
 
-Pour chaque page source, le badge « AI generated » était visible et aucun badge « Content ID Registered » n’était affiché lors du contrôle daté du 2026-11-19. Cette observation n’est pas une garantie juridique absolue ; la licence Pixabay et les éventuels droits tiers restent applicables.
+Pour chaque page source, aucun badge « Content ID Registered » n’était affiché lors du contrôle daté archivé. Cette observation n’est pas une garantie juridique absolue ; la licence Pixabay et les éventuels droits tiers restent applicables.
 
 ## Parcours commerçant inchangé
 
-Les six réponses définies par `form/questions_T2.json` alimentent `merchant_payload.nom`, `produit`, `prix`, `whatsapp`, `quartier` et `accroche`. Elles restent reliées aux quatre captures et aux blocs graphiques par `config/T2_runtime_contract_v0_7_0.json`.
+Les six réponses définies par `form/questions_T2.json` alimentent `merchant_payload.nom`, `produit`, `prix`, `whatsapp`, `quartier` et `accroche`. Elles restent reliées aux quatre captures et aux blocs graphiques par le contrat courant `config/T2_runtime_contract_v1_0_0.json` ; les contrats v0.6/v0.7 restent archivés pour leurs exemplaires historiques.
 
 Le parcours conserve quatre scènes et trois états stables par scène : **A Guide / B Enregistrement / C Validation**. Caméra et microphone sont relus à `1×`; le décompte 3–2–1 reste transitoire et ne crée pas un treizième écran.
 
 ## Production exclusivement sur GitHub
 
-Le Worker Cloudflare valide, stocke, sélectionne une des quatre musiques, orchestre et déclenche GitHub ; il ne rend jamais de vidéo. GitHub Actions reçoit le même RenderJob que le formulaire et les captures. Un job commerçant dynamique reconstruit son propre visuel. L’exemplaire canonique déjà approuvé matérialise au contraire le master exact de la Release v0.3, puis vérifie le SHA-256 du fichier **et** du flux H.264 avant tout mixage. GitHub vérifie la source musicale sélectionnée par SHA-256, applique voix et ducking, puis exécute le QC indépendant. Le Worker ne valide la nouvelle valeur de rotation qu’après un `RenderResult` réussi et conforme.
+Le Worker Cloudflare valide, stocke, impose le successeur musical exact, orchestre et déclenche GitHub ; il ne rend jamais de vidéo. GitHub Actions reçoit le même RenderJob que le formulaire et les captures. Les jobs commerçants reconstruisent leur visuel dynamique ; la fixture manuelle canonique et les exemplaires historiques matérialisent le master v0.3 verrouillé et en vérifient les empreintes. GitHub vérifie ensuite l’instrumentale locale sélectionnée par SHA-256, applique voix et ducking, puis exécute le QC indépendant. Le Worker ne valide la nouvelle valeur de rotation qu’après un `RenderResult` réussi et conforme.
 
-Le workflow refuse la publication d’audio autonome et refuse d’écraser une Release portant déjà le même tag. Son option de publication de Release est désactivée par défaut.
+Le workflow courant utilise `--music auto`, refuse la publication d’audio autonome et refuse d’écraser une Release portant déjà le même tag. Son option de pré-Release additive est désactivée par défaut.
 
 ## Historique public conservé
 

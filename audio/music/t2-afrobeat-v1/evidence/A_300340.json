@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_id": "A",
+  "pixabay_id": 300340,
+  "title": "Naija Flow",
+  "artist": "DPStudioMusic",
+  "official_page": "https://pixabay.com/music/afrobeat-naija-flow-300340/",
+  "official_content_url": "https://cdn.pixabay.com/audio/2025/02/12/audio_e74682b4b5.mp3",
+  "source_sha256": "a7f990fb3891aee07e55ae144ed8f7dd65aa549c10c1bf9e4247ddb522c6d943",
+  "source_bytes": 7680768,
+  "source_duration_s": 240.024,
+  "content_id_registered_label_observed": false,
+  "ai_generated_badge": "displayed",
+  "verified_on": "2026-11-19",
+  "owner_approved": true,
+  "production_eligible": true,
+  "license": "https://pixabay.com/service/license-summary/"
+}
