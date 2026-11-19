@@ -1,0 +1,8 @@
+{
+  "source_repository": "https://github.com/j9028379-hue/vitrine-video-t1-pilot",
+  "source_commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
+  "mode": "read_only_reference_copied_as_technical_structure",
+  "never_modify_source": true,
+  "copied_structure": ["capture-guide", "config", "schemas", "tools", "tests", "ui-screens", "proofs", ".github/workflows"],
+  "excluded_content": ["T1 music", "T1 voice", "T1 rendered media", "T1 merchant content"]
+}
