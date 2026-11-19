@@ -1,0 +1,258 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "restaurants_maquis_T2_avant_apres_runtime_v1_0_0",
+  "domain": "AVANT_APRES",
+  "status": "production_ready_owner_approved_four_track_rotation",
+  "audio_profile": "afrobeat_restaurants_maquis",
+  "music_selection_contract": "config/T2_music_pool_v1_0_0.json",
+  "non_destructive_base": {
+    "runtime_v0_3": "config/T2_runtime_contract_v0_3_0.json",
+    "visual_v0_3_release": "t2-avant-apres-v0.3.0-text-motion",
+    "visual_video_stream_sha256": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5",
+    "visual_logic_changed": false,
+    "music_changed": true,
+    "voice_speed_changed": false,
+    "runtime_v0_6": "config/T2_runtime_contract_v0_6_0.json",
+    "music_change_reason": "owner approved Naija Flow, Savanna Beats and Vibe Republic with retained Afrofire; historical A/B/C remain rejected",
+    "runtime_v0_7": "config/T2_runtime_contract_v0_7_0.json"
+  },
+  "reference": {
+    "repository": "https://github.com/j9028379-hue/vitrine-video-t1-pilot",
+    "commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
+    "mode": "read_only_architecture_reference",
+    "ported_mechanics": [
+      "explicit 12-screen state machine",
+      "complete capture media metadata",
+      "music and voice attachment to the same plan",
+      "RenderResult and RenderError contracts",
+      "server-side immutable reference verification"
+    ]
+  },
+  "runtime_order": [
+    {
+      "step": 1,
+      "id": "MERCHANT_INPUT",
+      "consumes": "six merchant answers",
+      "produces": "merchant_payload"
+    },
+    {
+      "step": 2,
+      "id": "GUIDED_CAPTURE",
+      "consumes": "camera plus optional microphone",
+      "produces": [
+        "captures.S1",
+        "captures.S2",
+        "captures.S3",
+        "captures.S4"
+      ],
+      "contract": "config/T2_capture_flow_v1_0_0.json",
+      "stable_screens": 12
+    },
+    {
+      "step": 3,
+      "id": "UNIFIED_RENDER_JOB",
+      "consumes": [
+        "merchant_payload",
+        "four accepted captures",
+        "auto or explicit owner-approved A/B/C/D music request",
+        "last_successful_music_id",
+        "voice source mode"
+      ],
+      "produces": "RenderJob schema 1.1.0"
+    },
+    {
+      "step": 4,
+      "id": "DETERMINISTIC_VISUAL_RENDER",
+      "consumes": "the same RenderJob",
+      "produces": "silent visual intermediate with dynamic merchant fields"
+    },
+    {
+      "step": 5,
+      "id": "VOICE_MUSIC_DUCKING",
+      "consumes": [
+        "the same RenderJob",
+        "registered or accepted captured voice",
+        "locked selected source from owner-approved A/B/C/D pool"
+      ],
+      "produces": "single complete MP4"
+    },
+    {
+      "step": 6,
+      "id": "QC_RESULT_RELEASE",
+      "consumes": [
+        "single MP4",
+        "job hash",
+        "input hashes"
+      ],
+      "produces": [
+        "RenderResult",
+        "objective QC",
+        "GitHub artifact or Release"
+      ]
+    }
+  ],
+  "merchant_bindings": [
+    {
+      "source": "merchant_payload.nom",
+      "targets": [
+        "T2_G01_IDENTITY",
+        "T2_G03_REVEAL",
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.produit",
+      "targets": [
+        "T2_G01_IDENTITY",
+        "T2_G02_OFFER",
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.prix",
+      "targets": [
+        "T2_G02_OFFER",
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.whatsapp",
+      "targets": [
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.quartier",
+      "targets": [
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.accroche",
+      "targets": [
+        "T2_G03_REVEAL"
+      ]
+    }
+  ],
+  "capture_bindings": [
+    {
+      "source": "captures.S1.uri",
+      "scene": "S1",
+      "duration_ms": 6000,
+      "timeline_start_ms": 0,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    },
+    {
+      "source": "captures.S2.uri",
+      "scene": "S2",
+      "duration_ms": 8000,
+      "timeline_start_ms": 6000,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    },
+    {
+      "source": "captures.S3.uri",
+      "scene": "S3",
+      "duration_ms": 7000,
+      "timeline_start_ms": 14000,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    },
+    {
+      "source": "captures.S4.uri",
+      "scene": "S4",
+      "duration_ms": 9000,
+      "timeline_start_ms": 21000,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    }
+  ],
+  "audio_handoff": {
+    "voice_modes": [
+      "registered_voice_clips",
+      "captured_scene_audio",
+      "captured_or_registered_fallback"
+    ],
+    "selected_exemplar_mode": "registered_voice_clips",
+    "source_speed": 1.0,
+    "audio_time_map": "identity",
+    "automatic_subtitles": false,
+    "music_template_default": false,
+    "ducking": {
+      "open_gain_db": -3.0,
+      "under_voice_gain_db": -10.0,
+      "attack_ms": 120,
+      "release_ms": 450
+    },
+    "source_audio_publish": false,
+    "fallback_speech_gate": {
+      "applies_to": "captured_or_registered_fallback",
+      "minimum_active_speech_s": 0.35,
+      "minimum_peak_dbfs": -42.0,
+      "fallback": "registered clip for the same scene when accepted capture has no usable speech"
+    },
+    "music_pool": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "default_music_request": "auto",
+    "no_immediate_repeat": true,
+    "state_key": "last_successful_music_id",
+    "state_schema": "schemas/T2_music_selection_state.schema.json",
+    "state_update_policy": "after_success_only",
+    "failed_render_state_policy": "unchanged",
+    "music_sources_contract": "config/T2_music_pool_v1_0_0.json"
+  },
+  "server_handoff": {
+    "control_planes": [
+      "github_actions_manual",
+      "cloudflare_worker"
+    ],
+    "render_plane": "GitHub Actions only",
+    "cloudflare_role": "validate, store captures and jobs, select A-D excluding the last success, enforce idempotency, dispatch GitHub, validate callback, commit music state after success only",
+    "cloudflare_never_renders_video": true,
+    "workflow": ".github/workflows/server-render-unified.yml",
+    "security": {
+      "client_mutations": "Bearer CLIENT_API_TOKEN",
+      "github_callback_and_materialization": "Bearer CALLBACK_TOKEN",
+      "capture_integrity": "client SHA-256 checked by R2 then checked again on GitHub",
+      "idempotency": "conditional R2 claim by Idempotency-Key",
+      "music_state": "R2 conditional ETag compare-and-swap; idempotent successful callbacks; duplicate adjacent success rejected"
+    },
+    "result_contract": "schemas/render_result.schema.json",
+    "error_contract": "schemas/render_error.schema.json"
+  },
+  "acceptance_gates": [
+    "the complete mixer receives the same RenderJob that supplied merchant_payload and captures",
+    "visual rendering is rebuilt from that job and remains exactly 900 frames",
+    "the selected music belongs to owner-approved A/B/C/D and differs from last_successful_music_id",
+    "historical B/D exemplar contracts and their approved video references remain immutable",
+    "captured audio, when selected, remains at identity speed 1x",
+    "selected music source hash is checked before mixing",
+    "music state advances only after a validated successful RenderResult and never after RenderError",
+    "RenderResult contains the job hash and all input hashes",
+    "one MP4 and no standalone source audio are published",
+    "all production rendering occurs on GitHub Actions"
+  ],
+  "capture_runtime": {
+    "application": "cloudflare/public/app.js",
+    "contract_endpoint": "/v1/contracts/capture-flow",
+    "form_endpoint": "/v1/contracts/form",
+    "stable_screens": 12,
+    "countdown_transient": true,
+    "camera_and_microphone": true,
+    "review_audio_at_1x": true,
+    "retake_supported": true,
+    "accepted_media_types": [
+      "video/mp4",
+      "video/webm",
+      "video/quicktime"
+    ],
+    "storage": "Cloudflare R2 until GitHub materialization",
+    "music_pool_endpoint": "/v1/contracts/music-pool",
+    "music_state_storage": "Cloudflare R2 music/t2-last-success.json"
+  }
+}

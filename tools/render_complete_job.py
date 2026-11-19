@@ -289,7 +289,14 @@ def execute(job_path: Path, output_dir: Path) -> Path:
 
         stage = "MIXING_AUDIO"
         candidate_id = mix_config["music_selection"]["candidate_id"]
-        artifact_version = "V0_7_0" if candidate_id == "D" else "V0_6_0"
+        config_id = mix_config["id"]
+        artifact_version = (
+            "V0_7_0"
+            if config_id == "restaurants_maquis_T2_complete_voice_mix_v0_7_0"
+            else "V0_6_0"
+            if config_id == "restaurants_maquis_T2_complete_voice_mix_v0_5_0"
+            else f"V1_0_0_{candidate_id}"
+        )
         subprocess.run(
             [
                 sys.executable,
@@ -389,9 +396,9 @@ def execute(job_path: Path, output_dir: Path) -> Path:
                 "github_run_id": os.environ.get("GITHUB_RUN_ID"),
             },
             "warnings": (
-                ["La page source Afrofire ne montrait aucun badge Content ID lors de la vérification datée; cela ne constitue pas une garantie juridique absolue."]
-                if candidate_id == "D"
-                else ["La musique B historique reste limitée à son exemplaire et sa page indique Content ID Registered."]
+                ["La musique B historique reste limitée à son exemplaire et sa page indique Content ID Registered."]
+                if config_id == "restaurants_maquis_T2_complete_voice_mix_v0_5_0"
+                else ["La page source de la piste sélectionnée ne montrait aucun badge Content ID lors de la vérification datée; cela ne constitue pas une garantie juridique absolue."]
             ),
         }
         validate(RESULT_SCHEMA, result)

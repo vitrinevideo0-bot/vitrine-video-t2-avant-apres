@@ -36,6 +36,10 @@ def main() -> None:
     afrofire_mix = read_json("config/T2_complete_voice_mix_v0_7_0.json")
     afrofire_mix_schema = read_json("schemas/T2_complete_voice_mix_v0_7_0.schema.json")
     current_runtime = read_json("config/T2_runtime_contract_v0_7_0.json")
+    rotation_runtime = read_json("config/T2_runtime_contract_v1_0_0.json")
+    music_pool = read_json("config/T2_music_pool_v1_0_0.json")
+    music_pool_schema = read_json("schemas/T2_music_pool_v1_0_0.schema.json")
+    rotation_mix_schema = read_json("schemas/T2_complete_voice_mix_v1_0_0.schema.json")
 
     if (config["template_id"], config["version"], config["audio_profile"]) != (
         "T2",
@@ -50,7 +54,13 @@ def main() -> None:
     if current_runtime["audio_profile"] != config["audio_profile"]:
         fail("le runtime et le JSON canonique n’utilisent pas le même profil audio")
     if current_runtime["music_selection_contract"] != "config/T2_music_selection_v0_7_0.json":
-        fail("le runtime ne référence pas la décision musicale approuvée")
+        fail("le runtime historique ne référence pas la décision Afrofire verrouillée")
+    if rotation_runtime["domain"] != "AVANT_APRES" or rotation_runtime["audio_profile"] != config["audio_profile"]:
+        fail("le runtime de rotation doit rester dans le domaine T2 Avant / Après")
+    if rotation_runtime["music_selection_contract"] != "config/T2_music_pool_v1_0_0.json":
+        fail("le runtime de rotation ne référence pas le pool A-D approuvé")
+    if rotation_runtime["audio_handoff"]["state_update_policy"] != "after_success_only":
+        fail("l'état musical doit avancer après succès seulement")
 
     if [item["seconds"] for item in config["scenes"]] != [6, 8, 7, 9]:
         fail("durées des scènes")
@@ -111,6 +121,17 @@ def main() -> None:
         fail("aucun texte commerçant dans le rendu actuel")
 
     Draft202012Validator(
+        music_pool_schema, format_checker=FormatChecker()
+    ).validate(music_pool)
+    if [item["id"] for item in music_pool["candidates"]] != ["A", "B", "C", "D"]:
+        fail("le pool musical doit contenir exactement A/B/C/D")
+    if not all(item["owner_approved"] and item["production_eligible"] for item in music_pool["candidates"]):
+        fail("les quatre musiques du pool doivent être approuvées et éligibles")
+    for candidate in "ABCD":
+        Draft202012Validator(rotation_mix_schema, format_checker=FormatChecker()).validate(
+            read_json(f"config/T2_complete_voice_mix_v1_0_0_{candidate}.json")
+        )
+    Draft202012Validator(
         music_decision_schema, format_checker=FormatChecker()
     ).validate(music_decision)
     Draft202012Validator(
@@ -123,6 +144,7 @@ def main() -> None:
         requested_music="D",
         voice_mode="registered_voice_clips",
         control_plane="github_actions_manual",
+        historical_exemplar=True,
     )
     if rebuilt_current != current_job:
         fail("demo/render_job_complete_demo.json ne correspond pas à Afrofire approuvé")
@@ -132,6 +154,21 @@ def main() -> None:
         fail("le RenderJob et la décision musicale ne verrouillent pas la même source")
     if current_job["audio_plan"]["publication"]["publish_standalone_audio"] is not False:
         fail("publication audio autonome interdite")
+    rotation_job = build_job(
+        current_answers,
+        stage="complete_voice_music_render",
+        requested_music="auto",
+        previous_music="A",
+        voice_mode="registered_voice_clips",
+        control_plane="github_actions_manual",
+    )
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(rotation_job)
+    if rotation_job["runtime_contract"] != "config/T2_runtime_contract_v1_0_0.json":
+        fail("le RenderJob de rotation doit utiliser le runtime v1")
+    if rotation_job["audio_plan"]["music"]["selected_candidate_id"] == "A":
+        fail("la rotation automatique a répété la dernière réussite")
+    if rotation_job["audio_plan"]["music"]["state_update_policy"] != "after_success_only":
+        fail("le RenderJob ne déclare pas la mise à jour après succès seulement")
 
     mention = (
         "Tu peux parler pendant que tu filmes, dans la langue que tu veux : "

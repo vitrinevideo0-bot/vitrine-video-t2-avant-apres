@@ -70,12 +70,15 @@ jobs:
               ('schemas/render_error.schema.json', 'fixtures/t2-avant-apres/render_error.unsupported_media.json'),
               ('schemas/T2_complete_voice_mix_v0_7_0.schema.json', 'config/T2_complete_voice_mix_v0_7_0.json'),
               ('schemas/T2_music_selection_v0_7_0.schema.json', 'config/T2_music_selection_v0_7_0.json'),
+              ('schemas/T2_music_pool_v1_0_0.schema.json', 'config/T2_music_pool_v1_0_0.json'),
+              *[('schemas/T2_complete_voice_mix_v1_0_0.schema.json', f'config/T2_complete_voice_mix_v1_0_0_{candidate}.json') for candidate in 'ABCD'],
           ]
           for schema, fixture in pairs:
               definition = json.load(open(schema))
               Draft202012Validator.check_schema(definition)
               Draft202012Validator(definition).validate(json.load(open(fixture)))
               print('SCHEMA_FIXTURE_OK', fixture)
+          Draft202012Validator.check_schema(json.load(open('schemas/T2_music_selection_state.schema.json')))
           PY
 
       - name: Rebuild historical RenderJobs without changing them
@@ -94,7 +97,7 @@ jobs:
           CF_EXPECTED_API_BASE: ${{ vars.T2_PUBLIC_API_BASE }}
           CF_CALLBACK_TOKEN: ${{ secrets.CLOUDFLARE_CALLBACK_TOKEN }}
         run: |
-          mkdir -p runtime "$OUTPUT_DIR"
+          mkdir -p runtime
           if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             test -n "$CF_JOB_ID" && test -n "$CF_API_BASE" && test -n "$CF_EXPECTED_API_BASE" && test -n "$CF_CALLBACK_TOKEN"
             test "$CF_API_BASE" = "$CF_EXPECTED_API_BASE"
@@ -108,11 +111,18 @@ jobs:
               --answers demo/reponses_textes_demo.json \
               --stage complete_voice_music_render \
               --music D \
+              --historical-exemplar \
               --voice-mode registered_voice_clips \
               --control-plane github_actions_manual \
               --output "$JOB_FILE"
+            # Historical manual output remains VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4.
             cmp demo/render_job_complete_demo.json "$JOB_FILE"
           fi
+          JOB_OUTPUT_DIR="$(python -c 'import json,sys,pathlib; print(pathlib.PurePosixPath(json.load(open(sys.argv[1]))["output"]["uri"]).parent)' "$JOB_FILE")"
+          test -n "$JOB_OUTPUT_DIR"
+          mkdir -p "$JOB_OUTPUT_DIR"
+          echo "OUTPUT_DIR=$JOB_OUTPUT_DIR" >> "$GITHUB_ENV"
+          echo "T2_JOB_OUTPUT_DIR=$JOB_OUTPUT_DIR"
 
       - name: Run existing and additional tests
         run: python -m unittest discover -s tests -v
@@ -120,17 +130,24 @@ jobs:
       - name: Materialize locked visual, mix voice and Afrofire, then run QC
         run: |
           python tools/render_complete_job.py --job "$JOB_FILE" --output-dir "$OUTPUT_DIR"
-          cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V0_7_0.json"
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V1_0_0.json"
+          else
+            cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V0_7_0.json"
+          fi
           find "$OUTPUT_DIR" -maxdepth 1 -type f -printf '%f\n' | sort
 
       - name: Enforce one MP4 and no standalone audio
         run: |
           python - <<'PY'
+          import json, os
           from pathlib import Path
-          root = Path('output/t2-complete-v0.7.0')
-          mp4 = sorted(path.name for path in root.glob('*.mp4'))
-          audio = sorted(path.name for suffix in ('*.wav','*.mp3','*.m4a','*.aac','*.flac','*.ogg','*.opus') for path in root.glob(suffix))
-          assert mp4 == ['VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4'], mp4
+          job=json.load(open(os.environ['JOB_FILE']))
+          root=Path(os.environ['OUTPUT_DIR'])
+          expected=Path(job['output']['uri']).name
+          mp4=sorted(path.name for path in root.glob('*.mp4'))
+          audio=sorted(path.name for suffix in ('*.wav','*.mp3','*.m4a','*.aac','*.flac','*.ogg','*.opus') for path in root.glob(suffix))
+          assert mp4 == [expected], (mp4, expected)
           assert audio == [], audio
           print('T2_RELEASE_POLICY_OK', mp4[0])
           PY
@@ -142,7 +159,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: T2-unified-${{ github.event.client_payload.job_id || github.run_id }}
-          path: output/t2-complete-v0.7.0/
+          path: |
+            output/t2-complete-v0.7.0/
+            output/runtime/
           if-no-files-found: warn
           retention-days: 30
 
@@ -160,10 +179,12 @@ jobs:
           import json, os
           from pathlib import Path
           root=Path(os.environ['OUTPUT_DIR'])
-          result=root/'T2_RENDER_RESULT_V0_7_0.json'
+          # The manual historical path still produces T2_RENDER_RESULT_V0_7_0.json;
+          # runtime pool jobs produce T2_RENDER_RESULT_V1_0_0_<ID>.json.
+          results=sorted(root.glob('T2_RENDER_RESULT_*.json'))
           error=root/'T2_RENDER_ERROR.json'
-          if result.exists():
-              payload={'status':'COMPLETED','github_run_id':os.environ['GITHUB_RUN_ID'],'github_run_url':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",'result':json.loads(result.read_text())}
+          if len(results) == 1:
+              payload={'status':'COMPLETED','github_run_id':os.environ['GITHUB_RUN_ID'],'github_run_url':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",'result':json.loads(results[0].read_text())}
           else:
               fallback={'schema_version':'1.0.0','status':'FAILED','job_id':os.environ['CF_JOB_ID'],'template_id':'restaurants_maquis_T2_avant_apres_v0_1_0','code':'T2_RENDER_FAILED','message':'GitHub Actions a échoué avant la création du contrat d’erreur détaillé.','retryable':True,'stage':'CALLBACK','control_plane':'cloudflare_worker','render_plane':'github_actions','details':{'github_run_id':os.environ['GITHUB_RUN_ID']}}
               payload={'status':'FAILED','github_run_id':os.environ['GITHUB_RUN_ID'],'github_run_url':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",'error':json.loads(error.read_text()) if error.exists() else fallback}

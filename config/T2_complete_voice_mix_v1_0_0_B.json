@@ -1,0 +1,162 @@
+{
+  "$schema": "../schemas/T2_complete_voice_mix_v1_0_0.schema.json",
+  "schema_version": "1.0.0",
+  "id": "restaurants_maquis_T2_complete_voice_mix_v1_0_0_B",
+  "display_name": "T2 — production voix française + Savanna Beats — pool approuvé",
+  "status": "owner_approved_four_track_rotation",
+  "requested_on": "2026-11-18",
+  "duration_s": 30.0,
+  "sample_rate_hz": 48000,
+  "frames": 900,
+  "fps": 30,
+  "runtime_visual_contract": "config/T2_runtime_contract_v0_3_0.json",
+  "reference_t1": {
+    "repository": "https://github.com/j9028379-hue/vitrine-video-t1-pilot",
+    "commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
+    "voice_mix_contract": "config/T1_special_menu_voice_mix_v1_0_0.json",
+    "mixer": "audio/scripts/mix_t1_voice_music_v1.py",
+    "workflow": ".github/workflows/render_t1_complete_voice.yml",
+    "mode": "read_only_exact_audio_architecture_reference"
+  },
+  "visual_source": {
+    "release_tag": "t2-avant-apres-v0.3.0-text-motion",
+    "asset_name": "T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+    "url": "https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.3.0-text-motion/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+    "sha256": "67c447dae81241fc9ecc34ee9edfbf8c354a6ddf76e7fa465a62cdac59550ada",
+    "video_stream_sha256": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5",
+    "policy": "bitstream_copy_no_visual_reencode"
+  },
+  "music_selection": {
+    "candidate_id": "B",
+    "title": "Savanna Beats",
+    "artist": "DPStudioMusic",
+    "source_page": "https://pixabay.com/music/afrobeat-savanna-beats-293956/",
+    "source_audio_url": "https://cdn.pixabay.com/audio/2025/01/28/audio_2803db62bb.mp3",
+    "source_sha256": "9d803e54f0833de5537334890b8edbd85ed9f384257d943beaaf3ccedee73740",
+    "source_bytes": 4481280,
+    "source_page_checked_on": "2026-11-19",
+    "license": "Pixabay Content License",
+    "license_url": "https://pixabay.com/service/license-summary/",
+    "content_id_status": "not_displayed_on_source_page",
+    "ai_generated_badge": "displayed",
+    "user_selected_for_this_exemplar": true,
+    "selected_on": "2026-11-18",
+    "scope": "t2_owner_approved_four_track_rotation",
+    "template_default_selection": false,
+    "source_audio_publish": false,
+    "source_start_s": 0.0,
+    "program_duration_s": 30.0,
+    "program_target_lufs": -17.0,
+    "program_true_peak_dbtp_max": -1.0,
+    "fade_in_s": 0.35,
+    "fade_out_s": 0.8
+  },
+  "voice": {
+    "provider": "Arena.ai Agent Mode",
+    "voice_id": "voice-01",
+    "language": "fr",
+    "identity": "masculine advertising",
+    "same_identity_for_all_scenes": true,
+    "source_speed": 1.0,
+    "audio_time_map": "identity",
+    "automatic_subtitles": false,
+    "normalization_target_lufs": -20.0,
+    "normalization_true_peak_dbtp_max": -3.0,
+    "stem_duration_s": 30.0,
+    "clips": [
+      {
+        "scene": 1,
+        "scene_window_s": [
+          0.0,
+          6.0
+        ],
+        "start_s": 1.2,
+        "text": "Voici le poulet, l'alloco et les épices avant la préparation.",
+        "source": "audio/voice/t2-voice-v0.5/voix_fr_scene1.wav",
+        "source_sha256": "ae5deb1a2e7e423010374c5347a0c4cd66db32c972a5ec12e062c6655bba2673",
+        "source_duration_s": 4.260862
+      },
+      {
+        "scene": 2,
+        "scene_window_s": [
+          6.0,
+          14.0
+        ],
+        "start_s": 6.8,
+        "text": "Regardez, nous retournons le poulet sur le feu pour bien le griller.",
+        "source": "audio/voice/t2-voice-v0.5/voix_fr_scene2.wav",
+        "source_sha256": "aeb711bba8f0bca564244ae9093429e1f1a046a8fac3282581f950fbb224c72a",
+        "source_duration_s": 3.622313
+      },
+      {
+        "scene": 3,
+        "scene_window_s": [
+          14.0,
+          21.0
+        ],
+        "start_s": 14.7,
+        "text": "Voilà notre poulet braisé avec alloco, le plat est prêt !",
+        "source": "audio/voice/t2-voice-v0.5/voix_fr_scene3.wav",
+        "source_sha256": "aad8283f7e5adcffc7e18bc69886d25f16f02821f12a8b8093061c935f4499c7",
+        "source_duration_s": 3.192744
+      },
+      {
+        "scene": 4,
+        "scene_window_s": [
+          21.0,
+          30.0
+        ],
+        "start_s": 21.8,
+        "text": "Notre poulet braisé avec alloco est prêt. Venez goûter !",
+        "source": "audio/voice/t2-voice-v0.5/voix_fr_scene4.wav",
+        "source_sha256": "e6488bcb215f9eb26a0839151de7bdf41046fcf2b538f478f42ed9c2dadac2b6",
+        "source_duration_s": 5.20127
+      }
+    ]
+  },
+  "mix_contract": {
+    "music_open_gain_db": -3.0,
+    "music_under_voice_gain_db": -10.0,
+    "duck_depth_db": -7.0,
+    "duck_attack_ms": 120,
+    "duck_release_ms": 450,
+    "duck_attack_curve": "linear_db",
+    "duck_release_curve": "linear_db",
+    "voice_gain_db": 0.0,
+    "sfx": "none",
+    "master_target_lufs": -16.0,
+    "master_true_peak_dbtp_max": -2.0,
+    "delivery_audio": "AAC stereo 48 kHz 192 kb/s"
+  },
+  "quality_gates": {
+    "exact_output_video_count": 1,
+    "duration_tolerance_s": 0.05,
+    "integrated_lufs_min": -16.5,
+    "integrated_lufs_max": -15.5,
+    "wav_true_peak_dbtp_max": -1.9,
+    "aac_true_peak_dbtp_max": -1.0,
+    "minimum_active_speech_to_music_db": 4.0,
+    "clipped_sample_count_max": 0,
+    "required_video_frames": 900,
+    "required_video_fps": "30/1",
+    "required_width": 720,
+    "required_height": 1280,
+    "required_audio_codec": "aac",
+    "required_audio_sample_rate_hz": 48000,
+    "required_audio_channels": 2,
+    "required_audio_bitrate_bps": 192000,
+    "visual_stream_must_match_v0_3": true,
+    "source_music_must_not_be_published": true,
+    "human_listening_required_for_final_approval": true
+  },
+  "publication": {
+    "output_file": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_SAVANNA_BEATS.mp4",
+    "validation_report": "T2_VOICE_MUSIC_LEVELS_VALIDATION_V1_0_0_B.json",
+    "human_report": "RAPPORT_NIVEAUX_T2.md",
+    "automation_csv": "T2_DUCKING_AUTOMATION_10MS.csv",
+    "timeline_plot": "T2_DUCKING_VOICE_TIMELINE.png",
+    "release_tag": "t2-avant-apres-v1.0.0-music-b-voice-mix",
+    "publish_exactly_one_mp4": true,
+    "publish_standalone_audio": false
+  }
+}

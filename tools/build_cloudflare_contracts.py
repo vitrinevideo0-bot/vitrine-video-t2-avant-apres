@@ -10,6 +10,7 @@ TARGETS = {
     ROOT / "demo/render_job_complete_demo.json": (ROOT / "cloudflare/src/render_job_template.ts", "RENDER_JOB_TEMPLATE"),
     ROOT / "config/T2_capture_flow_v1_0_0.json": (ROOT / "cloudflare/src/capture_flow_contract.ts", "CAPTURE_FLOW_CONTRACT"),
     ROOT / "form/questions_T2.json": (ROOT / "cloudflare/src/form_contract.ts", "FORM_CONTRACT"),
+    ROOT / "config/T2_music_pool_v1_0_0.json": (ROOT / "cloudflare/src/music_pool_contract.ts", "MUSIC_POOL_CONTRACT"),
 }
 
 

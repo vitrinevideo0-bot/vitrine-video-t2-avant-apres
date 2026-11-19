@@ -1,8 +1,8 @@
-# T2 « Avant / Après » — runtime unifié v0.7 et plan de contrôle Cloudflare
+# T2 « Avant / Après » — runtime musical A–D persistant et plan de contrôle Cloudflare
 
 ## Portée
 
-Cette implémentation relie réellement le formulaire T2, les douze écrans de capture, les quatre médias caméra/micro, les textes commerçant, le rendu visuel v0.3, les voix, Afrofire (candidat D), le ducking, le contrôle qualité et la publication GitHub.
+Cette implémentation relie réellement le formulaire T2, les douze écrans de capture, les quatre médias caméra/micro, les textes commerçant, le rendu visuel v0.3, les voix, le pool musical approuvé A–D, le ducking, le contrôle qualité et la publication GitHub.
 
 T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31d413dc4dfd74b42671532cd978`. Ses mécanismes génériques utiles sont repris, mais le domaine reste exclusivement T2 **« Avant / Après »**. Le dépôt T1 public ne contient pas de Worker Cloudflare : la présente implémentation Cloudflare est propre à T2.
 
@@ -13,10 +13,10 @@ T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31
 3. Le décompte 3–2–1 est transitoire et ne crée pas un treizième écran.
 4. Chaque scène demande caméra et microphone, s’arrête automatiquement après 6, 8, 7 ou 9 secondes, puis se relit **avec le son à vitesse 1×**.
 5. `REFAIRE` détruit la prise locale. L’acceptation calcule son SHA-256 et l’envoie à R2.
-6. Après S4, le Worker produit un seul `RenderJob` complet `1.1.0` et déclenche `repository_dispatch` sur GitHub.
-7. GitHub télécharge les quatre captures avec vérification SHA-256 et valide les médias. Un job commerçant dynamique reconstruit ses 900 images depuis ce même job. Pour l’exemplaire canonique déjà approuvé, GitHub matérialise plutôt le master de la Release v0.3 et exige à la fois son SHA-256 de fichier et son SHA-256 de flux H.264 avant de mixer voix et musique.
+6. Après S4, le Worker lit `music/t2-last-success.json`, choisit `auto` parmi A–D en excluant la dernière réussite (ou valide un choix explicite non répétitif), produit un `RenderJob` complet `1.1.0` et déclenche `repository_dispatch` sur GitHub.
+7. GitHub télécharge les quatre captures avec vérification SHA-256 et valide les médias. Un job commerçant dynamique reconstruit ses 900 images depuis ce même job. Pour l’exemplaire historique explicitement verrouillé, GitHub matérialise plutôt le master de la Release v0.3 et exige à la fois son SHA-256 de fichier et son SHA-256 de flux H.264 avant de mixer voix et musique.
 8. Le ducking conserve −3 dB hors parole, −10 dB sous parole, attaque 120 ms et relâchement 450 ms.
-9. Le QC indépendant produit `RenderResult` ou `RenderError`, puis GitHub rappelle le Worker.
+9. Le QC indépendant produit `RenderResult` ou `RenderError`, puis GitHub rappelle le Worker. L’état musical est écrit par CAS R2 uniquement après un `COMPLETED` conforme ; un échec ne l’avance jamais.
 10. Le client suit `UPLOADING → READY → QUEUED → RUNNING → COMPLETED|FAILED` et ouvre le run GitHub.
 
 ## Frontières d’exécution
@@ -24,8 +24,8 @@ T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31
 | Plan | Responsabilités |
 |---|---|
 | Navigateur | six réponses commerçant, machine à 12 écrans, caméra/micro, relecture, SHA-256 |
-| Cloudflare Worker + R2 | authentification pilote, idempotence, stockage, RenderJob, dispatch, statuts et callback |
-| GitHub Actions | FFmpeg/OpenCV pour les jobs dynamiques, matérialisation verrouillée du master pour l’exemplaire canonique, voix 1×, Afrofire (D), ducking, QC, artefact ou Release |
+| Cloudflare Worker + R2 | authentification pilote, idempotence, stockage, sélection A–D, état transactionnel après succès, RenderJob, dispatch, statuts et callback |
+| GitHub Actions | FFmpeg/OpenCV pour les jobs dynamiques, matérialisation verrouillée du master pour l’exemplaire historique, voix 1×, musique sélectionnée, ducking, QC, artefact ou Release |
 
 Cloudflare ne lance ni FFmpeg, ni OpenCV, ni mixage. Tout rendu de production est refusé hors GitHub Actions par le code Python lui-même.
 
@@ -43,17 +43,13 @@ Le parcours navigateur demande `captured_or_registered_fallback`. Le garde de pa
 
 ## Musique
 
-La sélection courante est explicitement **D — Afrofire · DPStudioMusic**. B est rejetée pour la production courante en raison du badge Content ID Registered affiché par sa page historique. D ne devient pas un choix implicite : le RenderJob la sélectionne explicitement et le JSON canonique conserve uniquement le profil sémantique `afrobeat_restaurants_maquis`.
+Le pool de production est exactement **A — Naija Flow / B — Savanna Beats / C — Vibe Republic / D — Afrofire**, toutes par DPStudioMusic et toutes approuvées après quatre auditions comparables. Les identifiants A/B/C historiques restent dans `music/T2_music_shortlist_v0_4_0.json` avec leur statut Content ID et ne sont jamais promus par le nouveau catalogue.
 
-Avant tout mixage, GitHub vérifie exactement :
+`config/T2_music_pool_v1_0_0.json` verrouille pour chaque piste la page, l’URL CDN, le SHA-256, la taille, le contrat de mixage et le dérivé d’audition. `auto` est la valeur par défaut. L’algorithme SHA-256 est déterministe parmi les trois pistes différentes de `last_successful_music_id`; un choix explicite égal à cette valeur est rejeté. Une piste peut revenir après une piste différente.
 
-```text
-24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61
-```
+Le Worker conserve l’état conforme à `schemas/T2_music_selection_state.schema.json` dans l’objet R2 `music/t2-last-success.json`. Les écritures sont conditionnelles sur l’ETag : un callback rejoué est idempotent, deux callbacks concurrents ne peuvent pas perdre une mise à jour, et deux succès adjacents ne peuvent pas valider la même piste. `FAILED` ne crée ni ne modifie cet état.
 
-La source vérifiée mesure `7 680 768` octets. Lors de la vérification datée du 2026-11-19, la page affichait le badge AI generated et aucun badge Content ID. Cette observation n’est pas une garantie juridique absolue.
-
-La source Pixabay, les WAV voix et les stems restent éphémères. Ils ne sont jamais publiés comme fichiers autonomes. Les détails sont verrouillés dans `config/T2_music_selection_v0_7_0.json`.
+Lors du contrôle daté du 2026-11-19, les quatre pages affichaient le badge AI generated et aucun badge Content ID. Cette observation n’est pas une garantie juridique absolue. Les sources Pixabay complètes restent éphémères et ne sont jamais publiées comme fichiers autonomes ; seuls les dérivés voix + musique nécessaires à l’audition sont conservés.
 
 ## API Worker
 
@@ -62,6 +58,7 @@ La source Pixabay, les WAV voix et les stems restent éphémères. Ils ne sont j
 - `GET /health`
 - `GET /v1/contracts/form`
 - `GET /v1/contracts/capture-flow`
+- `GET /v1/contracts/music-pool`
 - `GET /v1/jobs/{job_id}` — statut sans données commerçant ni média
 
 ### Routes client protégées par `CLIENT_API_TOKEN`
@@ -70,17 +67,18 @@ La source Pixabay, les WAV voix et les stems restent éphémères. Ils ne sont j
 - `PUT /v1/jobs/{job_id}/captures/S1|S2|S3|S4`
 - `POST /v1/jobs/{job_id}/dispatch`
 
-`POST /v1/jobs` exige `Idempotency-Key`. Le Worker réserve cette clé par écriture R2 conditionnelle.
+`POST /v1/jobs` exige `Idempotency-Key`. Le Worker réserve cette clé par écriture R2 conditionnelle. Le JSON accepte aussi `music_id: "auto"|"A"|"B"|"C"|"D"`; l’absence du champ équivaut à `auto`.
 
 Les captures acceptées sont `video/mp4`, `video/webm` ou `video/quicktime`. Les métadonnées sont déclarées par en-têtes, puis contrôlées de nouveau avec `ffprobe` sur GitHub. R2 vérifie le SHA-256 pendant l’écriture ; GitHub le recalcule après téléchargement.
 
 ### Routes GitHub protégées par `CALLBACK_TOKEN`
 
+- `GET /v1/music-state` — état de rotation, sans média ni données commerçant
 - `GET /v1/jobs/{job_id}/payload`
 - `GET /v1/jobs/{job_id}/captures/{slot}`
 - `POST /v1/jobs/{job_id}/events`
 
-Un callback `COMPLETED` doit contenir un `RenderResult` rattaché au bon job avec QC `PASS`. Le Worker recroise aussi le profil, l’URI de sortie, les quatre empreintes de capture et le SHA-256 Afrofire avec le RenderJob stocké. Un callback `FAILED` doit contenir un `RenderError` rattaché au bon job.
+Un callback `COMPLETED` doit contenir un `RenderResult` rattaché au bon job avec QC `PASS`. Le Worker recroise aussi le profil, l’URI de sortie, les quatre empreintes de capture et le SHA-256 de la piste sélectionnée avec le RenderJob stocké, puis seulement il valide la nouvelle dernière musique. Un callback `FAILED` doit contenir un `RenderError` rattaché au bon job et laisse l’état musical inchangé.
 
 ## Déploiement Cloudflare
 
@@ -125,7 +123,7 @@ Dans un second terminal :
 python cloudflare/test/control_plane_integration.py
 ```
 
-Ce test couvre le formulaire canonique, le contrat des 12 écrans, l’authentification, l’idempotence, MP4/WebM, R2, le RenderJob strict, le dispatch, le téléchargement GitHub, le callback invalide puis le callback valide. Il ne produit aucune vidéo locale.
+Ce test couvre le formulaire canonique, le contrat des 12 écrans, le pool musical, l’authentification, l’idempotence, MP4/WebM, R2, le RenderJob strict, le dispatch, le téléchargement GitHub, les callbacks invalides/valides et la persistance musicale après succès seulement. Il ne produit aucune vidéo locale.
 
 ## Rendu de référence unique
 

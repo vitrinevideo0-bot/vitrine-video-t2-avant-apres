@@ -93,16 +93,17 @@ def build_job(
     *,
     capture_overrides: dict[str, dict[str, Any]] | None = None,
     capture_manifest: str = "rushes/manifest.json",
-    requested_music: str = "D",
+    requested_music: str = "auto",
     previous_music: str | None = None,
     voice_mode: str = "registered_voice_clips",
     control_plane: str = "github_actions_manual",
     cloudflare_job_id: str | None = None,
+    historical_exemplar: bool = False,
 ) -> dict[str, Any]:
     if stage not in STAGES:
         raise ValueError(f"Étape inconnue : {stage}")
     stage_spec = dict(STAGES[stage])
-    if stage == "complete_voice_music_render" and requested_music == "D":
+    if stage == "complete_voice_music_render" and historical_exemplar and requested_music == "D":
         stage_spec.update(
             {
                 "release_version": "v0.7.0-afrofire-voice-mix",
@@ -158,6 +159,8 @@ def build_job(
                 "control_plane": control_plane,
             }
         )
+        if not historical_exemplar:
+            fingerprint_payload["music_contract"] = "owner_approved_four_track_rotation_v1"
     fingerprint_input = json.dumps(
         fingerprint_payload,
         ensure_ascii=False,
@@ -179,7 +182,9 @@ def build_job(
         "capture_manifest": capture_manifest if stage == "complete_voice_music_render" else "rushes/manifest.json",
         "runtime_contract": (
             (
-                "config/T2_runtime_contract_v0_7_0.json"
+                "config/T2_runtime_contract_v1_0_0.json"
+                if not historical_exemplar
+                else "config/T2_runtime_contract_v0_7_0.json"
                 if requested_music == "D"
                 else "config/T2_runtime_contract_v0_6_0.json"
             )
@@ -215,7 +220,11 @@ def build_job(
             "overwrite": True,
         },
     }
+    if historical_exemplar and stage != "complete_voice_music_render":
+        raise ValueError("Le mode historique ne s'applique qu'au rendu complet.")
     if stage == "complete_voice_music_render":
+        if historical_exemplar and (control_plane != "github_actions_manual" or requested_music not in {"B", "D"}):
+            raise ValueError("Un exemplaire historique doit être B ou D et rester manuel sur GitHub Actions.")
         if control_plane not in {"github_actions_manual", "cloudflare_worker"}:
             raise ValueError(f"Plan de contrôle inconnu : {control_plane}")
         if control_plane == "cloudflare_worker" and not cloudflare_job_id:
@@ -253,6 +262,7 @@ def build_job(
             requested_candidate_id=requested_music,
             previous_candidate_id=previous_music,
             voice_mode=voice_mode,
+            historical_exemplar=historical_exemplar,
         )
     Draft202012Validator(_read(SCHEMA)).validate(job)
     return job
@@ -269,7 +279,8 @@ def main() -> None:
     )
     parser.add_argument("--captures-json", help="Complete S1…S4 capture map supplied by the runtime control plane.")
     parser.add_argument("--capture-manifest", default="rushes/manifest.json")
-    parser.add_argument("--music", choices=["A", "B", "C", "D", "auto"], default="D")
+    parser.add_argument("--music", choices=["A", "B", "C", "D", "auto"], default="auto")
+    parser.add_argument("--historical-exemplar", action="store_true", help="Rebuild only the locked historical B/D reference; never use for rotation.")
     parser.add_argument("--previous-music", choices=["A", "B", "C", "D"])
     parser.add_argument(
         "--voice-mode",
@@ -293,6 +304,7 @@ def main() -> None:
         voice_mode=args.voice_mode,
         control_plane=args.control_plane,
         cloudflare_job_id=args.cloudflare_job_id,
+        historical_exemplar=args.historical_exemplar,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(

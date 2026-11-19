@@ -29,6 +29,10 @@ DEFAULT_CONFIG = ROOT / "config/T2_complete_voice_mix_v0_5_0.json"
 SCHEMAS = {
     "restaurants_maquis_T2_complete_voice_mix_v0_5_0": ROOT / "schemas/T2_complete_voice_mix.schema.json",
     "restaurants_maquis_T2_complete_voice_mix_v0_7_0": ROOT / "schemas/T2_complete_voice_mix_v0_7_0.schema.json",
+    **{
+        f"restaurants_maquis_T2_complete_voice_mix_v1_0_0_{candidate}": ROOT / "schemas/T2_complete_voice_mix_v1_0_0.schema.json"
+        for candidate in "ABCD"
+    },
 }
 RENDER_JOB_SCHEMA = ROOT / "schemas/render_job.schema.json"
 SR = 48_000
@@ -531,7 +535,7 @@ def write_human_report(path: Path, report: dict[str, Any]) -> None:
     mix = report["ducking"]
     music = report["music"]
     candidate_id = music["candidate_id"]
-    music_label = "Afrofire — DPStudioMusic" if candidate_id == "D" else "musique B historique"
+    music_label = f"{music['title']} — {music['artist']}"
     lines = [
         f"# Rapport des niveaux — T2 complet voix + {music_label}",
         "",
@@ -578,7 +582,7 @@ def write_human_report(path: Path, report: dict[str, Any]) -> None:
             "- Le flux vidéo final est identique bit à bit au visuel 900 images reconstruit depuis le même RenderJob.",
             "- Les quatre textes sont les exemples exacts des scènes S1 à S4.",
             "- Les voix restent à vitesse 1×, réunies dans un stem de 30 s, sans sous-titres.",
-            f"- La musique {candidate_id} est une sélection explicite du catalogue ; elle n’est pas un défaut implicite du gabarit.",
+            f"- La musique {candidate_id} provient du pool approuvé ; elle n’est pas un défaut implicite du gabarit.",
             f"- Statut Content ID observé et verrouillé dans le contrat : `{music['content_id_status']}`.",
             "- Aucun MP3 musical, WAV voix ou stem audio autonome n’est publié dans la Release.",
             "",
@@ -599,8 +603,8 @@ def validate_source_config(config: dict[str, Any]) -> None:
     if config["duration_s"] != TOTAL_S or config["sample_rate_hz"] != SR:
         raise ValueError("La durée ou la fréquence du contrat T2 ne correspond pas au moteur.")
     candidate_id = config["music_selection"]["candidate_id"]
-    if candidate_id not in {"B", "D"}:
-        raise ValueError("Le mixeur de production accepte uniquement les contrats approuvés B ou D.")
+    if candidate_id not in {"A", "B", "C", "D"}:
+        raise ValueError("Le mixeur de production accepte uniquement A, B, C ou D.")
     if config["music_selection"]["template_default_selection"] is not False:
         raise ValueError("La piste sélectionnée ne doit pas devenir un défaut du gabarit.")
 
@@ -953,7 +957,7 @@ def main() -> None:
             voice,
             music_gain_db,
             spans,
-            "Afrofire" if candidate_id == "D" else "musique B",
+            selection["title"],
         )
         intelligibility = frame_speech_metrics(voice, music_stem, spans)
 
@@ -1003,7 +1007,7 @@ def main() -> None:
                 "-metadata",
                 "artist=Vitrine Video",
                 "-metadata",
-                f"comment=Musique {candidate_id} explicite; aucune selection implicite du gabarit",
+                f"comment=Musique {candidate_id} du pool approuve; aucune valeur implicite fixe du gabarit",
                 "-movflags",
                 "+faststart",
                 str(output_mp4),
@@ -1101,7 +1105,7 @@ def main() -> None:
             ),
             "voice_stem_exact_30s": len(voice) == N,
             "four_voice_clips_in_scene_windows": len(voice_entries) == 4,
-            "approved_music_contract": selection["candidate_id"] in {"B", "D"},
+            "approved_music_contract": selection["candidate_id"] in {"A", "B", "C", "D"},
             "music_not_template_default": selection["template_default_selection"] is False,
         }
         status = "PASS" if all(checks.values()) else "FAIL"

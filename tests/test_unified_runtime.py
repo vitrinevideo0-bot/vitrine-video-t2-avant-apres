@@ -103,7 +103,7 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
         self.assertIn("T2_MEDIA: R2Bucket", worker)
         self.assertIn("CLIENT_API_TOKEN", worker)
         self.assertIn("CALLBACK_TOKEN", worker)
-        self.assertIn("buildRenderJob(state)", worker)
+        self.assertIn("buildRenderJob(state, env)", worker)
         for forbidden in ("ffmpeg", "opencv", "render_text_motion.py", "mix_t2_voice_music_v0_5.py"):
             self.assertNotIn(forbidden, worker.lower())
         workflow = (ROOT / ".github/workflows/server-render-unified.yml").read_text(encoding="utf-8")
@@ -125,6 +125,7 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
             ("cloudflare/src/render_job_template.ts", "demo/render_job_complete_demo.json"),
             ("cloudflare/src/capture_flow_contract.ts", "config/T2_capture_flow_v1_0_0.json"),
             ("cloudflare/src/form_contract.ts", "form/questions_T2.json"),
+            ("cloudflare/src/music_pool_contract.ts", "config/T2_music_pool_v1_0_0.json"),
         )
         for ts_path, json_path in targets:
             text = (ROOT / ts_path).read_text(encoding="utf-8")

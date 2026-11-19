@@ -5,6 +5,7 @@ on:
     paths:
       - 'cloudflare/**'
       - 'config/T2_capture_flow_v1_0_0.json'
+      - 'config/T2_music_pool_v1_0_0.json'
       - 'form/questions_T2.json'
       - 'demo/render_job_complete_demo.json'
       - 'schemas/**'
@@ -15,6 +16,7 @@ on:
     paths:
       - 'cloudflare/**'
       - 'config/T2_capture_flow_v1_0_0.json'
+      - 'config/T2_music_pool_v1_0_0.json'
       - 'form/questions_T2.json'
       - 'demo/render_job_complete_demo.json'
       - 'schemas/**'
@@ -59,10 +61,12 @@ jobs:
           cp cloudflare/src/render_job_template.ts /tmp/render_job_template.ts
           cp cloudflare/src/capture_flow_contract.ts /tmp/capture_flow_contract.ts
           cp cloudflare/src/form_contract.ts /tmp/form_contract.ts
+          cp cloudflare/src/music_pool_contract.ts /tmp/music_pool_contract.ts
           python tools/build_cloudflare_contracts.py
           cmp /tmp/render_job_template.ts cloudflare/src/render_job_template.ts
           cmp /tmp/capture_flow_contract.ts cloudflare/src/capture_flow_contract.ts
           cmp /tmp/form_contract.ts cloudflare/src/form_contract.ts
+          cmp /tmp/music_pool_contract.ts cloudflare/src/music_pool_contract.ts
 
       - name: Type-check, audit and dry-build Worker
         working-directory: cloudflare
@@ -71,7 +75,7 @@ jobs:
           npm test
           node --check public/app.js
 
-      - name: Integration — form, 12-screen contracts, R2, RenderJob, dispatch and callback
+      - name: Integration — form, 12 screens, A–D rotation, R2 CAS, dispatch and callbacks
         run: |
           set -euo pipefail
           python cloudflare/test/mock_github_api.py --port 8790 >/tmp/mock-github.log 2>&1 &

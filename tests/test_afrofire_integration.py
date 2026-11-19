@@ -116,6 +116,7 @@ class T2AfrofireIntegrationTest(unittest.TestCase):
             requested_music="B",
             voice_mode="registered_voice_clips",
             control_plane="github_actions_manual",
+            historical_exemplar=True,
         )
         self.assertEqual(historical["audio_plan"]["music"]["selected_candidate_id"], "B")
         self.assertEqual(historical["runtime_contract"], "config/T2_runtime_contract_v0_6_0.json")

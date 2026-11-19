@@ -1,0 +1,223 @@
+{
+  "id": "T2_music_replacement_auditions_2026_11_19",
+  "status": "audition_only_no_selection",
+  "warning": "No track in this package is production-approved except the historically retained D — Afrofire. A/B/C require explicit owner approval before activation.",
+  "comparison_policy": {
+    "same_duration_s": 30.0,
+    "same_source_start_s": 0.0,
+    "same_voice_clips": true,
+    "same_voice_timing": true,
+    "same_music_program_target_lufs": -17.0,
+    "same_mix_target_lufs": -16.0,
+    "same_music_open_gain_db": -3.0,
+    "same_music_under_voice_gain_db": -10.0,
+    "duck_attack_ms": 120,
+    "duck_release_ms": 450,
+    "same_fades_s": {
+      "in": 0.35,
+      "out": 0.8
+    }
+  },
+  "voice_receipts": [
+    {
+      "scene": 1,
+      "start_s": 1.2,
+      "end_s": 5.460875000000001,
+      "source_sha256": "ae5deb1a2e7e423010374c5347a0c4cd66db32c972a5ec12e062c6655bba2673"
+    },
+    {
+      "scene": 2,
+      "start_s": 6.8,
+      "end_s": 10.422333333333333,
+      "source_sha256": "aeb711bba8f0bca564244ae9093429e1f1a046a8fac3282581f950fbb224c72a"
+    },
+    {
+      "scene": 3,
+      "start_s": 14.7,
+      "end_s": 17.89275,
+      "source_sha256": "aad8283f7e5adcffc7e18bc69886d25f16f02821f12a8b8093061c935f4499c7"
+    },
+    {
+      "scene": 4,
+      "start_s": 21.8,
+      "end_s": 27.001270833333333,
+      "source_sha256": "e6488bcb215f9eb26a0839151de7bdf41046fcf2b538f478f42ed9c2dadac2b6"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "A",
+      "title": "Naija Flow",
+      "artist": "DPStudioMusic",
+      "page": "https://pixabay.com/music/afrobeat-naija-flow-300340/",
+      "audio_url": "https://cdn.pixabay.com/audio/2025/02/12/audio_e74682b4b5.mp3",
+      "source_sha256": "a7f990fb3891aee07e55ae144ed8f7dd65aa549c10c1bf9e4247ddb522c6d943",
+      "observed_page_status": "AI generated displayed; Content ID Registered badge not displayed",
+      "output": "T2_AUDITION_A_NAIJA_FLOW.m4a",
+      "output_sha256": "ea5e8256afb83dc4e330871a9343dd6e099e8970e2081d2d77a1fb39a382a272",
+      "output_bytes": 754259,
+      "duration_s": 30.0,
+      "integrated_lufs_observed": -16.12,
+      "true_peak_dbtp_observed": -1.93,
+      "mastering": {
+        "before": {
+          "input_i": "-18.20",
+          "input_tp": "-2.54",
+          "input_lra": "3.60",
+          "input_thresh": "-28.26",
+          "output_i": "-16.28",
+          "output_tp": "-2.00",
+          "output_lra": "3.50",
+          "output_thresh": "-26.31",
+          "normalization_type": "dynamic",
+          "target_offset": "0.28"
+        },
+        "after": {
+          "input_i": "-16.09",
+          "input_tp": "-2.00",
+          "input_lra": "3.50",
+          "input_thresh": "-26.16",
+          "output_i": "-16.05",
+          "output_tp": "-2.00",
+          "output_lra": "3.30",
+          "output_thresh": "-26.08",
+          "normalization_type": "dynamic",
+          "target_offset": "0.05"
+        }
+      },
+      "status": "audition_only_no_selection"
+    },
+    {
+      "id": "B",
+      "title": "Savanna Beats",
+      "artist": "DPStudioMusic",
+      "page": "https://pixabay.com/music/afrobeat-savanna-beats-293956/",
+      "audio_url": "https://cdn.pixabay.com/audio/2025/01/28/audio_2803db62bb.mp3",
+      "source_sha256": "9d803e54f0833de5537334890b8edbd85ed9f384257d943beaaf3ccedee73740",
+      "observed_page_status": "AI generated displayed; Content ID Registered badge not displayed",
+      "output": "T2_AUDITION_B_SAVANNA_BEATS.m4a",
+      "output_sha256": "82e6ecc0d3785d26dfef0bde544360d842e225792f3a12a4ac03e4ca9d674845",
+      "output_bytes": 765978,
+      "duration_s": 30.0,
+      "integrated_lufs_observed": -16.18,
+      "true_peak_dbtp_observed": -1.95,
+      "mastering": {
+        "before": {
+          "input_i": "-18.21",
+          "input_tp": "-3.00",
+          "input_lra": "4.30",
+          "input_thresh": "-28.26",
+          "output_i": "-16.47",
+          "output_tp": "-2.00",
+          "output_lra": "3.70",
+          "output_thresh": "-26.49",
+          "normalization_type": "dynamic",
+          "target_offset": "0.47"
+        },
+        "after": {
+          "input_i": "-16.14",
+          "input_tp": "-2.00",
+          "input_lra": "4.00",
+          "input_thresh": "-26.18",
+          "output_i": "-16.22",
+          "output_tp": "-2.01",
+          "output_lra": "3.70",
+          "output_thresh": "-26.24",
+          "normalization_type": "dynamic",
+          "target_offset": "0.22"
+        }
+      },
+      "status": "audition_only_no_selection"
+    },
+    {
+      "id": "C",
+      "title": "Vibe Republic",
+      "artist": "DPStudioMusic",
+      "page": "https://pixabay.com/music/afrobeat-vibe-republic-300333/",
+      "audio_url": "https://cdn.pixabay.com/audio/2025/02/12/audio_ed4aff38b8.mp3",
+      "source_sha256": "71b20e916467d79ff4c59a674a2e3d66695cb613ddca76342cc02177fb629fec",
+      "observed_page_status": "AI generated displayed; Content ID Registered badge not displayed",
+      "output": "T2_AUDITION_C_VIBE_REPUBLIC.m4a",
+      "output_sha256": "921af7e3fb441c303f6491303bf2b85d869e25e1f0bb94f8c683787f15112840",
+      "output_bytes": 747178,
+      "duration_s": 30.0,
+      "integrated_lufs_observed": -16.19,
+      "true_peak_dbtp_observed": -2.0,
+      "mastering": {
+        "before": {
+          "input_i": "-18.05",
+          "input_tp": "-2.99",
+          "input_lra": "3.60",
+          "input_thresh": "-28.24",
+          "output_i": "-16.36",
+          "output_tp": "-2.00",
+          "output_lra": "3.30",
+          "output_thresh": "-26.49",
+          "normalization_type": "dynamic",
+          "target_offset": "0.36"
+        },
+        "after": {
+          "input_i": "-16.16",
+          "input_tp": "-1.99",
+          "input_lra": "3.60",
+          "input_thresh": "-26.35",
+          "output_i": "-16.21",
+          "output_tp": "-2.09",
+          "output_lra": "3.30",
+          "output_thresh": "-26.35",
+          "normalization_type": "dynamic",
+          "target_offset": "0.21"
+        }
+      },
+      "status": "audition_only_no_selection"
+    },
+    {
+      "id": "D",
+      "title": "Afrofire",
+      "artist": "DPStudioMusic",
+      "page": "https://pixabay.com/music/afrobeat-afrofire-300338/",
+      "audio_url": "https://cdn.pixabay.com/audio/2025/02/12/audio_bf52f1c5ad.mp3",
+      "source_sha256": "24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61",
+      "observed_page_status": "AI generated displayed; Content ID Registered badge not displayed",
+      "output": "T2_AUDITION_D_AFROFIRE.m4a",
+      "output_sha256": "3ae4167d3a32dfc2c8f1f4d9d2b71265943f79a17245acae8459484cb804c573",
+      "output_bytes": 761676,
+      "duration_s": 30.0,
+      "integrated_lufs_observed": -16.16,
+      "true_peak_dbtp_observed": -1.99,
+      "mastering": {
+        "before": {
+          "input_i": "-18.22",
+          "input_tp": "-2.80",
+          "input_lra": "4.60",
+          "input_thresh": "-28.37",
+          "output_i": "-16.50",
+          "output_tp": "-2.00",
+          "output_lra": "4.30",
+          "output_thresh": "-26.61",
+          "normalization_type": "dynamic",
+          "target_offset": "0.50"
+        },
+        "after": {
+          "input_i": "-16.15",
+          "input_tp": "-2.00",
+          "input_lra": "4.20",
+          "input_thresh": "-26.29",
+          "output_i": "-16.25",
+          "output_tp": "-2.02",
+          "output_lra": "3.90",
+          "output_thresh": "-26.36",
+          "normalization_type": "dynamic",
+          "target_offset": "0.25"
+        }
+      },
+      "status": "audition_only_no_selection"
+    }
+  ],
+  "license": {
+    "name": "Pixabay Content License",
+    "url": "https://pixabay.com/service/license-summary/",
+    "source_audio_published_separately": false,
+    "note": "Absence of a displayed Content ID badge is an observation, not a legal guarantee; page state can change."
+  }
+}
