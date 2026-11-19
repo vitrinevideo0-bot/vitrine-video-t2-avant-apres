@@ -18,7 +18,7 @@ Cette version contient uniquement les rushes et les six transitions validées. E
 5. Dans quel quartier peut-on te trouver ?
 6. Veux-tu ajouter une petite phrase ? — facultatif.
 
-La définition machine est `form/questions_T2.json`. Les réponses deviennent `business.nom`, `business.produit`, `business.prix`, `business.whatsapp`, `business.quartier` et `business.accroche` dans le RenderJob. Elles sont conservées dès maintenant, mais elles ne sont pas affichées pendant l’étape de validation silencieuse.
+La définition machine est `form/questions_T2.json`. Les réponses deviennent `merchant_payload.nom`, `merchant_payload.produit`, `merchant_payload.prix`, `merchant_payload.whatsapp`, `merchant_payload.quartier` et `merchant_payload.accroche` dans le RenderJob. Ce nommage et le chemin formulaire → `merchant_payload` → `captures` → rendu reprennent le contrat public T1 verrouillé. Les valeurs sont conservées dès maintenant, mais elles ne sont jamais dessinées pendant l’étape de validation silencieuse.
 
 ## Contrat
 
@@ -35,7 +35,7 @@ La définition machine est `form/questions_T2.json`. Les réponses deviennent `b
 Le workflow `.github/workflows/server-render-silent.yml` :
 
 1. vérifie la base T1 publique sans la modifier ;
-2. construit le RenderJob à partir des réponses ;
+2. construit et valide le RenderJob à partir des réponses et des quatre captures ;
 3. exécute les tests ;
 4. télécharge les rushes sur le runner GitHub ;
 5. rend la vidéo muette sur le runner GitHub ;

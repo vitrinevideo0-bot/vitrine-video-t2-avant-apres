@@ -1,6 +1,12 @@
 {
+  "schema_version": "1.0.0",
+  "job_id": "t2-silent-7b2713186c729dc7",
+  "idempotency_key": "t2-avant-apres-v0.2.0-silent-7b2713186c729dc7",
   "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
-  "business": {
+  "template_version": "0.1.0",
+  "execution_profile": "T2_GITHUB_ACTIONS_SILENT",
+  "network_policy": "declared_sources_only",
+  "merchant_payload": {
     "nom": "RESTAURANT PILOTE",
     "produit": "POULET BRAISÉ",
     "prix": "2500",
@@ -8,9 +14,51 @@
     "quartier": "QUARTIER CENTRAL",
     "accroche": "DU FEU À L’ASSIETTE"
   },
-  "rush_manifest": "rushes/manifest.json",
-  "output": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
+  "captures": {
+    "S1": {
+      "uri": "rushes/cache/7652493.mp4",
+      "duration_ms": 6000,
+      "source_in_ms": 500,
+      "has_audio": false,
+      "sha256": "9f9703887befc2c2000ed67a45a0189debaf4111c2d7903bc84a62a4ec4025f8"
+    },
+    "S2": {
+      "uri": "rushes/cache/5794186.mp4",
+      "duration_ms": 8000,
+      "source_in_ms": 3000,
+      "has_audio": false,
+      "sha256": "487c790cfec035467c4d2dc5dceffb23c1074e641c97d6620ae3d490901769c7"
+    },
+    "S3": {
+      "uri": "rushes/cache/8094293.mp4",
+      "duration_ms": 7000,
+      "source_in_ms": 4000,
+      "has_audio": false,
+      "sha256": "bd96b04f7c5317a7a73b4eb8a57db6713e0d68230a57c263aafc99324d207425"
+    },
+    "S4": {
+      "uri": "rushes/cache/8448099.mp4",
+      "duration_ms": 9000,
+      "source_in_ms": 200,
+      "has_audio": false,
+      "sha256": "e1f54df1d88d82aabfb15c830130084c02d22ab737ba07719439dbcbd0e4801d"
+    }
+  },
+  "capture_manifest": "rushes/manifest.json",
+  "audio_mode": "silent_no_audio_stream",
   "render_stage": "silent_transition_validation",
   "render_business_text": false,
-  "render_audio": false
+  "render_audio": false,
+  "output": {
+    "uri": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
+    "container": "mp4",
+    "video_mime": "video/avc",
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "frames": 900,
+    "duration_ms": 30000,
+    "target_video_bitrate_bps": 5000000,
+    "overwrite": true
+  }
 }
