@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "title": "Questions commerçant — T2 Avant / Après",
+  "additionalProperties": false,
+  "fields": [
+    {"id":"nom","question":"Comment s’appelle ton restaurant ou ton maquis ?","required":true,"maxLength":40,"json_target":"business.nom"},
+    {"id":"produit","question":"Quel plat allons-nous montrer avant et après ?","required":true,"maxLength":32,"json_target":"business.produit"},
+    {"id":"prix","question":"Quel est le prix de ce plat ?","required":true,"maxLength":7,"pattern":"^[0-9 .]+$","json_target":"business.prix","helper":"Écris seulement le nombre. FCFA sera ajouté plus tard."},
+    {"id":"whatsapp","question":"Quel numéro WhatsApp les clients doivent-ils utiliser ?","required":true,"minLength":4,"maxLength":20,"json_target":"business.whatsapp"},
+    {"id":"quartier","question":"Dans quel quartier peut-on te trouver ?","required":true,"maxLength":40,"json_target":"business.quartier"},
+    {"id":"accroche","question":"Veux-tu ajouter une petite phrase ?","required":false,"maxLength":48,"json_target":"business.accroche"}
+  ],
+  "current_stage_rule": "Les réponses sont validées et conservées dans le RenderJob, mais aucun texte n’est affiché dans la vidéo silencieuse de validation des transitions."
+}
