@@ -28,7 +28,7 @@ Les contrats v0.5/v0.6 et leurs Releases restent des preuves historiques. Ils ne
 3. chaque prise acceptée est stockée dans R2 avec métadonnées et SHA-256 ;
 4. le Worker enrichit le template canonique v0.7 avec ces données, sans réécrire le plan visuel ;
 5. `repository_dispatch` déclenche GitHub Actions ;
-6. GitHub matérialise et revalide les captures, puis reconstruit les 900 images depuis le même RenderJob ;
+6. GitHub matérialise et revalide les captures ; les jobs dynamiques reconstruisent leurs 900 images, tandis que l’exemplaire canonique matérialise le master v0.3 exact et vérifie ses deux empreintes verrouillées ;
 7. le mixeur choisit pour chaque scène la voix capturée exploitable ou son fallback enregistré, à `1×` ;
 8. la source D — Afrofire est vérifiée par SHA-256, puis duckée de −3 dB à −10 dB sous parole ;
 9. un QC indépendant valide l’unique MP4 et l’invariance du flux vidéo ;
@@ -38,7 +38,7 @@ Les contrats v0.5/v0.6 et leurs Releases restent des preuves historiques. Ils ne
 
 - **Navigateur** : saisie, caméra/micro, relecture, SHA-256.
 - **Cloudflare Worker/R2** : sécurité, idempotence, stockage, orchestration, statuts.
-- **GitHub Actions** : OpenCV, FFmpeg, rendu, mixage, QC, artefact/Release.
+- **GitHub Actions** : OpenCV/FFmpeg pour le dynamique, matérialisation du master canonique, mixage, QC, artefact/Release.
 
 Cloudflare n’effectue aucun rendu. Le code Python refuse explicitement tout rendu complet lorsque `GITHUB_ACTIONS != true`.
 

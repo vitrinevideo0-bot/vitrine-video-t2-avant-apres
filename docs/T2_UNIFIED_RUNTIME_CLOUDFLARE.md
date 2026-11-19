@@ -14,7 +14,7 @@ T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31
 4. Chaque scène demande caméra et microphone, s’arrête automatiquement après 6, 8, 7 ou 9 secondes, puis se relit **avec le son à vitesse 1×**.
 5. `REFAIRE` détruit la prise locale. L’acceptation calcule son SHA-256 et l’envoie à R2.
 6. Après S4, le Worker produit un seul `RenderJob` complet `1.1.0` et déclenche `repository_dispatch` sur GitHub.
-7. GitHub télécharge les quatre captures avec vérification SHA-256, valide les médias, reconstruit les 900 images depuis ce même job, vérifie le SHA-256 du flux H.264 (l’empreinte du conteneur MP4 est seulement consignée), puis mixe voix et musique.
+7. GitHub télécharge les quatre captures avec vérification SHA-256 et valide les médias. Un job commerçant dynamique reconstruit ses 900 images depuis ce même job. Pour l’exemplaire canonique déjà approuvé, GitHub matérialise plutôt le master de la Release v0.3 et exige à la fois son SHA-256 de fichier et son SHA-256 de flux H.264 avant de mixer voix et musique.
 8. Le ducking conserve −3 dB hors parole, −10 dB sous parole, attaque 120 ms et relâchement 450 ms.
 9. Le QC indépendant produit `RenderResult` ou `RenderError`, puis GitHub rappelle le Worker.
 10. Le client suit `UPLOADING → READY → QUEUED → RUNNING → COMPLETED|FAILED` et ouvre le run GitHub.
@@ -25,7 +25,7 @@ T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31
 |---|---|
 | Navigateur | six réponses commerçant, machine à 12 écrans, caméra/micro, relecture, SHA-256 |
 | Cloudflare Worker + R2 | authentification pilote, idempotence, stockage, RenderJob, dispatch, statuts et callback |
-| GitHub Actions | FFmpeg/OpenCV, rendu 900 images, voix 1×, Afrofire (D), ducking, QC, artefact ou Release |
+| GitHub Actions | FFmpeg/OpenCV pour les jobs dynamiques, matérialisation verrouillée du master pour l’exemplaire canonique, voix 1×, Afrofire (D), ducking, QC, artefact ou Release |
 
 Cloudflare ne lance ni FFmpeg, ni OpenCV, ni mixage. Tout rendu de production est refusé hors GitHub Actions par le code Python lui-même.
 
@@ -129,6 +129,6 @@ Ce test couvre le formulaire canonique, le contrat des 12 écrans, l’authentif
 
 ## Rendu de référence unique
 
-Le workflow `.github/workflows/server-render-unified.yml` peut être lancé manuellement sur GitHub. Il reconstruit l’exemplaire canonique D/Afrofire, prouve les verrous historiques et visuels, exécute les tests, puis rend une seule vidéo. L’option `publish_release` est désactivée par défaut.
+Le workflow `.github/workflows/server-render-unified.yml` peut être lancé manuellement sur GitHub. Pour l’exemplaire canonique D/Afrofire, il matérialise le master v0.3 de sa Release publique, exige le SHA-256 exact du fichier et du flux H.264, prouve les verrous historiques et visuels, exécute les tests, puis rend une seule vidéo. Cette voie évite qu’un changement de génération de runner GitHub tente de réencoder différemment un visuel déjà approuvé. L’option `publish_release` est désactivée par défaut.
 
 Si une Release v0.7 est demandée explicitement, le workflow refuse d’écraser un tag existant et publie exactement un MP4, les rapports et les checksums — jamais la source musicale seule. Les jobs Cloudflare utilisent le même workflow par `repository_dispatch`, mais publient un artefact GitHub privé plutôt qu’une nouvelle Release publique à chaque commerçant.
