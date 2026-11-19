@@ -1,12 +1,14 @@
 # Changelog
 
-## 0.1.0 — 2026-11-18
+## 0.2.0 — correction de phase
 
-- création du dépôt public indépendant T2 ;
-- contrat quatre scènes / douze écrans ;
-- langage commerçant simplifié et multilingue ;
-- six transitions originales équilibrées entre trois références ;
-- moteur Python de référence ;
-- rushes de démonstration Pexels vérifiés par SHA-256 ;
-- montage vertical 30 s avec musique originale ;
-- captures des douze états et preuves de rendu.
+- rendu déplacé intégralement sur GitHub Actions ;
+- vidéo de validation rendue muette, sans flux audio ;
+- suppression de tous les textes superposés du montage ;
+- questions commerçant formalisées séparément ;
+- base T1 publique verrouillée en lecture seule ;
+- suppression du moteur musical prématuré et de la première vidéo sonore.
+
+## 0.1.0
+
+- première exploration des six transitions ; version remplacée car elle contenait un son et des textes non autorisés.
