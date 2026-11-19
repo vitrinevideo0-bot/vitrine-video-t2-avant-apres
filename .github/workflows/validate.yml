@@ -12,10 +12,20 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
+      - name: Dépendance de validation
+        run: pip install jsonschema==4.25.1
+      - name: Compiler les sources Python
+        run: python -m compileall -q engine tools tests
+      - name: Reconstruire le RenderJob depuis les réponses
+        run: |
+          python tools/build_render_job.py \
+            --answers demo/reponses_demo.json \
+            --output /tmp/render_job_rebuilt.json
+          cmp demo/input_demo.json /tmp/render_job_rebuilt.json
       - name: Contrat T2
         run: python tools/validate_contract.py
       - name: Tests unitaires

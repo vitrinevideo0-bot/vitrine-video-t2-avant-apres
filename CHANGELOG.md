@@ -6,6 +6,7 @@
 - vidéo de validation rendue muette, sans flux audio ;
 - suppression de tous les textes superposés du montage ;
 - questions commerçant formalisées séparément ;
+- mécanisme aligné sur le contrat T1 public : réponses → `merchant_payload` + quatre `captures` → RenderJob ;
 - base T1 publique verrouillée en lecture seule ;
 - suppression du moteur musical prématuré et de la première vidéo sonore.
 
