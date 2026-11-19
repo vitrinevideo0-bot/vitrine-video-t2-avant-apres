@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "repository": "https://github.com/j9028379-hue/vitrine-video-t1-pilot",
+  "commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
+  "mode": "read_only",
+  "files": {
+    "config/T1_special_menu_voice_mix_v1_0_0.json": "7d872e666725b2953e62d2c0dbbddc70de49870fc627ef914d72bb858f2dd660",
+    "schemas/T1_voice_mix.schema.json": "51c375a51932186b3d21e87ab501a237cd5320d6d3cdf4a38c8cc7ff83b7c9f4",
+    "audio/scripts/mix_t1_voice_music_v1.py": "b6d2f581a5f4648ac4b5b8c3349c4b9f37388f369517b7a74f5b5d930efadc21",
+    ".github/workflows/render_t1_complete_voice.yml": "3e4aa9012e44618cebbc63a5d286ed910f7d05d3eb6afe3b9fd42c14b74c3c71"
+  }
+}

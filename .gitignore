@@ -10,3 +10,6 @@ __pycache__/
 .pytest_cache/
 output/music-shortlist-*/
 proofs/music_shortlist_validation*.json
+output/t2-complete-*/
+proofs/T2_complete_mix_server_validation*.json
+release/
