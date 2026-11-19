@@ -1,48 +1,17 @@
-# Architecture du pilote T2
+# Architecture serveur T2
+
+La structure technique reprend le modèle du dépôt T1 public, sans le modifier et sans réutiliser sa musique, ses voix ou ses médias.
 
 ## Sources de vérité
 
-1. `config/T2_avant_apres_template_v0_1_0.json` — chronologie, format, champs et transitions ;
-2. `capture-guide/consignes_T2.json` — textes commerçant ;
-3. `schemas/render_job.schema.json` — entrée de rendu ;
-4. `rushes/manifest.json` — médias de démonstration, segments et empreintes ;
-5. `engine/` — implémentation Python de référence.
+- `baseline/T1_BASELINE.lock.json` : dépôt et commit T1 de référence ;
+- `form/questions_T2.json` : questions commerçant ;
+- `capture-guide/consignes_T2.json` : quatre guides validés ;
+- `config/T2_avant_apres_template_v0_1_0.json` : chronologie et transitions ;
+- `schemas/render_job.schema.json` : contrat des réponses ;
+- `engine/render_silent.py` : rendu actuel, sans texte et sans audio ;
+- `.github/workflows/server-render-silent.yml` : seul chemin de production de la vidéo actuelle.
 
-## Pipeline
+## Règle d’étape
 
-```text
-RenderJob
-  → contrôle des six champs
-  → vérification SHA-256 des quatre rushes
-  → lecture monotone et recadrage 9:16
-  → étalonnage chaud modéré
-  → 6 transitions originales
-  → habillage Playfair Display condensé à 66 %
-  → 900 images MP4 intermédiaires
-  → musique originale générée à 120 BPM
-  → encodage H.264 High + AAC, yuv420p, faststart
-  → manifeste de preuve
-```
-
-## Capture
-
-Le contrat possède exactement quatre scènes et trois états stables par scène :
-
-- A — Guide ;
-- B — Enregistrement ;
-- C — Validation.
-
-Le décompte `3 · 2 · 1` est transitoire. Il n’existe ni cinquième scène ni treizième écran stable.
-
-## Audio
-
-Le pilote de démonstration utilise une musique synthétisée par `engine/audio.py`, sans échantillon tiers. Dans l’application de production :
-
-- la parole reste facultative ;
-- le microphone reste actif ;
-- la voix réellement enregistrée doit être conservée ;
-- aucun sous-titre automatique n’est ajouté.
-
-## Limites
-
-Ce moteur Python prouve le contrat et la recette visuelle. Il ne constitue pas encore un composant Android Media3 qualifié hors ligne.
+La musique et la voix n’existent pas dans l’étape actuelle. Elles seront ajoutées dans des workflows séparés seulement après validation du montage silencieux.
