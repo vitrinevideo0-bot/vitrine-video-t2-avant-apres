@@ -18,7 +18,7 @@ if str(AUDIO_SCRIPTS) not in sys.path:
 
 from mix_t2_voice_music_v0_5 import SR, captured_audio_qc, reference_visual_integrity
 from tools.cloudflare_runtime import validate_api_base
-from tools.render_complete_job import execute
+from tools.render_complete_job import execute, reference_visual_contract, visual_strategy
 from tools.verify_visual_pipeline import verify as verify_visual_pipeline
 
 
@@ -136,6 +136,27 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
         lock = verify_visual_pipeline()
         self.assertEqual(lock["approved_reference"]["frames"], 900)
         self.assertEqual(lock["approved_reference"]["video_stream_sha256"], "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5")
+
+    def test_reference_exemplar_materializes_the_exact_release_master_only(self) -> None:
+        job = load("demo/render_job_complete_demo.json")
+        mix_config = load("config/T2_complete_voice_mix_v0_7_0.json")
+        self.assertEqual(visual_strategy(job), "approved_release_asset")
+        source = reference_visual_contract(job, mix_config)
+        self.assertEqual(source["sha256"], job["visual_plan"]["approved_file_sha256"])
+        self.assertEqual(
+            source["video_stream_sha256"],
+            job["visual_plan"]["approved_video_stream_sha256"],
+        )
+        self.assertEqual(source["policy"], "bitstream_copy_no_visual_reencode")
+
+        dynamic = json.loads(json.dumps(job))
+        dynamic["merchant_payload"]["nom"] = "Autre commerce"
+        self.assertEqual(visual_strategy(dynamic), "dynamic_rebuild_same_render_job")
+
+        divergent = json.loads(json.dumps(mix_config))
+        divergent["visual_source"]["sha256"] = "0" * 64
+        with self.assertRaisesRegex(RuntimeError, "master visuel v0.3 diverge"):
+            reference_visual_contract(job, divergent)
 
     def test_reference_visual_enforces_stream_not_container_packaging(self) -> None:
         integrity = reference_visual_integrity(

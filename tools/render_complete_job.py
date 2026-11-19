@@ -22,6 +22,7 @@ if str(ROOT / "audio/scripts") not in sys.path:
 
 from engine.render_text_motion import render as render_visual
 from mix_t2_voice_music_v0_5 import (
+    download,
     is_reference_exemplar,
     only_streams,
     probe,
@@ -146,6 +147,105 @@ def validate_capture_files(job: dict[str, Any]) -> None:
             raise RuntimeError(f"Capture {slot} déclare une voix mais ne contient aucun flux audio.")
 
 
+def reference_visual_contract(job: dict[str, Any], mix_config: dict[str, Any]) -> dict[str, Any]:
+    """Cross-check the immutable v0.3 Release asset against the RenderJob.
+
+    The approved reference exemplar must consume the already-approved MP4 instead
+    of attempting to reproduce its H.264 bitstream on whichever hosted runner is
+    assigned. Dynamic merchant jobs still render their own captures and text.
+    """
+    plan = job["visual_plan"]
+    source = mix_config["visual_source"]
+    expected_url = (
+        "https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/"
+        f"{plan['approved_release_tag']}/{Path(plan['intermediate_uri']).name}"
+    )
+    checks = {
+        "release_tag": (source["release_tag"], plan["approved_release_tag"]),
+        "asset_name": (source["asset_name"], Path(plan["intermediate_uri"]).name),
+        "file_sha256": (source["sha256"], plan["approved_file_sha256"]),
+        "video_stream_sha256": (
+            source["video_stream_sha256"],
+            plan["approved_video_stream_sha256"],
+        ),
+        "url": (source["url"], expected_url),
+        "policy": (source["policy"], "bitstream_copy_no_visual_reencode"),
+    }
+    mismatches = [name for name, (actual, expected) in checks.items() if actual != expected]
+    if mismatches:
+        raise RuntimeError(
+            "Le contrat du master visuel v0.3 diverge entre RenderJob et mix: "
+            + ", ".join(mismatches)
+        )
+    return source
+
+
+def visual_strategy(job: dict[str, Any]) -> str:
+    return "approved_release_asset" if is_reference_exemplar(job) else "dynamic_rebuild_same_render_job"
+
+
+def materialize_reference_visual(
+    job: dict[str, Any],
+    mix_config: dict[str, Any],
+    destination: Path,
+) -> dict[str, Any]:
+    """Atomically materialize and byte-verify the approved v0.3 visual master."""
+    source = reference_visual_contract(job, mix_config)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(
+        f".{destination.stem}.approved-download{destination.suffix}"
+    )
+    temporary.unlink(missing_ok=True)
+    try:
+        receipt = download(source["url"], temporary)
+        observed_file_hash = sha256(temporary)
+        if observed_file_hash != source["sha256"]:
+            raise RuntimeError(
+                "Le fichier du master visuel v0.3 ne correspond pas au verrou: "
+                f"{observed_file_hash}"
+            )
+        observed_stream_hash = stream_hash(temporary, "0:v:0")
+        integrity = reference_visual_integrity(
+            observed_file_sha256=observed_file_hash,
+            observed_video_stream_sha256=observed_stream_hash,
+            approved_file_sha256=source["sha256"],
+            approved_video_stream_sha256=source["video_stream_sha256"],
+        )
+        metadata = probe(temporary)
+        videos = only_streams(metadata, "video")
+        if len(videos) != 1 or only_streams(metadata, "audio") or only_streams(metadata, "subtitle"):
+            raise RuntimeError("Le master visuel v0.3 doit contenir une seule vidéo et aucun autre flux.")
+        video = videos[0]
+        expected_output = job["output"]
+        media_ok = (
+            video.get("codec_name") == "h264"
+            and int(video.get("width", 0)) == int(expected_output["width"])
+            and int(video.get("height", 0)) == int(expected_output["height"])
+            and video.get("r_frame_rate") == f"{expected_output['fps']}/1"
+            and int(video.get("nb_frames", 0)) == int(expected_output["frames"])
+        )
+        if not media_ok:
+            raise RuntimeError("Le master visuel v0.3 ne respecte pas H.264, 720×1280, 30 i/s et 900 images.")
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+    proof = {
+        "mode": "approved_release_asset",
+        "release_tag": source["release_tag"],
+        "asset_name": source["asset_name"],
+        "bytes": destination.stat().st_size,
+        "file_sha256": observed_file_hash,
+        "video_stream_sha256": observed_stream_hash,
+        "file_sha256_matches": observed_file_hash == source["sha256"],
+        "video_stream_sha256_matches": integrity["video_stream_sha256_matches"],
+        "downloaded_on_github_actions": os.environ.get("GITHUB_ACTIONS") == "true",
+        "download": receipt,
+    }
+    print("T2_APPROVED_REFERENCE_VISUAL_OK", json.dumps(proof, ensure_ascii=False, sort_keys=True))
+    return proof
+
+
 def execute(job_path: Path, output_dir: Path) -> Path:
     if os.environ.get("GITHUB_ACTIONS") != "true":
         raise RuntimeError("Le rendu complet de production est interdit hors GitHub Actions.")
@@ -164,11 +264,18 @@ def execute(job_path: Path, output_dir: Path) -> Path:
         stage = "MATERIALIZING_CAPTURES"
         validate_capture_files(job)
 
+        config = ROOT / job["audio_plan"]["config"]
+        mix_config = load(config)
+
         stage = "RENDERING_VISUAL"
         verify_visual_pipeline()
         visual = ROOT / job["visual_plan"]["intermediate_uri"]
         visual.parent.mkdir(parents=True, exist_ok=True)
-        render_visual(job_path, output_override=visual)
+        strategy = visual_strategy(job)
+        if strategy == "approved_release_asset":
+            materialize_reference_visual(job, mix_config, visual)
+        else:
+            render_visual(job_path, output_override=visual)
         observed_file_hash = sha256(visual)
         observed_stream_hash = stream_hash(visual, "0:v:0")
         reference_exemplar = is_reference_exemplar(job)
@@ -181,8 +288,6 @@ def execute(job_path: Path, output_dir: Path) -> Path:
             )
 
         stage = "MIXING_AUDIO"
-        config = ROOT / job["audio_plan"]["config"]
-        mix_config = load(config)
         candidate_id = mix_config["music_selection"]["candidate_id"]
         artifact_version = "V0_7_0" if candidate_id == "D" else "V0_6_0"
         subprocess.run(

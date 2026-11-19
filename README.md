@@ -57,7 +57,7 @@ Le parcours conserve quatre scènes et trois états stables par scène : **A Gui
 
 ## Production exclusivement sur GitHub
 
-Le Worker Cloudflare valide, stocke, orchestre et déclenche GitHub ; il ne rend jamais de vidéo. GitHub Actions reçoit le même RenderJob que le formulaire et les captures, reconstruit le visuel, vérifie la source Afrofire par SHA-256, applique voix et ducking, puis exécute le QC indépendant.
+Le Worker Cloudflare valide, stocke, orchestre et déclenche GitHub ; il ne rend jamais de vidéo. GitHub Actions reçoit le même RenderJob que le formulaire et les captures. Un job commerçant dynamique reconstruit son propre visuel. L’exemplaire canonique déjà approuvé matérialise au contraire le master exact de la Release v0.3, puis vérifie le SHA-256 du fichier **et** du flux H.264 avant tout mixage. GitHub vérifie aussi la source Afrofire par SHA-256, applique voix et ducking, puis exécute le QC indépendant.
 
 Le workflow refuse la publication d’audio autonome et refuse d’écraser une Release portant déjà le même tag. Son option de publication de Release est désactivée par défaut.
 

@@ -117,7 +117,7 @@ jobs:
       - name: Run existing and additional tests
         run: python -m unittest discover -s tests -v
 
-      - name: Render visual, voice, music and QC from the same RenderJob
+      - name: Materialize locked visual, mix voice and Afrofire, then run QC
         run: |
           python tools/render_complete_job.py --job "$JOB_FILE" --output-dir "$OUTPUT_DIR"
           cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V0_7_0.json"
@@ -183,6 +183,7 @@ jobs:
 
           - domaine T2 Avant / Après inchangé ;
           - visuel v0.3, 900 images et textes dynamiques inchangés ;
+          - pour cet exemplaire canonique, master v0.3 matérialisé depuis sa Release puis vérifié par SHA-256 du fichier et du flux H.264 ;
           - quatre voix v0.5 à vitesse 1× inchangées ;
           - Afrofire (candidat D) remplace B ; les réglages −3/−10 dB restent inchangés ;
           - source musicale vérifiée avant mixage par SHA-256 ;

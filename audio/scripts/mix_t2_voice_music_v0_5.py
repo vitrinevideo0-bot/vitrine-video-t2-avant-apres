@@ -756,7 +756,11 @@ def main() -> None:
             if not visual.is_file():
                 raise FileNotFoundError(f"Visuel unifié absent : {visual}")
             visual_download = {
-                "mode": "rebuilt_from_same_render_job",
+                "mode": (
+                    "approved_release_asset_materialized_by_orchestrator"
+                    if reference_exemplar
+                    else "rebuilt_from_same_render_job"
+                ),
                 "path": str(visual),
                 "bytes": visual.stat().st_size,
                 "sha256": sha256(visual),
@@ -764,7 +768,10 @@ def main() -> None:
             }
         else:
             visual = temporary / config["visual_source"]["asset_name"]
-            visual_download = download(config["visual_source"]["url"], visual)
+            visual_download = {
+                "mode": "approved_release_asset_downloaded_by_mixer",
+                **download(config["visual_source"]["url"], visual),
+            }
         music_download = download(selection["source_audio_url"], music_source)
         if music_download["sha256"] != selection["source_sha256"]:
             raise RuntimeError(
