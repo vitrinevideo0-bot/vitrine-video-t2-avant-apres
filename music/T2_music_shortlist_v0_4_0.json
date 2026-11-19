@@ -1,0 +1,174 @@
+{
+  "schema_version": "1.0.0",
+  "shortlist_version": "0.4.0",
+  "template": "T2_AVANT_APRES_RESTAURANT_MAQUIS",
+  "status": "audition_only_no_selection",
+  "verified_on": "2026-11-18",
+  "provider": {
+    "name": "Pixabay",
+    "license_name": "Pixabay Content License",
+    "license_url": "https://pixabay.com/service/license-summary/",
+    "attribution_required": false,
+    "credit_retained_in_proof": true,
+    "standalone_redistribution_forbidden": true
+  },
+  "approved_visual_base": {
+    "release_tag": "t2-avant-apres-v0.3.0-text-motion",
+    "asset_name": "T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+    "asset_url": "https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.3.0-text-motion/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+    "sha256": "67c447dae81241fc9ecc34ee9edfbf8c354a6ddf76e7fa465a62cdac59550ada",
+    "duration_seconds": 30.0,
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "frames": 900,
+    "audio_streams": 0
+  },
+  "audition_contract": {
+    "preview_duration_seconds": 30.0,
+    "music_target_lufs": -18.0,
+    "true_peak_db": -1.5,
+    "fade_in_seconds": 0.35,
+    "fade_out_seconds": 0.8,
+    "visual_stream_policy": "bitstream_copy_from_approved_v0_3",
+    "publish_source_audio": false,
+    "publish_derivative_video_only": true,
+    "final_selection": null,
+    "selection_required_before_final_mix": true
+  },
+  "future_mix_contract": {
+    "preserve_captured_voice": true,
+    "captured_voice_speed": 1.0,
+    "source_time_map": "identity",
+    "audio_time_map": "identity",
+    "automatic_subtitles": false,
+    "music_ducking_when_speech_present": true,
+    "ducking_gain_reduction_db": 12.0,
+    "ducking_attack_ms": 120,
+    "ducking_release_ms": 450,
+    "active_in_current_auditions": false
+  },
+  "candidates": [
+    {
+      "id": "A",
+      "title": "Afrobeat Music - Feelgood Groove",
+      "artist": "MusicInMedia",
+      "style_label": "Chaleureux et gourmand",
+      "source_page": "https://pixabay.com/music/afrobeat-afrobeat-music-feelgood-groove-465199/",
+      "source_audio_url": "https://cdn.pixabay.com/download/audio/2026/01/13/audio_093dfb41b2.mp3?filename=musicinmedia-afrobeat-music-feelgood-groove-465199.mp3",
+      "page_display_duration": "2:34",
+      "duration_seconds": 154.0,
+      "published_date": "2026-01-14",
+      "genre": [
+        "Afrobeat",
+        "Instrumental"
+      ],
+      "page_keywords": [
+        "Afrobeat",
+        "Feelgood",
+        "Groovy",
+        "Commercial",
+        "Lounge",
+        "Bar",
+        "Cooking"
+      ],
+      "content_id_status": "registered",
+      "ai_generated_badge": "not_displayed",
+      "preview_start_seconds": 0.0,
+      "preview_duration_seconds": 30.0,
+      "output_file": "T2_MUSIC_A_FEELGOOD_GROOVE_AUDITION_30S.mp4",
+      "fit_for_t2": "Le choix le plus directement relié à la cuisine, au bar et à une ambiance commerciale chaleureuse."
+    },
+    {
+      "id": "B",
+      "title": "Afro Pop Vlog Sunshine",
+      "artist": "alex-morgan",
+      "style_label": "Solaire et léger",
+      "source_page": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/",
+      "source_audio_url": "https://cdn.pixabay.com/download/audio/2026/07/25/audio_f820d61128.mp3?filename=alex-morgan-afro-pop-vlog-sunshine-573643.mp3",
+      "page_display_duration": "1:01",
+      "duration_seconds": 61.0,
+      "published_date": "2026-07-28",
+      "genre": [
+        "Afrobeat"
+      ],
+      "page_keywords": [
+        "Afro Pop",
+        "Vlog",
+        "Advertising",
+        "Happy",
+        "Upbeat",
+        "Smooth",
+        "Summer"
+      ],
+      "content_id_status": "registered",
+      "ai_generated_badge": "displayed",
+      "preview_start_seconds": 0.0,
+      "preview_duration_seconds": 30.0,
+      "output_file": "T2_MUSIC_B_AFRO_POP_SUNSHINE_AUDITION_30S.mp4",
+      "fit_for_t2": "Une option claire et accessible, pensée pour les formats verticaux, les vlogs et les publicités courtes."
+    },
+    {
+      "id": "C",
+      "title": "Amapiano Beats Log Drum Groove",
+      "artist": "alex-morgan",
+      "style_label": "Moderne et profond",
+      "source_page": "https://pixabay.com/music/afrobeat-amapiano-beats-log-drum-groove-573944/",
+      "source_audio_url": "https://cdn.pixabay.com/download/audio/2026/07/25/audio_3620dde8e0.mp3?filename=alex-morgan-amapiano-beats-log-drum-groove-573944.mp3",
+      "page_display_duration": "2:27",
+      "duration_seconds": 147.0,
+      "published_date": "2026-07-28",
+      "genre": [
+        "Afrobeat",
+        "House",
+        "Upbeat",
+        "Electronic"
+      ],
+      "page_keywords": [
+        "Amapiano",
+        "Log Drum",
+        "Groovy",
+        "Smooth",
+        "Uplifting",
+        "Vlog",
+        "Background Music"
+      ],
+      "content_id_status": "registered",
+      "ai_generated_badge": "displayed",
+      "preview_start_seconds": 0.0,
+      "preview_duration_seconds": 30.0,
+      "output_file": "T2_MUSIC_C_AMAPIANO_LOG_DRUM_AUDITION_30S.mp4",
+      "fit_for_t2": "Une couleur amapiano actuelle, avec davantage de profondeur rythmique pour donner un caractère premium au plat."
+    },
+    {
+      "id": "D",
+      "title": "Afrofire",
+      "artist": "DPStudioMusic",
+      "style_label": "Énergique et premium",
+      "source_page": "https://pixabay.com/music/afrobeat-afrofire-300338/",
+      "source_audio_url": "https://cdn.pixabay.com/download/audio/2025/02/12/audio_bf52f1c5ad.mp3?filename=dpstudiomusic-afrofire-300338.mp3",
+      "page_display_duration": "4:00",
+      "duration_seconds": 240.0,
+      "published_date": "2025-02-13",
+      "genre": [
+        "Afrobeat"
+      ],
+      "page_keywords": [
+        "Advertising",
+        "Commercial",
+        "Danceable",
+        "Happy",
+        "Instrumental",
+        "Jingle",
+        "Naija",
+        "Nigerian"
+      ],
+      "content_id_status": "not_displayed_on_source_page",
+      "ai_generated_badge": "displayed",
+      "preview_start_seconds": 0.0,
+      "preview_duration_seconds": 30.0,
+      "output_file": "T2_MUSIC_D_AFROFIRE_AUDITION_30S.mp4",
+      "fit_for_t2": "La proposition la plus percutante, portée par les percussions, les cuivres et une énergie publicitaire immédiate."
+    }
+  ]
+}

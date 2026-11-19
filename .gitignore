@@ -8,3 +8,5 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
+output/music-shortlist-*/
+proofs/music_shortlist_validation*.json

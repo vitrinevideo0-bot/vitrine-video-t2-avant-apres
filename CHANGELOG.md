@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 — quatre auditions musicales Afrobeat
+
+- quatre pages Pixabay et leur licence vérifiées dans un manifeste public ;
+- quatre MP4 d’audition de 30 secondes sur le montage v0.3 validé ;
+- flux vidéo v0.3 copié bit à bit, sans changer textes, police, mouvements ni vitesse ;
+- aucun MP3 source redistribué de façon autonome ;
+- badges Content ID consignés avant le choix ;
+- aucune musique finale sélectionnée automatiquement ;
+- futur ducking réservé pour garder les voix intelligibles à vitesse 1× ;
+- construction, validation et publication exclusivement sur GitHub Actions.
+
 ## 0.3.0 — textes dynamiques liés aux scènes
 
 - six réponses commerçant liées à quatre blocs graphiques S1 à S4 ;
