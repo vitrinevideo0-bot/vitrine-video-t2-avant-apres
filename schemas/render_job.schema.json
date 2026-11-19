@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vitrine.video/schemas/T2/render_job.schema.json",
-  "title": "T2 Avant / Après — RenderJob silencieux",
+  "title": "T2 Avant / Après — RenderJob",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,6 +15,9 @@
     "merchant_payload",
     "captures",
     "capture_manifest",
+    "runtime_contract",
+    "text_motion_config",
+    "audio_contract",
     "audio_mode",
     "render_stage",
     "render_business_text",
@@ -27,7 +30,9 @@
     "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 120},
     "template_id": {"const": "restaurants_maquis_T2_avant_apres_v0_1_0"},
     "template_version": {"const": "0.1.0"},
-    "execution_profile": {"const": "T2_GITHUB_ACTIONS_SILENT"},
+    "execution_profile": {
+      "enum": ["T2_GITHUB_ACTIONS_SILENT", "T2_GITHUB_ACTIONS_TEXT_MOTION"]
+    },
     "network_policy": {"const": "declared_sources_only"},
     "merchant_payload": {"$ref": "#/$defs/merchantPayload"},
     "captures": {
@@ -42,12 +47,51 @@
       }
     },
     "capture_manifest": {"const": "rushes/manifest.json"},
+    "runtime_contract": {"const": "config/T2_runtime_contract_v0_3_0.json"},
+    "text_motion_config": {
+      "type": ["string", "null"]
+    },
+    "audio_contract": {"$ref": "#/$defs/audioContract"},
     "audio_mode": {"const": "silent_no_audio_stream"},
-    "render_stage": {"const": "silent_transition_validation"},
-    "render_business_text": {"const": false},
+    "render_stage": {
+      "enum": ["silent_transition_validation", "dynamic_text_validation"]
+    },
+    "render_business_text": {"type": "boolean"},
     "render_audio": {"const": false},
     "output": {"$ref": "#/$defs/output"}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"render_stage": {"const": "silent_transition_validation"}}},
+      "then": {
+        "properties": {
+          "execution_profile": {"const": "T2_GITHUB_ACTIONS_SILENT"},
+          "render_business_text": {"const": false},
+          "text_motion_config": {"const": null},
+          "output": {
+            "properties": {
+              "uri": {"const": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"render_stage": {"const": "dynamic_text_validation"}}},
+      "then": {
+        "properties": {
+          "execution_profile": {"const": "T2_GITHUB_ACTIONS_TEXT_MOTION"},
+          "render_business_text": {"const": true},
+          "text_motion_config": {"const": "config/T2_text_motion_v0_3_0.json"},
+          "output": {
+            "properties": {
+              "uri": {"const": "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"}
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "merchantPayload": {
       "type": "object",
@@ -98,6 +142,32 @@
         {"properties": {"duration_ms": {"const": 9000}}}
       ]
     },
+    "audioContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capture_voice_mode",
+        "preserve_captured_voice",
+        "source_speed",
+        "source_time_map",
+        "audio_time_map",
+        "automatic_subtitles",
+        "current_output_audio",
+        "music_status",
+        "future_mix"
+      ],
+      "properties": {
+        "capture_voice_mode": {"const": "optional_per_scene"},
+        "preserve_captured_voice": {"const": true},
+        "source_speed": {"const": 1.0},
+        "source_time_map": {"const": "identity"},
+        "audio_time_map": {"const": "identity"},
+        "automatic_subtitles": {"const": false},
+        "current_output_audio": {"const": false},
+        "music_status": {"const": "deferred_until_visual_and_music_approval"},
+        "future_mix": {"const": "captured_voice_plus_selected_T2_music_with_ducking"}
+      }
+    },
     "output": {
       "type": "object",
       "additionalProperties": false,
@@ -114,7 +184,12 @@
         "overwrite"
       ],
       "properties": {
-        "uri": {"const": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4"},
+        "uri": {
+          "enum": [
+            "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
+            "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"
+          ]
+        },
         "container": {"const": "mp4"},
         "video_mime": {"const": "video/avc"},
         "width": {"const": 720},

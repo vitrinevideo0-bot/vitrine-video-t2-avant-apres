@@ -1,0 +1,91 @@
+{
+  "schema_version": "0.3.0",
+  "contract_id": "restaurants_maquis_T2_avant_apres_runtime_v0_3_0",
+  "status": "dynamic_text_validation",
+  "reference": {
+    "repository": "https://github.com/j9028379-hue/vitrine-video-t1-pilot",
+    "commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
+    "mode": "read_only_architecture_reference",
+    "paths": [
+      "config/T1_special_menu_reference_v3_1.json#/implementation_handoff",
+      "schemas/T1_render_job.schema.json",
+      "engine/special_menu_style.py",
+      "tests/test_t1_capture_flow_12_screens.py"
+    ]
+  },
+  "runtime_order": [
+    {
+      "step": 1,
+      "id": "MERCHANT_INPUT",
+      "consumes": "six merchant answers",
+      "produces": "merchant_payload",
+      "next": "T2_CAPTURE_S1_A_GUIDE"
+    },
+    {
+      "step": 2,
+      "id": "GUIDED_CAPTURE",
+      "consumes": "camera + optional microphone speech",
+      "produces": ["captures.S1", "captures.S2", "captures.S3", "captures.S4"],
+      "stable_screens": 12,
+      "next": "T2_RENDER_JOB"
+    },
+    {
+      "step": 3,
+      "id": "DETERMINISTIC_VISUAL_RENDER",
+      "consumes": [
+        "merchant_payload",
+        "captures.S1",
+        "captures.S2",
+        "captures.S3",
+        "captures.S4",
+        "config/T2_text_motion_v0_3_0.json"
+      ],
+      "produces": "output.uri",
+      "current_preview_audio": false,
+      "next": "VISUAL_TEXT_APPROVAL"
+    },
+    {
+      "step": 4,
+      "id": "VOICE_AND_MUSIC_ASSEMBLY_AFTER_APPROVAL",
+      "consumes": ["accepted visual master", "captured scene audio when present", "selected T2 music"],
+      "produces": "complete mixed master",
+      "blocked_until": "explicit visual and music approval"
+    }
+  ],
+  "merchant_bindings": [
+    {"source": "merchant_payload.nom", "targets": ["T2_G01_IDENTITY", "T2_G03_REVEAL", "T2_G04_FINAL"]},
+    {"source": "merchant_payload.produit", "targets": ["T2_G01_IDENTITY", "T2_G02_OFFER", "T2_G04_FINAL"]},
+    {"source": "merchant_payload.prix", "targets": ["T2_G02_OFFER", "T2_G04_FINAL"]},
+    {"source": "merchant_payload.whatsapp", "targets": ["T2_G04_FINAL"]},
+    {"source": "merchant_payload.quartier", "targets": ["T2_G04_FINAL"]},
+    {"source": "merchant_payload.accroche", "targets": ["T2_G03_REVEAL"]}
+  ],
+  "capture_bindings": [
+    {"source": "captures.S1.uri", "scene": "S1", "duration_ms": 6000, "source_time_map": "identity", "audio_time_map": "identity", "timeline_start_ms": 0},
+    {"source": "captures.S2.uri", "scene": "S2", "duration_ms": 8000, "source_time_map": "identity", "audio_time_map": "identity", "timeline_start_ms": 6000},
+    {"source": "captures.S3.uri", "scene": "S3", "duration_ms": 7000, "source_time_map": "identity", "audio_time_map": "identity", "timeline_start_ms": 14000},
+    {"source": "captures.S4.uri", "scene": "S4", "duration_ms": 9000, "source_time_map": "identity", "audio_time_map": "identity", "timeline_start_ms": 21000}
+  ],
+  "audio_handoff": {
+    "capture_voice_optional_each_scene": true,
+    "preserve_captured_voice": true,
+    "source_speed": 1.0,
+    "scene_audio_time_map": "identity",
+    "scene_boundaries_ms": [0, 6000, 14000, 21000, 30000],
+    "automatic_subtitles": false,
+    "current_text_preview": "no_audio_stream",
+    "future_voice_track": "concatenate every accepted capture audio at exact scene boundaries when has_audio=true",
+    "future_music": "T2-specific selected track only after Patron approval",
+    "future_mix": "duck selected music under captured speech; never retime or cut words"
+  },
+  "acceptance_gates": [
+    "six merchant fields have explicit graphic targets",
+    "four accepted capture URIs are required before render",
+    "capture durations are exactly 6000, 8000, 7000 and 9000 ms",
+    "merchant payload and captures are consumed by the same RenderJob",
+    "text stays above transitions and is rendered from bundled fonts",
+    "captured voice timeline remains identity 1.0x",
+    "no automatic subtitles",
+    "current text preview contains no audio stream"
+  ]
+}

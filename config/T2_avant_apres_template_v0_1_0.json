@@ -162,12 +162,17 @@
     "weight": 900,
     "horizontal_scale": 0.66,
     "license": "SIL Open Font License 1.1",
-    "ui_family": "system sans-serif"
+    "ui_family": "system sans-serif",
+    "signature_family": "Pinyon Script",
+    "signature_file": "assets/fonts/PinyonScript-Regular.ttf",
+    "signature_license": "SIL Open Font License 1.1"
   },
   "audio": {
     "capture_voice_optional": true,
     "preserve_recorded_voice": true,
     "automatic_subtitles": false,
     "current_demo_profile": "silent_no_audio_stream"
-  }
+  },
+  "dynamic_text_contract": "config/T2_text_motion_v0_3_0.json",
+  "runtime_contract": "config/T2_runtime_contract_v0_3_0.json"
 }

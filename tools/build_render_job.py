@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Transforme les réponses du formulaire T2 en RenderJob reproductible."""
+"""Transforme formulaire + captures T2 en RenderJob reproductible."""
 from __future__ import annotations
 
 import argparse
@@ -15,6 +15,25 @@ ROOT = Path(__file__).resolve().parents[1]
 QUESTIONS = ROOT / "form/questions_T2.json"
 MANIFEST = ROOT / "rushes/manifest.json"
 SCHEMA = ROOT / "schemas/render_job.schema.json"
+
+STAGES: dict[str, dict[str, Any]] = {
+    "silent_transition_validation": {
+        "job_prefix": "t2-silent",
+        "release_version": "v0.2.0-silent",
+        "execution_profile": "T2_GITHUB_ACTIONS_SILENT",
+        "render_business_text": False,
+        "text_motion_config": None,
+        "output_uri": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
+    },
+    "dynamic_text_validation": {
+        "job_prefix": "t2-text",
+        "release_version": "v0.3.0-text-motion",
+        "execution_profile": "T2_GITHUB_ACTIONS_TEXT_MOTION",
+        "render_business_text": True,
+        "text_motion_config": "config/T2_text_motion_v0_3_0.json",
+        "output_uri": "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+    },
+}
 
 
 def _read(path: Path) -> dict[str, Any]:
@@ -53,7 +72,13 @@ def normalize_answers(raw: dict[str, Any], questions: dict[str, Any]) -> dict[st
     return cleaned
 
 
-def build_job(raw_answers: dict[str, Any]) -> dict[str, Any]:
+def build_job(
+    raw_answers: dict[str, Any],
+    stage: str = "silent_transition_validation",
+) -> dict[str, Any]:
+    if stage not in STAGES:
+        raise ValueError(f"Étape inconnue : {stage}")
+    stage_spec = STAGES[stage]
     questions = _read(QUESTIONS)
     manifest = _read(MANIFEST)
     answers = normalize_answers(raw_answers, questions)
@@ -77,7 +102,7 @@ def build_job(raw_answers: dict[str, Any]) -> dict[str, Any]:
         }
 
     fingerprint_input = json.dumps(
-        {"merchant_payload": answers, "captures": captures},
+        {"stage": stage, "merchant_payload": answers, "captures": captures},
         ensure_ascii=False,
         sort_keys=True,
         separators=(",", ":"),
@@ -86,21 +111,34 @@ def build_job(raw_answers: dict[str, Any]) -> dict[str, Any]:
 
     job: dict[str, Any] = {
         "schema_version": "1.0.0",
-        "job_id": f"t2-silent-{token}",
-        "idempotency_key": f"t2-avant-apres-v0.2.0-silent-{token}",
+        "job_id": f"{stage_spec['job_prefix']}-{token}",
+        "idempotency_key": f"t2-avant-apres-{stage_spec['release_version']}-{token}",
         "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
         "template_version": "0.1.0",
-        "execution_profile": "T2_GITHUB_ACTIONS_SILENT",
+        "execution_profile": stage_spec["execution_profile"],
         "network_policy": "declared_sources_only",
         "merchant_payload": answers,
         "captures": captures,
         "capture_manifest": "rushes/manifest.json",
+        "runtime_contract": "config/T2_runtime_contract_v0_3_0.json",
+        "text_motion_config": stage_spec["text_motion_config"],
+        "audio_contract": {
+            "capture_voice_mode": "optional_per_scene",
+            "preserve_captured_voice": True,
+            "source_speed": 1.0,
+            "source_time_map": "identity",
+            "audio_time_map": "identity",
+            "automatic_subtitles": False,
+            "current_output_audio": False,
+            "music_status": "deferred_until_visual_and_music_approval",
+            "future_mix": "captured_voice_plus_selected_T2_music_with_ducking",
+        },
         "audio_mode": "silent_no_audio_stream",
-        "render_stage": "silent_transition_validation",
-        "render_business_text": False,
+        "render_stage": stage,
+        "render_business_text": stage_spec["render_business_text"],
         "render_audio": False,
         "output": {
-            "uri": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
+            "uri": stage_spec["output_uri"],
             "container": "mp4",
             "video_mime": "video/avc",
             "width": 720,
@@ -120,11 +158,16 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--answers", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--stage",
+        choices=sorted(STAGES),
+        default="silent_transition_validation",
+    )
     args = parser.parse_args()
 
     answers_path = _resolve(args.answers)
     output_path = _resolve(args.output)
-    job = build_job(_read(answers_path))
+    job = build_job(_read(answers_path), stage=args.stage)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
         json.dumps(job, ensure_ascii=False, indent=2) + "\n",

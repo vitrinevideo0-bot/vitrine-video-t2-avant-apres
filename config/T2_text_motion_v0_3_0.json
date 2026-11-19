@@ -1,0 +1,87 @@
+{
+  "schema_version": "0.3.0",
+  "id": "T2_TEXT_MOTION_V0_3_0",
+  "canvas": {"width": 720, "height": 1280, "fps": 30, "frames": 900},
+  "visual_reference": {
+    "description": "Calligraphic restaurant title shown in the Patron's supplied Taste of Italy capture",
+    "redistributed": false,
+    "selected_open_font": "Pinyon Script",
+    "selection_reason": "high-contrast connected calligraphy with long restaurant-title swashes"
+  },
+  "fonts": {
+    "signature": {
+      "family": "Pinyon Script",
+      "file": "assets/fonts/PinyonScript-Regular.ttf",
+      "sha256": "4aab130a6ed27f8b8117738c84a5602edf9300cdcc0651a9a65bf96f451ac29a",
+      "license": "SIL OFL 1.1",
+      "role": "restaurant name and elegant signature"
+    },
+    "display": {
+      "family": "Playfair Display",
+      "file": "assets/fonts/PlayfairDisplay[wght].ttf",
+      "sha256": "c40f2293766a503bc70cce9e512ef844a4ccb7cbcde792fe2ea31d191917d8d6",
+      "license": "SIL OFL 1.1",
+      "role": "dish and hook"
+    },
+    "utility": {
+      "family": "DejaVu Sans",
+      "file": "assets/fonts/DejaVuSans.ttf",
+      "sha256": "57f73e11f51999432bf7ab22ce55b6f945d5eca1bf824404cfa9ec2e3718c84e",
+      "license": "Bitstream Vera / DejaVu",
+      "role": "location and support text"
+    },
+    "utility_bold": {
+      "family": "DejaVu Sans Bold",
+      "file": "assets/fonts/DejaVuSans-Bold.ttf",
+      "sha256": "a4c5bc453ca281d90ea079e596da7ae0dfeb5777497c29ec254e76d97ff6f890",
+      "license": "Bitstream Vera / DejaVu",
+      "role": "price and WhatsApp"
+    }
+  },
+  "text_layer_affected_by_transitions": false,
+  "graphics": [
+    {
+      "id": "T2_G01_IDENTITY",
+      "scene": "S1",
+      "start_f": 18,
+      "reveal_end_f": 48,
+      "end_f_exclusive": 156,
+      "fields": ["nom", "produit"],
+      "motion": "signature_mask_plus_soft_rise",
+      "safe_region": {"x_min": 0.08, "x_max": 0.92, "y_min": 0.12, "y_max": 0.45}
+    },
+    {
+      "id": "T2_G02_OFFER",
+      "scene": "S2",
+      "start_f": 210,
+      "reveal_end_f": 234,
+      "end_f_exclusive": 378,
+      "fields": ["produit", "prix"],
+      "motion": "split_reveal_with_price_settle",
+      "safe_region": {"x_min": 0.08, "x_max": 0.92, "y_min": 0.12, "y_max": 0.88}
+    },
+    {
+      "id": "T2_G03_REVEAL",
+      "scene": "S3",
+      "start_f": 450,
+      "reveal_end_f": 480,
+      "end_f_exclusive": 606,
+      "fields": ["accroche", "nom"],
+      "optional_field": "accroche",
+      "empty_behavior": "show nom only; never invent a hook",
+      "motion": "center_bloom_and_signature",
+      "safe_region": {"x_min": 0.08, "x_max": 0.92, "y_min": 0.14, "y_max": 0.44}
+    },
+    {
+      "id": "T2_G04_FINAL",
+      "scene": "S4",
+      "start_f": 660,
+      "reveal_end_f": 708,
+      "end_f_exclusive": 900,
+      "fields": ["nom", "produit", "prix", "whatsapp", "quartier"],
+      "motion": "sequential_identity_contact_lockup",
+      "safe_region": {"x_min": 0.06, "x_max": 0.94, "y_min": 0.08, "y_max": 0.91},
+      "hold_through_frame": 899
+    }
+  ]
+}

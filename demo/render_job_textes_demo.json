@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0.0",
+  "job_id": "t2-text-8a609f099028f495",
+  "idempotency_key": "t2-avant-apres-v0.3.0-text-motion-8a609f099028f495",
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "template_version": "0.1.0",
+  "execution_profile": "T2_GITHUB_ACTIONS_TEXT_MOTION",
+  "network_policy": "declared_sources_only",
+  "merchant_payload": {
+    "nom": "Le Jardin de Kandi",
+    "produit": "Poulet braisé à l’alloco",
+    "prix": "2 500",
+    "whatsapp": "01 00 00 00 00",
+    "quartier": "Gansosso — Kandi",
+    "accroche": "De la braise à l’assiette"
+  },
+  "captures": {
+    "S1": {
+      "uri": "rushes/cache/7652493.mp4",
+      "duration_ms": 6000,
+      "source_in_ms": 500,
+      "has_audio": false,
+      "sha256": "9f9703887befc2c2000ed67a45a0189debaf4111c2d7903bc84a62a4ec4025f8"
+    },
+    "S2": {
+      "uri": "rushes/cache/5794186.mp4",
+      "duration_ms": 8000,
+      "source_in_ms": 3000,
+      "has_audio": false,
+      "sha256": "487c790cfec035467c4d2dc5dceffb23c1074e641c97d6620ae3d490901769c7"
+    },
+    "S3": {
+      "uri": "rushes/cache/8094293.mp4",
+      "duration_ms": 7000,
+      "source_in_ms": 4000,
+      "has_audio": false,
+      "sha256": "bd96b04f7c5317a7a73b4eb8a57db6713e0d68230a57c263aafc99324d207425"
+    },
+    "S4": {
+      "uri": "rushes/cache/8448099.mp4",
+      "duration_ms": 9000,
+      "source_in_ms": 200,
+      "has_audio": false,
+      "sha256": "e1f54df1d88d82aabfb15c830130084c02d22ab737ba07719439dbcbd0e4801d"
+    }
+  },
+  "capture_manifest": "rushes/manifest.json",
+  "runtime_contract": "config/T2_runtime_contract_v0_3_0.json",
+  "text_motion_config": "config/T2_text_motion_v0_3_0.json",
+  "audio_contract": {
+    "capture_voice_mode": "optional_per_scene",
+    "preserve_captured_voice": true,
+    "source_speed": 1.0,
+    "source_time_map": "identity",
+    "audio_time_map": "identity",
+    "automatic_subtitles": false,
+    "current_output_audio": false,
+    "music_status": "deferred_until_visual_and_music_approval",
+    "future_mix": "captured_voice_plus_selected_T2_music_with_ducking"
+  },
+  "audio_mode": "silent_no_audio_stream",
+  "render_stage": "dynamic_text_validation",
+  "render_business_text": true,
+  "render_audio": false,
+  "output": {
+    "uri": "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+    "container": "mp4",
+    "video_mime": "video/avc",
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "frames": 900,
+    "duration_ms": 30000,
+    "target_video_bitrate_bps": 5000000,
+    "overwrite": true
+  }
+}
