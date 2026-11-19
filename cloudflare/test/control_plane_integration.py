@@ -121,8 +121,8 @@ def main() -> None:
     assert job["provenance"]["render_plane"] == "github_actions"
     assert job["audio_plan"]["voice"]["mode"] == "captured_or_registered_fallback"
     assert job["audio_plan"]["voice"]["fallback_policy"] == "registered_clips_when_capture_has_no_usable_speech"
-    assert job["audio_plan"]["music"]["selected_candidate_id"] == "B"
-    assert job["runtime_contract"] == "config/T2_runtime_contract_v0_6_0.json"
+    assert job["audio_plan"]["music"]["selected_candidate_id"] == "D"
+    assert job["runtime_contract"] == "config/T2_runtime_contract_v0_7_0.json"
     for slot in ("S1", "S2", "S3", "S4"):
         assert call(args.base, f"/v1/jobs/{job_id}/captures/{slot}", headers=auth)[0] == media
 
@@ -134,7 +134,23 @@ def main() -> None:
     result["job_id"] = job_id
     result["idempotency_key"] = nonce
     result["control_plane"] = "cloudflare_worker"
+    result["inputs"]["capture_sha256"] = {slot: media_sha for slot in ("S1", "S2", "S3", "S4")}
+    result["inputs"]["music_source_sha256"] = job["audio_plan"]["music"]["source_sha256"]
+    result["output"]["uri"] = job["output"]["uri"]
     Draft202012Validator(json.loads((ROOT / "schemas/render_result.schema.json").read_text())).validate(result)
+
+    wrong_music = json.loads(json.dumps(result))
+    wrong_music["inputs"]["music_source_sha256"] = "0" * 64
+    mismatch = as_json(call(
+        args.base,
+        f"/v1/jobs/{job_id}/events",
+        method="POST",
+        body=json.dumps({"status": "COMPLETED", "result": wrong_music}).encode(),
+        headers={**auth, "content-type": "application/json"},
+        expected=422,
+    )[0])
+    assert mismatch["code"] == "T2_INVALID_CALLBACK_PAYLOAD"
+
     completed = as_json(call(
         args.base,
         f"/v1/jobs/{job_id}/events",

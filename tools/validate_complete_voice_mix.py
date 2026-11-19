@@ -17,7 +17,10 @@ import numpy as np
 from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = ROOT / "schemas/T2_complete_voice_mix.schema.json"
+SCHEMAS = {
+    "restaurants_maquis_T2_complete_voice_mix_v0_5_0": ROOT / "schemas/T2_complete_voice_mix.schema.json",
+    "restaurants_maquis_T2_complete_voice_mix_v0_7_0": ROOT / "schemas/T2_complete_voice_mix_v0_7_0.schema.json",
+}
 RENDER_JOB_SCHEMA = ROOT / "schemas/render_job.schema.json"
 SR = 48_000
 
@@ -135,7 +138,11 @@ def main() -> None:
     output_dir = args.output_dir.resolve()
     proof_path = args.proof.resolve()
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    try:
+        schema_path = SCHEMAS[config["id"]]
+    except KeyError as error:
+        raise ValueError(f"Contrat audio T2 inconnu : {config.get('id')}") from error
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(config)
     publication = config["publication"]
     gates = config["quality_gates"]
@@ -180,12 +187,15 @@ def main() -> None:
         raise ValueError("Le rapport de mixage GitHub n’est pas PASS.")
     if not report.get("checks") or not all(report["checks"].values()):
         raise ValueError("Au moins un contrôle du mixeur n’est pas validé.")
-    if report["music"]["candidate_id"] != "B":
-        raise ValueError("Le choix utilisateur B n’a pas été respecté.")
+    expected_music = config["music_selection"]
+    if report["music"]["candidate_id"] != expected_music["candidate_id"]:
+        raise ValueError("Le choix musical explicite du contrat n’a pas été respecté.")
+    if report["music"]["source_sha256"] != expected_music["source_sha256"]:
+        raise ValueError("La source musicale du rapport ne correspond pas au verrou du contrat.")
     if report["music"]["template_default_selection"] is not False:
-        raise ValueError("Le morceau B a été défini à tort comme défaut du gabarit.")
-    if report["music"]["content_id_status"] != "registered":
-        raise ValueError("L’avertissement Content ID doit rester visible.")
+        raise ValueError("La piste explicite a été définie à tort comme défaut implicite du gabarit.")
+    if report["music"]["content_id_status"] != expected_music["content_id_status"]:
+        raise ValueError("Le statut Content ID observé diverge du contrat approuvé.")
     if report["publication"]["source_music_published"] or report["publication"]["voice_stem_published"]:
         raise ValueError("Une source audio autonome est marquée publiée.")
     if job is not None and job_path is not None:
@@ -290,9 +300,9 @@ def main() -> None:
         "automation": automation,
         "one_mp4_only": True,
         "standalone_audio_published": False,
-        "music_candidate": "B",
+        "music_candidate": expected_music["candidate_id"],
         "music_template_default": False,
-        "content_id_status": "registered",
+        "content_id_status": expected_music["content_id_status"],
         "mp4": {
             "file": mp4.name,
             "sha256": digest(mp4),

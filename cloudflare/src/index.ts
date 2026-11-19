@@ -279,10 +279,20 @@ function validateCallbackPayload(state: StoredJob, status: string, body: Record<
     const result = record(body.result);
     const output = record(result?.output);
     const quality = record(result?.quality);
+    const inputs = record(result?.inputs);
+    const job = record(state.job);
+    const audioPlan = record(job?.audio_plan);
+    const expectedMusic = record(audioPlan?.music);
+    const expectedOutput = record(job?.output);
     if (!result || result.schema_version !== "1.0.0" || result.status !== "COMPLETED") return "RenderResult absent ou invalide.";
     if (result.job_id !== state.job_id || result.idempotency_key !== state.idempotency_key) return "RenderResult rattaché à un autre job.";
     if (!output || typeof output.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(output.sha256)) return "Empreinte de sortie RenderResult invalide.";
     if (!quality || quality.status !== "PASS") return "Le QC RenderResult n'est pas PASS.";
+    if (!inputs || !expectedMusic || inputs.music_source_sha256 !== expectedMusic.source_sha256) return "La source musicale du résultat diverge du RenderJob.";
+    if (!expectedOutput || output.uri !== expectedOutput.uri) return "La sortie du résultat diverge du RenderJob.";
+    if (result.template_id !== job?.template_id || result.template_version !== job?.template_version || result.profile_used !== job?.execution_profile) return "Le profil du résultat diverge du RenderJob.";
+    const captureSha = record(inputs.capture_sha256);
+    if (!captureSha || SLOTS.some((slot) => captureSha[slot] !== state.captures[slot]?.sha256)) return "Les captures du résultat divergent du RenderJob.";
   }
   if (status === "FAILED") {
     const error = record(body.error);

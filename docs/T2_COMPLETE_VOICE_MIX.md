@@ -1,6 +1,8 @@
-# T2 — exemplaire complet voix française + musique B
+# T2 — exemplaire historique complet voix française + musique B
 
-## Portée
+> **Archive v0.5.** La piste B est désormais rejetée pour la production courante en raison de son badge Content ID Registered. La sélection approuvée est D — Afrofire ; voir [T2_AFROFIRE_INTEGRATION_V0_7.md](T2_AFROFIRE_INTEGRATION_V0_7.md). La Release historique n’est pas modifiée.
+
+## Portée historique
 
 La v0.5 produit **un seul MP4 complet de 30 secondes** pour l’écoute de l’équilibre voix/musique. Elle ne modifie ni les 900 images, ni les textes dynamiques, ni la police, ni les mouvements du montage v0.3 validé.
 

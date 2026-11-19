@@ -182,6 +182,9 @@ def execute(job_path: Path, output_dir: Path) -> Path:
 
         stage = "MIXING_AUDIO"
         config = ROOT / job["audio_plan"]["config"]
+        mix_config = load(config)
+        candidate_id = mix_config["music_selection"]["candidate_id"]
+        artifact_version = "V0_7_0" if candidate_id == "D" else "V0_6_0"
         subprocess.run(
             [
                 sys.executable,
@@ -200,7 +203,7 @@ def execute(job_path: Path, output_dir: Path) -> Path:
         )
 
         stage = "VALIDATING_OUTPUT"
-        proof_path = output_dir / "T2_GITHUB_SERVER_VALIDATION_V0_6_0.json"
+        proof_path = output_dir / f"T2_GITHUB_SERVER_VALIDATION_{artifact_version}.json"
         subprocess.run(
             [
                 sys.executable,
@@ -220,7 +223,6 @@ def execute(job_path: Path, output_dir: Path) -> Path:
             check=True,
         )
         proof = load(proof_path)
-        mix_config = load(config)
         report = load(output_dir / mix_config["publication"]["validation_report"])
         final = proof["mp4"]
         result = {
@@ -273,7 +275,7 @@ def execute(job_path: Path, output_dir: Path) -> Path:
                 "no_standalone_audio": proof["standalone_audio_published"] is False,
             },
             "artifacts": {
-                "mix_report": "T2_VOICE_MUSIC_LEVELS_VALIDATION_V0_5_0.json",
+                "mix_report": mix_config["publication"]["validation_report"],
                 "server_validation": proof_path.name,
                 "render_job": job_path.name,
             },
@@ -281,12 +283,14 @@ def execute(job_path: Path, output_dir: Path) -> Path:
                 "elapsed_ms": int(round((time.monotonic() - started) * 1000)),
                 "github_run_id": os.environ.get("GITHUB_RUN_ID"),
             },
-            "warnings": [
-                "La musique B reste limitée à cet exemplaire et sa page indique Content ID Registered."
-            ],
+            "warnings": (
+                ["La page source Afrofire ne montrait aucun badge Content ID lors de la vérification datée; cela ne constitue pas une garantie juridique absolue."]
+                if candidate_id == "D"
+                else ["La musique B historique reste limitée à son exemplaire et sa page indique Content ID Registered."]
+            ),
         }
         validate(RESULT_SCHEMA, result)
-        result_path = output_dir / "T2_RENDER_RESULT_V0_6_0.json"
+        result_path = output_dir / f"T2_RENDER_RESULT_{artifact_version}.json"
         result_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print("T2_UNIFIED_RENDER_OK", result["job_id"], result["output"]["sha256"])
         return result_path

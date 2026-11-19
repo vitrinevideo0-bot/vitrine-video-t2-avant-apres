@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0 — préparation Afrofire approuvée
+
+- remplacement de la sélection courante B rejetée par le candidat existant D — **Afrofire · DPStudioMusic** ;
+- preuve stricte de page, licence Pixabay, taille `7 680 768` octets et SHA-256 `24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61` ;
+- observation datée : badge AI generated visible et aucun badge Content ID visible le 2026-11-19, sans en faire une garantie juridique absolue ;
+- ajout de `audio_profile: afrobeat_restaurants_maquis` au JSON canonique, sans changer `template_id: T2` ni la version de gabarit `0.1.0` ;
+- nouveaux contrats additifs de sélection, mix et runtime v0.7 ; contrats historiques v0.5/v0.6 conservés octet pour octet ;
+- RenderJob, schéma strict, fixture, Cloudflare et workflow courant corrélés au candidat D ;
+- quatre voix `1×`, scènes 6/8/7/9 s, douze écrans, visuel v0.3, 900 images et ducking −3/−10 dB préservés ;
+- refus de publier une source audio autonome et refus d’écraser une Release existante ;
+- aucun nouveau rendu vidéo ni aucune Release créé par cette intégration de code.
+
 ## 0.6.0 — runtime unifié T2 et plan de contrôle Cloudflare
 
 - application mobile exécutable alimentée par les six questions et le contrat canonique des douze écrans ;

@@ -91,7 +91,8 @@
     "runtime_contract": {
       "enum": [
         "config/T2_runtime_contract_v0_3_0.json",
-        "config/T2_runtime_contract_v0_6_0.json"
+        "config/T2_runtime_contract_v0_6_0.json",
+        "config/T2_runtime_contract_v0_7_0.json"
       ]
     },
     "text_motion_config": {
@@ -299,7 +300,10 @@
                 "const": true
               },
               "music_status": {
-                "const": "selected_for_single_validation_exemplar"
+                "enum": [
+                  "selected_for_single_validation_exemplar",
+                  "selected_for_current_production"
+                ]
               },
               "future_mix": {
                 "const": "active_voice_plus_selected_T2_music_with_ducking"
@@ -321,12 +325,190 @@
             ],
             "properties": {
               "uri": {
-                "const": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+                "enum": [
+                  "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+                  "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+                ]
               }
             }
           },
           "runtime_contract": {
+            "enum": [
+              "config/T2_runtime_contract_v0_6_0.json",
+              "config/T2_runtime_contract_v0_7_0.json"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "audio_plan": {
+            "properties": {
+              "music": {
+                "properties": {
+                  "selected_candidate_id": {
+                    "const": "B"
+                  }
+                },
+                "required": [
+                  "selected_candidate_id"
+                ]
+              }
+            },
+            "required": [
+              "music"
+            ]
+          }
+        },
+        "required": [
+          "audio_plan"
+        ]
+      },
+      "then": {
+        "properties": {
+          "runtime_contract": {
             "const": "config/T2_runtime_contract_v0_6_0.json"
+          },
+          "audio_contract": {
+            "properties": {
+              "music_status": {
+                "const": "selected_for_single_validation_exemplar"
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "uri": {
+                "const": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+              }
+            }
+          },
+          "audio_plan": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v0_5_0.json"
+              },
+              "config_sha256": {
+                "const": "6f58c9fbbd4f9305ba9a2f46e84a002db5577499f94e6933a0f8fc54cec620db"
+              },
+              "publication": {
+                "properties": {
+                  "output_file": {
+                    "const": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+                  }
+                }
+              },
+              "music": {
+                "properties": {
+                  "selection_mode": {
+                    "const": "explicit_user_choice"
+                  },
+                  "requested_candidate_id": {
+                    "const": "B"
+                  },
+                  "source_page": {
+                    "const": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/"
+                  },
+                  "source_audio_url": {
+                    "const": "https://cdn.pixabay.com/download/audio/2026/07/25/audio_f820d61128.mp3?filename=alex-morgan-afro-pop-vlog-sunshine-573643.mp3"
+                  },
+                  "source_sha256": {
+                    "const": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec"
+                  },
+                  "content_id_status": {
+                    "const": "registered"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "audio_plan": {
+            "properties": {
+              "music": {
+                "properties": {
+                  "selected_candidate_id": {
+                    "const": "D"
+                  }
+                },
+                "required": [
+                  "selected_candidate_id"
+                ]
+              }
+            },
+            "required": [
+              "music"
+            ]
+          }
+        },
+        "required": [
+          "audio_plan"
+        ]
+      },
+      "then": {
+        "properties": {
+          "runtime_contract": {
+            "const": "config/T2_runtime_contract_v0_7_0.json"
+          },
+          "audio_contract": {
+            "properties": {
+              "music_status": {
+                "const": "selected_for_current_production"
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "uri": {
+                "const": "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+              }
+            }
+          },
+          "audio_plan": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v0_7_0.json"
+              },
+              "config_sha256": {
+                "const": "0f5dd52b4340d34453f212a4b2c4d7dd5760d915525f94d8a3831ee5db021d3e"
+              },
+              "publication": {
+                "properties": {
+                  "output_file": {
+                    "const": "VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+                  }
+                }
+              },
+              "music": {
+                "properties": {
+                  "selection_mode": {
+                    "const": "explicit_user_choice"
+                  },
+                  "requested_candidate_id": {
+                    "const": "D"
+                  },
+                  "source_page": {
+                    "const": "https://pixabay.com/music/afrobeat-afrofire-300338/"
+                  },
+                  "source_audio_url": {
+                    "const": "https://cdn.pixabay.com/download/audio/2025/02/12/audio_bf52f1c5ad.mp3?filename=dpstudiomusic-afrofire-300338.mp3"
+                  },
+                  "source_sha256": {
+                    "const": "24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61"
+                  },
+                  "content_id_status": {
+                    "const": "not_displayed_on_source_page"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -545,7 +727,8 @@
         "music_status": {
           "enum": [
             "deferred_until_visual_and_music_approval",
-            "selected_for_single_validation_exemplar"
+            "selected_for_single_validation_exemplar",
+            "selected_for_current_production"
           ]
         },
         "future_mix": {
@@ -583,7 +766,8 @@
           "enum": [
             "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
             "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
-            "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+            "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+            "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
           ]
         },
         "container": {
@@ -715,10 +899,14 @@
       ],
       "properties": {
         "config": {
-          "const": "config/T2_complete_voice_mix_v0_5_0.json"
+          "enum": [
+            "config/T2_complete_voice_mix_v0_5_0.json",
+            "config/T2_complete_voice_mix_v0_7_0.json"
+          ]
         },
         "config_sha256": {
-          "const": "6f58c9fbbd4f9305ba9a2f46e84a002db5577499f94e6933a0f8fc54cec620db"
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         },
         "voice": {
           "type": "object",
@@ -962,7 +1150,10 @@
           ],
           "properties": {
             "output_file": {
-              "const": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+              "enum": [
+                "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+                "VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+              ]
             },
             "publish_exactly_one_mp4": {
               "const": true
@@ -972,7 +1163,47 @@
             }
           }
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v0_5_0.json"
+              }
+            },
+            "required": [
+              "config"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config_sha256": {
+                "const": "6f58c9fbbd4f9305ba9a2f46e84a002db5577499f94e6933a0f8fc54cec620db"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v0_7_0.json"
+              }
+            },
+            "required": [
+              "config"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config_sha256": {
+                "const": "0f5dd52b4340d34453f212a4b2c4d7dd5760d915525f94d8a3831ee5db021d3e"
+              }
+            }
+          }
+        }
+      ]
     },
     "visualPlan": {
       "type": "object",

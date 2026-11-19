@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vitrine-video.example/schemas/T2_music_selection_v0_7_0.schema.json",
+  "title": "T2 explicit approved music selection — Afrofire by DPStudioMusic",
+  "description": "Strict evidence and invariance lock for the approved T2 candidate D. It does not authorize standalone source-audio publication.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "id",
+    "template_id",
+    "template_version",
+    "status",
+    "approved_on",
+    "audio_profile",
+    "selection",
+    "replaces",
+    "rights_evidence",
+    "invariants"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "../schemas/T2_music_selection_v0_7_0.schema.json"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "const": "T2_music_selection_v0_7_0"
+    },
+    "template_id": {
+      "const": "T2"
+    },
+    "template_version": {
+      "const": "0.1.0"
+    },
+    "status": {
+      "const": "USER_APPROVED_FOR_T2_PRODUCTION"
+    },
+    "approved_on": {
+      "const": "2026-11-18",
+      "format": "date"
+    },
+    "audio_profile": {
+      "const": "afrobeat_restaurants_maquis"
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "title",
+        "artist",
+        "source_page",
+        "source_audio_url",
+        "source_sha256",
+        "source_bytes",
+        "source_page_checked_on",
+        "license",
+        "license_url",
+        "content_id_status",
+        "ai_generated_badge",
+        "user_selected_for_this_exemplar",
+        "selected_on",
+        "scope",
+        "template_default_selection",
+        "source_audio_publish",
+        "source_start_s",
+        "program_duration_s",
+        "program_target_lufs",
+        "program_true_peak_dbtp_max",
+        "fade_in_s",
+        "fade_out_s"
+      ],
+      "properties": {
+        "candidate_id": {
+          "const": "D"
+        },
+        "title": {
+          "const": "Afrofire"
+        },
+        "artist": {
+          "const": "DPStudioMusic"
+        },
+        "source_page": {
+          "const": "https://pixabay.com/music/afrobeat-afrofire-300338/",
+          "format": "uri"
+        },
+        "source_audio_url": {
+          "const": "https://cdn.pixabay.com/download/audio/2025/02/12/audio_bf52f1c5ad.mp3?filename=dpstudiomusic-afrofire-300338.mp3",
+          "format": "uri"
+        },
+        "source_sha256": {
+          "const": "24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_bytes": {
+          "const": 7680768
+        },
+        "source_page_checked_on": {
+          "const": "2026-11-19",
+          "format": "date"
+        },
+        "license": {
+          "const": "Pixabay Content License"
+        },
+        "license_url": {
+          "const": "https://pixabay.com/service/license-summary/",
+          "format": "uri"
+        },
+        "content_id_status": {
+          "const": "not_displayed_on_source_page"
+        },
+        "ai_generated_badge": {
+          "const": "displayed"
+        },
+        "user_selected_for_this_exemplar": {
+          "const": true
+        },
+        "selected_on": {
+          "const": "2026-11-18",
+          "format": "date"
+        },
+        "scope": {
+          "const": "t2_current_production_selection"
+        },
+        "template_default_selection": {
+          "const": false
+        },
+        "source_audio_publish": {
+          "const": false
+        },
+        "source_start_s": {
+          "const": 0.0
+        },
+        "program_duration_s": {
+          "const": 30.0
+        },
+        "program_target_lufs": {
+          "const": -17.0
+        },
+        "program_true_peak_dbtp_max": {
+          "const": -1.0
+        },
+        "fade_in_s": {
+          "const": 0.35
+        },
+        "fade_out_s": {
+          "const": 0.8
+        }
+      }
+    },
+    "replaces": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "title",
+        "reason",
+        "production_selectable",
+        "artist",
+        "source_page",
+        "source_sha256",
+        "content_id_status"
+      ],
+      "properties": {
+        "candidate_id": {
+          "const": "B"
+        },
+        "title": {
+          "const": "Afro Pop Vlog Sunshine"
+        },
+        "reason": {
+          "const": "Pixabay source page displays Content ID Registered; user required a replacement before further T2 work"
+        },
+        "production_selectable": {
+          "const": false
+        },
+        "artist": {
+          "const": "alex-morgan"
+        },
+        "source_page": {
+          "const": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/",
+          "format": "uri"
+        },
+        "source_sha256": {
+          "const": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "content_id_status": {
+          "const": "registered"
+        }
+      }
+    },
+    "rights_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "license_name",
+        "license_url",
+        "commercial_use_permitted_under_license_summary",
+        "attribution_required",
+        "adaptation_permitted",
+        "standalone_redistribution_forbidden",
+        "source_page_checked",
+        "content_id_badge_displayed",
+        "ai_generated_badge_displayed",
+        "standalone_audio_publication",
+        "source_audio_committed",
+        "note",
+        "source_page_checked_on"
+      ],
+      "properties": {
+        "provider": {
+          "const": "Pixabay"
+        },
+        "license_name": {
+          "const": "Pixabay Content License"
+        },
+        "license_url": {
+          "const": "https://pixabay.com/service/license-summary/",
+          "format": "uri"
+        },
+        "commercial_use_permitted_under_license_summary": {
+          "const": true
+        },
+        "attribution_required": {
+          "const": false
+        },
+        "adaptation_permitted": {
+          "const": true
+        },
+        "standalone_redistribution_forbidden": {
+          "const": true
+        },
+        "source_page_checked": {
+          "const": "https://pixabay.com/music/afrobeat-afrofire-300338/",
+          "format": "uri"
+        },
+        "content_id_badge_displayed": {
+          "const": false
+        },
+        "ai_generated_badge_displayed": {
+          "const": true
+        },
+        "standalone_audio_publication": {
+          "const": false
+        },
+        "source_audio_committed": {
+          "const": false
+        },
+        "note": {
+          "const": "Pixabay states that additional third-party rights may apply; this record captures the page and license status observed at approval time and is not legal advice."
+        },
+        "source_page_checked_on": {
+          "const": "2026-11-19",
+          "format": "date"
+        }
+      }
+    },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenes_unchanged",
+        "scene_durations_unchanged",
+        "stable_capture_screens_unchanged",
+        "visual_v0_3_unchanged",
+        "voice_clips_unchanged",
+        "voice_speed",
+        "music_open_gain_db",
+        "music_under_voice_gain_db",
+        "duck_attack_ms",
+        "duck_release_ms"
+      ],
+      "properties": {
+        "scenes_unchanged": {
+          "const": true
+        },
+        "scene_durations_unchanged": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "prefixItems": [
+            {
+              "const": 6
+            },
+            {
+              "const": 8
+            },
+            {
+              "const": 7
+            },
+            {
+              "const": 9
+            }
+          ],
+          "items": false
+        },
+        "stable_capture_screens_unchanged": {
+          "const": 12
+        },
+        "visual_v0_3_unchanged": {
+          "const": true
+        },
+        "voice_clips_unchanged": {
+          "const": 4
+        },
+        "voice_speed": {
+          "const": 1.0
+        },
+        "music_open_gain_db": {
+          "const": -3.0
+        },
+        "music_under_voice_gain_db": {
+          "const": -10.0
+        },
+        "duck_attack_ms": {
+          "const": 120
+        },
+        "duck_release_ms": {
+          "const": 450
+        }
+      }
+    }
+  }
+}

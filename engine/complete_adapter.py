@@ -1,8 +1,8 @@
 """T2 complete-plan adapter, modelled on T1 without changing T2's domain.
 
 The adapter enriches the existing Avant / Après RenderJob. It never rewrites
-merchant_payload, captures, scene timing, text motion, the selected B music, or
-the four registered voice files.
+merchant_payload, captures, scene timing, text motion, or the four registered
+voice files. Historical B and current user-approved D contracts stay explicit.
 """
 from __future__ import annotations
 
@@ -13,7 +13,10 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-MIX_CONFIG = ROOT / "config/T2_complete_voice_mix_v0_5_0.json"
+MIX_CONFIGS = {
+    "B": ROOT / "config/T2_complete_voice_mix_v0_5_0.json",
+    "D": ROOT / "config/T2_complete_voice_mix_v0_7_0.json",
+}
 SHORTLIST = ROOT / "music/T2_music_shortlist_v0_4_0.json"
 SOURCE_LOCK = ROOT / "config/T2_music_source_lock_v0_4_0.json"
 
@@ -31,14 +34,14 @@ def select_music_candidate(
     source_lock: dict[str, Any],
     *,
     render_job_id: str,
-    requested_candidate_id: str = "B",
+    requested_candidate_id: str = "D",
     previous_candidate_id: str | None = None,
 ) -> dict[str, Any]:
     """Select one of the unchanged T2 candidates deterministically.
 
-    The current approved exemplar asks explicitly for B. ``auto`` exists for the
-    future control plane and follows T1's deterministic no-immediate-repeat
-    mechanic without making any candidate the template default.
+    Historical v0.6 asks explicitly for B; current production asks explicitly
+    for user-approved D. ``auto`` remains reserved for a future catalog and
+    follows T1's deterministic no-immediate-repeat mechanism.
     """
     candidates = shortlist.get("candidates", [])
     if [item.get("id") for item in candidates] != ["A", "B", "C", "D"]:
@@ -73,28 +76,41 @@ def select_music_candidate(
     }
 
 
+def mix_config_path_for_candidate(candidate_id: str) -> Path:
+    """Resolve an approved production mix without altering historical contracts."""
+    try:
+        return MIX_CONFIGS[candidate_id]
+    except KeyError as error:
+        raise ValueError(
+            f"Aucun contrat de mixage de production approuvé pour le candidat {candidate_id}."
+        ) from error
+
+
 def attach_music_track(
     job: dict[str, Any],
     *,
-    requested_candidate_id: str = "B",
+    requested_candidate_id: str = "D",
     previous_candidate_id: str | None = None,
+    selected_candidate: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Attach the selected existing T2 music to the same RenderJob."""
-    config = load_json(MIX_CONFIG)
-    selected = select_music_candidate(
+    """Attach the explicit approved T2 music to the same RenderJob."""
+    selected = selected_candidate or select_music_candidate(
         load_json(SHORTLIST),
         load_json(SOURCE_LOCK),
         render_job_id=job["job_id"],
         requested_candidate_id=requested_candidate_id,
         previous_candidate_id=previous_candidate_id,
     )
-    # The production exemplar remains B exactly as selected by the user.
-    if selected["id"] != config["music_selection"]["candidate_id"]:
-        raise ValueError("Le mix de production actuel est verrouillé sur le choix utilisateur B.")
-    config_selection = config["music_selection"]
+    selected_config = config or load_json(mix_config_path_for_candidate(selected["id"]))
+    config_selection = selected_config["music_selection"]
+    if selected["id"] != config_selection["candidate_id"]:
+        raise ValueError("Le candidat musical diverge du contrat de mixage approuvé.")
     for key in ("source_page", "source_audio_url", "source_sha256", "content_id_status"):
         if selected[key] != config_selection[key]:
-            raise ValueError(f"La source musicale B diverge du contrat : {key}")
+            raise ValueError(f"La source musicale {selected['id']} diverge du contrat : {key}")
+    if "source_bytes" in config_selection and selected["source_bytes"] != config_selection["source_bytes"]:
+        raise ValueError(f"La taille de la source musicale {selected['id']} diverge du contrat.")
     job.setdefault("audio_plan", {})["music"] = {
         "selection_mode": selected["selection_mode"],
         "requested_candidate_id": selected["requested_candidate_id"],
@@ -111,13 +127,18 @@ def attach_music_track(
     return job
 
 
-def attach_voice_track(job: dict[str, Any], *, mode: str = "registered_voice_clips") -> dict[str, Any]:
+def attach_voice_track(
+    job: dict[str, Any],
+    *,
+    mode: str = "registered_voice_clips",
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Attach registered clips and the explicit captured-audio strategy."""
     allowed = {"registered_voice_clips", "captured_scene_audio", "captured_or_registered_fallback"}
     if mode not in allowed:
         raise ValueError(f"Mode voix inconnu : {mode}")
-    config = load_json(MIX_CONFIG)
-    voice = config["voice"]
+    selected_config = config or load_json(MIX_CONFIGS["D"])
+    voice = selected_config["voice"]
     fallback = {
         "registered_voice_clips": "registered_clips_are_explicitly_selected_for_this_exemplar",
         "captured_scene_audio": "no_fallback",
@@ -140,27 +161,37 @@ def attach_voice_track(job: dict[str, Any], *, mode: str = "registered_voice_cli
 def attach_complete_audio(
     job: dict[str, Any],
     *,
-    requested_candidate_id: str = "B",
+    requested_candidate_id: str = "D",
     previous_candidate_id: str | None = None,
     voice_mode: str = "registered_voice_clips",
 ) -> dict[str, Any]:
-    """Attach voice, music and ducking while proving visual data did not move."""
+    """Attach voice, approved music and ducking while proving visual data did not move."""
     before = {
         "merchant_payload": copy.deepcopy(job["merchant_payload"]),
         "captures": copy.deepcopy(job["captures"]),
         "text_motion_config": job["text_motion_config"],
     }
-    config = load_json(MIX_CONFIG)
+    selected = select_music_candidate(
+        load_json(SHORTLIST),
+        load_json(SOURCE_LOCK),
+        render_job_id=job["job_id"],
+        requested_candidate_id=requested_candidate_id,
+        previous_candidate_id=previous_candidate_id,
+    )
+    config_path = mix_config_path_for_candidate(selected["id"])
+    config = load_json(config_path)
     job["audio_plan"] = {
-        "config": str(MIX_CONFIG.relative_to(ROOT)),
-        "config_sha256": digest(MIX_CONFIG),
+        "config": str(config_path.relative_to(ROOT)),
+        "config_sha256": digest(config_path),
     }
     attach_music_track(
         job,
         requested_candidate_id=requested_candidate_id,
         previous_candidate_id=previous_candidate_id,
+        selected_candidate=selected,
+        config=config,
     )
-    attach_voice_track(job, mode=voice_mode)
+    attach_voice_track(job, mode=voice_mode, config=config)
     job["audio_plan"]["mix"] = copy.deepcopy(config["mix_contract"])
     job["audio_plan"]["publication"] = {
         "output_file": config["publication"]["output_file"],
@@ -172,7 +203,11 @@ def attach_complete_audio(
     job["audio_contract"].update(
         {
             "current_output_audio": True,
-            "music_status": "selected_for_single_validation_exemplar",
+            "music_status": (
+                "selected_for_single_validation_exemplar"
+                if selected["id"] == "B"
+                else "selected_for_current_production"
+            ),
             "future_mix": "active_voice_plus_selected_T2_music_with_ducking",
         }
     )

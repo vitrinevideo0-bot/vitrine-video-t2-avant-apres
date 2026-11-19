@@ -1,13 +1,13 @@
-name: Rendu T2 unifié — RenderJob complet
+name: Rendu T2 unifié — Afrofire approuvé
 
 on:
   workflow_dispatch:
     inputs:
       publish_release:
-        description: Publier la Release de référence v0.6
+        description: Publier une nouvelle Release v0.7 Afrofire (jamais par défaut)
         required: true
         type: boolean
-        default: true
+        default: false
   repository_dispatch:
     types: [t2_render_job]
 
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
-      OUTPUT_DIR: output/t2-complete-v0.6.0
+      OUTPUT_DIR: output/t2-complete-v0.7.0
       JOB_FILE: runtime/render_job_complete.json
     steps:
       - name: Checkout T2
@@ -68,9 +68,13 @@ jobs:
           pairs = [
               ('schemas/render_result.schema.json', 'fixtures/t2-avant-apres/render_result.valid.json'),
               ('schemas/render_error.schema.json', 'fixtures/t2-avant-apres/render_error.unsupported_media.json'),
+              ('schemas/T2_complete_voice_mix_v0_7_0.schema.json', 'config/T2_complete_voice_mix_v0_7_0.json'),
+              ('schemas/T2_music_selection_v0_7_0.schema.json', 'config/T2_music_selection_v0_7_0.json'),
           ]
           for schema, fixture in pairs:
-              Draft202012Validator(json.load(open(schema))).validate(json.load(open(fixture)))
+              definition = json.load(open(schema))
+              Draft202012Validator.check_schema(definition)
+              Draft202012Validator(definition).validate(json.load(open(fixture)))
               print('SCHEMA_FIXTURE_OK', fixture)
           PY
 
@@ -103,7 +107,7 @@ jobs:
             python tools/build_render_job.py \
               --answers demo/reponses_textes_demo.json \
               --stage complete_voice_music_render \
-              --music B \
+              --music D \
               --voice-mode registered_voice_clips \
               --control-plane github_actions_manual \
               --output "$JOB_FILE"
@@ -116,17 +120,17 @@ jobs:
       - name: Render visual, voice, music and QC from the same RenderJob
         run: |
           python tools/render_complete_job.py --job "$JOB_FILE" --output-dir "$OUTPUT_DIR"
-          cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V0_6_0.json"
+          cp "$JOB_FILE" "$OUTPUT_DIR/T2_RENDER_JOB_V0_7_0.json"
           find "$OUTPUT_DIR" -maxdepth 1 -type f -printf '%f\n' | sort
 
       - name: Enforce one MP4 and no standalone audio
         run: |
           python - <<'PY'
           from pathlib import Path
-          root = Path('output/t2-complete-v0.6.0')
+          root = Path('output/t2-complete-v0.7.0')
           mp4 = sorted(path.name for path in root.glob('*.mp4'))
           audio = sorted(path.name for suffix in ('*.wav','*.mp3','*.m4a','*.aac','*.flac','*.ogg','*.opus') for path in root.glob(suffix))
-          assert mp4 == ['VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4'], mp4
+          assert mp4 == ['VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4'], mp4
           assert audio == [], audio
           print('T2_RELEASE_POLICY_OK', mp4[0])
           PY
@@ -138,7 +142,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: T2-unified-${{ github.event.client_payload.job_id || github.run_id }}
-          path: output/t2-complete-v0.6.0/
+          path: output/t2-complete-v0.7.0/
           if-no-files-found: warn
           retention-days: 30
 
@@ -156,7 +160,7 @@ jobs:
           import json, os
           from pathlib import Path
           root=Path(os.environ['OUTPUT_DIR'])
-          result=root/'T2_RENDER_RESULT_V0_6_0.json'
+          result=root/'T2_RENDER_RESULT_V0_7_0.json'
           error=root/'T2_RENDER_ERROR.json'
           if result.exists():
               payload={'status':'COMPLETED','github_run_id':os.environ['GITHUB_RUN_ID'],'github_run_url':f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",'result':json.loads(result.read_text())}
@@ -173,30 +177,33 @@ jobs:
         if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_release
         run: |
           cat > /tmp/release-notes.md <<'EOF'
-          # T2 Avant / Après — runtime unifié v0.6.0
+          # T2 Avant / Après — runtime unifié v0.7.0, Afrofire approuvé
 
-          Production effectuée exclusivement sur GitHub Actions depuis un seul RenderJob : réponses commerçant, quatre captures, visuel dynamique, quatre voix, musique B, ducking, QC et RenderResult.
+          Production effectuée exclusivement sur GitHub Actions depuis un seul RenderJob : réponses commerçant, quatre captures, visuel dynamique, quatre voix et Afrofire — DPStudioMusic, ducking, QC et RenderResult.
 
           - domaine T2 Avant / Après inchangé ;
           - visuel v0.3, 900 images et textes dynamiques inchangés ;
           - quatre voix v0.5 à vitesse 1× inchangées ;
-          - musique B et réglages −3/−10 dB inchangés ;
+          - Afrofire (candidat D) remplace B ; les réglages −3/−10 dB restent inchangés ;
           - source musicale vérifiée avant mixage par SHA-256 ;
           - exactement un MP4, aucune source audio autonome ;
           - contrat exécutable des 12 écrans et métadonnées complètes des captures ;
           - RenderJob, RenderResult, QC et empreintes inclus.
 
-          La piste B reste réservée à cet exemplaire et indique Content ID Registered.
+          La page Pixabay Afrofire montrait le badge AI generated et aucun badge Content ID lors de la vérification datée du 2026-11-19. Cette observation n’est pas une garantie juridique absolue. La source musicale n’est jamais publiée seule.
           EOF
 
-      - name: Publish reference Release v0.6.0
+      - name: Publish new Release v0.7.0 without overwriting history
         if: success() && github.event_name == 'workflow_dispatch' && inputs.publish_release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG=t2-avant-apres-v0.6.0-unified-runtime
-          gh release delete "$TAG" --cleanup-tag --yes || true
+          TAG=t2-avant-apres-v0.7.0-afrofire-voice-mix
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "La Release $TAG existe déjà : refus de l’écraser." >&2
+            exit 1
+          fi
           gh release create "$TAG" "$OUTPUT_DIR"/* \
             --target "$GITHUB_SHA" \
-            --title "T2 Avant / Après — runtime unifié v0.6.0" \
+            --title "T2 Avant / Après — Afrofire approuvé v0.7.0" \
             --notes-file /tmp/release-notes.md

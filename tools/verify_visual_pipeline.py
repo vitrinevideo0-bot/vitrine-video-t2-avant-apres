@@ -21,10 +21,23 @@ def verify(lock_path: Path = LOCK) -> dict:
         if not path.is_file():
             raise FileNotFoundError(f"Composant visuel verrouillé absent : {relative}")
         actual = digest(path)
-        if actual != expected:
-            raise RuntimeError(f"Composant visuel T2 modifié : {relative}: {actual} != {expected}")
+        if actual == expected:
+            continue
+        if relative == "config/T2_avant_apres_template_v0_1_0.json":
+            # ``audio_profile`` is approved non-visual metadata. Removing that
+            # one key must reconstruct the byte-locked v0.3 visual contract.
+            canonical = json.loads(path.read_text(encoding="utf-8"))
+            if canonical.get("audio_profile") != "afrobeat_restaurants_maquis":
+                raise RuntimeError("Le profil audio canonique T2 est absent ou inattendu.")
+            del canonical["audio_profile"]
+            historical = hashlib.sha256(
+                (json.dumps(canonical, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+            ).hexdigest()
+            if historical == expected:
+                continue
+        raise RuntimeError(f"Composant visuel T2 modifié : {relative}: {actual} != {expected}")
     config = json.loads((ROOT / "config/T2_text_motion_v0_3_0.json").read_text(encoding="utf-8"))
-    runtime = json.loads((ROOT / "config/T2_runtime_contract_v0_6_0.json").read_text(encoding="utf-8"))
+    runtime = json.loads((ROOT / "config/T2_runtime_contract_v0_7_0.json").read_text(encoding="utf-8"))
     runtime_sections = {
         "merchant_bindings": runtime["merchant_bindings"],
         "capture_bindings": runtime["capture_bindings"],
