@@ -35,5 +35,5 @@ jobs:
           cmp demo/render_job_textes_demo.json /tmp/render_job_textes.json
       - name: Contrat T2
         run: python tools/validate_contract.py
-      - name: Tests formulaire, caméras, scènes, textes et voix réservée
+      - name: Tests formulaire, caméras, scènes, textes, voix et mix final
         run: python -m unittest discover -s tests -v

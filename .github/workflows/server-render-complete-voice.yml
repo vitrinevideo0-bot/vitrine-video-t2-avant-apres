@@ -1,0 +1,144 @@
+name: Rendu T2 complet — voix française + musique B
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: t2-complete-voice-mix-release
+  cancel-in-progress: false
+
+jobs:
+  render-validate-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout T2
+        uses: actions/checkout@v5
+
+      - name: Vérifier l’architecture audio T1 exacte en lecture seule
+        run: |
+          git clone --filter=blob:none --no-checkout \
+            https://github.com/j9028379-hue/vitrine-video-t1-pilot \
+            /tmp/t1-reference
+          git -C /tmp/t1-reference sparse-checkout init --cone
+          git -C /tmp/t1-reference sparse-checkout set \
+            audio/scripts config schemas .github/workflows
+          git -C /tmp/t1-reference checkout --detach \
+            c656510ab81d31d413dc4dfd74b42671532cd978
+          python tools/verify_t1_audio_reference.py /tmp/t1-reference
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - name: Installer FFmpeg et les dépendances Python
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python -m pip install -r requirements.txt
+          ffmpeg -version | head -n 1
+          ffprobe -version | head -n 1
+
+      - name: Compiler et tester tous les contrats avant production
+        run: |
+          python -m compileall -q engine tools tests audio/scripts
+          python tools/validate_contract.py
+          python -m unittest discover -s tests -v
+
+      - name: Produire l’unique MP4 complet sur le runner GitHub
+        run: |
+          python audio/scripts/mix_t2_voice_music_v0_5.py \
+            --config config/T2_complete_voice_mix_v0_5_0.json \
+            --output-dir output/t2-complete-v0.5.0
+
+      - name: Revalider indépendamment image, débit, niveaux et ducking
+        run: |
+          python tools/validate_complete_voice_mix.py \
+            --config config/T2_complete_voice_mix_v0_5_0.json \
+            --output-dir output/t2-complete-v0.5.0 \
+            --proof output/t2-complete-v0.5.0/T2_GITHUB_SERVER_VALIDATION_V0_5_0.json
+
+      - name: Assembler la livraison sans aucune source audio autonome
+        run: |
+          rm -rf release
+          mkdir -p release
+          cp output/t2-complete-v0.5.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4 release/
+          cp output/t2-complete-v0.5.0/T2_VOICE_MUSIC_LEVELS_VALIDATION_V0_5_0.json release/
+          cp output/t2-complete-v0.5.0/T2_GITHUB_SERVER_VALIDATION_V0_5_0.json release/
+          cp output/t2-complete-v0.5.0/RAPPORT_NIVEAUX_T2.md release/
+          cp output/t2-complete-v0.5.0/T2_DUCKING_AUTOMATION_10MS.csv release/
+          cp output/t2-complete-v0.5.0/T2_DUCKING_VOICE_TIMELINE.png release/
+          cp config/T2_complete_voice_mix_v0_5_0.json release/
+          cp baseline/T1_AUDIO_REFERENCE.lock.json release/
+          cp docs/T2_COMPLETE_VOICE_MIX.md release/
+          python - <<'PY'
+          from pathlib import Path
+          root = Path('release')
+          mp4 = [path for path in root.iterdir() if path.suffix.lower() == '.mp4']
+          forbidden = [
+              path for path in root.iterdir()
+              if path.suffix.lower() in {'.mp3', '.wav', '.m4a', '.aac', '.flac', '.ogg', '.opus'}
+          ]
+          assert [path.name for path in mp4] == ['VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4'], mp4
+          assert not forbidden, forbidden
+          print('RELEASE_ONE_MP4_NO_STANDALONE_AUDIO_OK', mp4[0])
+          PY
+          (cd release && find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' | sort | xargs sha256sum > SHA256SUMS.txt)
+          ffprobe -v error \
+            -show_entries format=duration,size,bit_rate \
+            -show_entries stream=codec_name,codec_type,width,height,r_frame_rate,nb_frames,sample_rate,channels,bit_rate \
+            -of json release/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4
+
+      - name: Publier l’artefact GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: T2-complet-voix-musique-B-${{ github.run_id }}
+          path: release/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Rédiger les notes de Release
+        run: |
+          cat > release-notes.md <<'EOF'
+          # T2 Avant / Après — exemplaire complet voix + musique B
+
+          Production effectuée exclusivement sur **GitHub Actions** à partir du flux visuel v0.3 validé, copié sans réencodage.
+
+          - un seul MP4 de 30 secondes, 720 × 1280, 30 i/s, 900 images ;
+          - quatre voix françaises réunies dans un stem continu de 30 s, à vitesse 1× ;
+          - musique B « Afro Pop Vlog Sunshine » choisie pour cet exemplaire de validation uniquement ;
+          - ducking T1 exact : −3 dB hors parole, −10 dB sous parole, attaque 120 ms, relâchement 450 ms ;
+          - master −16 LUFS, plafond WAV −2 dBTP, livraison AAC stéréo 48 kHz à 192 kb/s ;
+          - rapport de niveaux, rapport parole/musique, automation 10 ms et contrôles indépendants inclus ;
+          - aucun MP3 Pixabay, aucun WAV voix et aucun stem audio autonome publié.
+
+          **Avertissement :** la page Pixabay de la piste B affiche « Content ID Registered ». Ce choix ne devient pas la musique par défaut du gabarit sans nouvelle décision explicite.
+
+          Le fichier principal est `VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4`.
+          EOF
+
+      - name: Publier la Release publique et le lien direct
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=t2-avant-apres-v0.5.0-complete-voice-mix
+          gh release delete "$TAG" --cleanup-tag --yes || true
+          gh release create "$TAG" \
+            release/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4 \
+            release/T2_VOICE_MUSIC_LEVELS_VALIDATION_V0_5_0.json \
+            release/T2_GITHUB_SERVER_VALIDATION_V0_5_0.json \
+            release/RAPPORT_NIVEAUX_T2.md \
+            release/T2_DUCKING_AUTOMATION_10MS.csv \
+            release/T2_DUCKING_VOICE_TIMELINE.png \
+            release/T2_complete_voice_mix_v0_5_0.json \
+            release/T1_AUDIO_REFERENCE.lock.json \
+            release/T2_COMPLETE_VOICE_MIX.md \
+            release/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title "T2 Avant / Après — complet voix + musique B v0.5.0" \
+            --notes-file release-notes.md
+          gh release view "$TAG" --json url,tagName,name,assets
