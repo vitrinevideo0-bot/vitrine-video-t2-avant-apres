@@ -1,0 +1,88 @@
+name: Auditions musicales T2 sur GitHub
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: t2-music-shortlist-release
+  cancel-in-progress: false
+
+jobs:
+  build-music-shortlist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout T2
+        uses: actions/checkout@v5
+
+      - name: Vérifier T1 en lecture seule au commit canonique
+        run: |
+          git clone --filter=blob:none --no-checkout \
+            https://github.com/j9028379-hue/vitrine-video-t1-pilot \
+            /tmp/t1-reference
+          git -C /tmp/t1-reference sparse-checkout init --cone
+          git -C /tmp/t1-reference sparse-checkout set capture-guide config schemas tools .github
+          git -C /tmp/t1-reference checkout --detach c656510ab81d31d413dc4dfd74b42671532cd978
+          python tools/verify_t1_baseline.py /tmp/t1-reference
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Installer FFmpeg sur le runner GitHub
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+
+      - name: Tester le contrat de présélection
+        run: |
+          python -m compileall -q tools tests
+          python -m unittest tests.test_music_shortlist -v
+
+      - name: Construire quatre auditions sur la base visuelle v0.3
+        run: |
+          python tools/build_music_shortlist.py \
+            --manifest music/T2_music_shortlist_v0_4_0.json \
+            --output-dir output/music-shortlist-v0.4.0 \
+            --proof proofs/music_shortlist_validation_v0_4_0.json
+
+      - name: Valider les quatre MP4 et l'absence de MP3 publié
+        run: |
+          python tools/validate_music_shortlist.py \
+            --manifest music/T2_music_shortlist_v0_4_0.json \
+            --output-dir output/music-shortlist-v0.4.0 \
+            --proof proofs/music_shortlist_validation_v0_4_0.json
+
+      - name: Artefact GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: T2_MUSIC_SHORTLIST_V0_4_0
+          path: |
+            output/music-shortlist-v0.4.0/*.mp4
+            output/music-shortlist-v0.4.0/T2_MUSIC_SHORTLIST_V0_4_0.md
+            output/music-shortlist-v0.4.0/SHA256SUMS.txt
+            proofs/music_shortlist_validation_v0_4_0.json
+            music/T2_music_shortlist_v0_4_0.json
+            docs/T2_MUSIC_SHORTLIST.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publier la Release des quatre auditions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=t2-avant-apres-v0.4.0-music-shortlist
+          gh release delete "$TAG" --cleanup-tag --yes || true
+          gh release create "$TAG" \
+            output/music-shortlist-v0.4.0/*.mp4 \
+            output/music-shortlist-v0.4.0/T2_MUSIC_SHORTLIST_V0_4_0.md \
+            output/music-shortlist-v0.4.0/SHA256SUMS.txt \
+            proofs/music_shortlist_validation_v0_4_0.json \
+            music/T2_music_shortlist_v0_4_0.json \
+            docs/T2_MUSIC_SHORTLIST.md \
+            --target "${GITHUB_SHA}" \
+            --title "T2 Avant / Après — quatre auditions Afrobeat v0.4.0" \
+            --notes "Quatre auditions A/B/C/D sur le flux visuel v0.3 validé, produit exclusivement sur GitHub Actions. Aucun MP3 source n'est redistribué et aucune musique n'est encore sélectionnée. Les statuts Content ID sont consignés dans le manifeste. Répondre A, B, C ou D avant tout mix final avec voix."

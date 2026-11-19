@@ -2,13 +2,18 @@
 
 Dépôt public indépendant pour le gabarit **Restaurants / Maquis — T2**. Le dépôt T1 reste intact et sert uniquement de base technique en lecture seule, verrouillée par `baseline/T1_BASELINE.lock.json`.
 
-## Étape actuelle : validation des textes dynamiques
+## Étape actuelle : quatre auditions musicales Afrobeat
 
-- [Télécharger le test des textes produit sur GitHub Actions](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.3.0-text-motion/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4)
-- [Ouvrir la Release des textes](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.3.0-text-motion)
-- [Conserver le montage silencieux v0.2 comme référence visuelle validée](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.2.0-silent)
+Le montage T2 v0.3, ses textes, sa police et ses mouvements sont validés. La v0.4 compare maintenant quatre musiques, sans choisir ni modifier définitivement la base visuelle.
 
-La v0.3 conserve le montage validé et ajoute les six informations commerçant avec leur motion design. Le nom utilise la police calligraphique **Pinyon Script**, choisie d’après la capture fournie. Cette étape reste sans musique et sans voix uniquement pour valider les textes avant le mixage.
+- [Ouvrir la Release des quatre auditions](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.4.0-music-shortlist)
+- [A — Feelgood Groove · chaleureux et gourmand](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.4.0-music-shortlist/T2_MUSIC_A_FEELGOOD_GROOVE_AUDITION_30S.mp4)
+- [B — Afro Pop Sunshine · solaire et léger](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.4.0-music-shortlist/T2_MUSIC_B_AFRO_POP_SUNSHINE_AUDITION_30S.mp4)
+- [C — Amapiano Log Drum · moderne et profond](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.4.0-music-shortlist/T2_MUSIC_C_AMAPIANO_LOG_DRUM_AUDITION_30S.mp4)
+- [D — Afrofire · énergique et premium](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.4.0-music-shortlist/T2_MUSIC_D_AFROFIRE_AUDITION_30S.mp4)
+- [Conserver le rendu v0.3 validé comme base](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.3.0-text-motion)
+
+Chaque audition reprend exactement les 900 images de la v0.3 et ajoute uniquement une musique de comparaison. Les MP3 Pixabay ne sont pas redistribués seuls. Aucune musique n'est définitive avant le vote A/B/C/D.
 
 ## Questions commerçant qui alimentent le JSON
 
@@ -33,15 +38,14 @@ La définition machine est `form/questions_T2.json`. Les réponses deviennent `m
 
 ## Tout se fait sur GitHub
 
-Le workflow `.github/workflows/server-render-silent.yml` :
+Les workflows GitHub conservent le rendu v0.3 et ajoutent la présélection v0.4 :
 
-1. vérifie la base T1 publique sans la modifier ;
-2. construit et valide le RenderJob à partir des réponses et des quatre captures ;
-3. teste les liaisons formulaire → textes → scènes, les durées caméra et la timeline de future voix ;
-4. télécharge les rushes sur le runner GitHub ;
-5. rend transitions et textes dynamiques sur le runner GitHub ;
-6. contrôle les quatre blocs graphiques et l’absence de flux audio à cette étape ;
-7. publie le MP4, la planche de police, les preuves JSON et le RenderJob dans une Release GitHub.
+1. `.github/workflows/server-render-text-motion.yml` conserve la vidéo v0.3 validée ;
+2. `.github/workflows/server-build-music-shortlist.yml` vérifie T1 en lecture seule et le SHA-256 de la v0.3 ;
+3. télécharge quatre sources officielles Pixabay uniquement dans le runner éphémère ;
+4. copie le flux visuel v0.3 sans réencodage et crée quatre MP4 d’audition ;
+5. prouve que les 900 images sont identiques et qu’aucun MP3 source n’est publié ;
+6. publie les quatre auditions, le manifeste de licence et les preuves dans une Release GitHub.
 
 Aucun rush brut n’est publié. Aucun rendu local n’est requis.
 
