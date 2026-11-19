@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, FormatChecker
 
 from build_render_job import build_job
 
@@ -29,6 +29,28 @@ def main() -> None:
     schema = read_json("schemas/render_job.schema.json")
     manifest = read_json("rushes/manifest.json")
     baseline = read_json("baseline/T1_BASELINE.lock.json")
+    current_answers = read_json("demo/reponses_textes_demo.json")
+    current_job = read_json("demo/render_job_complete_demo.json")
+    music_decision = read_json("config/T2_music_selection_v0_7_0.json")
+    music_decision_schema = read_json("schemas/T2_music_selection_v0_7_0.schema.json")
+    afrofire_mix = read_json("config/T2_complete_voice_mix_v0_7_0.json")
+    afrofire_mix_schema = read_json("schemas/T2_complete_voice_mix_v0_7_0.schema.json")
+    current_runtime = read_json("config/T2_runtime_contract_v0_7_0.json")
+
+    if (config["template_id"], config["version"], config["audio_profile"]) != (
+        "T2",
+        "0.1.0",
+        "afrobeat_restaurants_maquis",
+    ):
+        fail("identité canonique T2, version du gabarit ou profil audio")
+    if ".mp3" in config["audio_profile"].lower() or "afrofire" in config["audio_profile"].lower():
+        fail("audio_profile doit désigner une ambiance et non un fichier ou une piste")
+    if current_runtime["domain"] != "AVANT_APRES":
+        fail("le runtime v0.7 doit rester dans le domaine Avant / Après")
+    if current_runtime["audio_profile"] != config["audio_profile"]:
+        fail("le runtime et le JSON canonique n’utilisent pas le même profil audio")
+    if current_runtime["music_selection_contract"] != "config/T2_music_selection_v0_7_0.json":
+        fail("le runtime ne référence pas la décision musicale approuvée")
 
     if [item["seconds"] for item in config["scenes"]] != [6, 8, 7, 9]:
         fail("durées des scènes")
@@ -87,6 +109,29 @@ def main() -> None:
         fail("rendu strictement muet")
     if job["render_business_text"] is not False:
         fail("aucun texte commerçant dans le rendu actuel")
+
+    Draft202012Validator(
+        music_decision_schema, format_checker=FormatChecker()
+    ).validate(music_decision)
+    Draft202012Validator(
+        afrofire_mix_schema, format_checker=FormatChecker()
+    ).validate(afrofire_mix)
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(current_job)
+    rebuilt_current = build_job(
+        current_answers,
+        stage="complete_voice_music_render",
+        requested_music="D",
+        voice_mode="registered_voice_clips",
+        control_plane="github_actions_manual",
+    )
+    if rebuilt_current != current_job:
+        fail("demo/render_job_complete_demo.json ne correspond pas à Afrofire approuvé")
+    if current_job["audio_plan"]["music"]["selected_candidate_id"] != "D":
+        fail("le RenderJob courant doit sélectionner explicitement D")
+    if current_job["audio_plan"]["music"]["source_sha256"] != music_decision["selection"]["source_sha256"]:
+        fail("le RenderJob et la décision musicale ne verrouillent pas la même source")
+    if current_job["audio_plan"]["publication"]["publish_standalone_audio"] is not False:
+        fail("publication audio autonome interdite")
 
     mention = (
         "Tu peux parler pendant que tu filmes, dans la langue que tu veux : "

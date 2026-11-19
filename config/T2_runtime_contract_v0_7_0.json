@@ -1,0 +1,243 @@
+{
+  "schema_version": "0.7.0",
+  "contract_id": "restaurants_maquis_T2_avant_apres_runtime_v0_7_0",
+  "domain": "AVANT_APRES",
+  "status": "production_ready_user_approved_afrofire",
+  "audio_profile": "afrobeat_restaurants_maquis",
+  "music_selection_contract": "config/T2_music_selection_v0_7_0.json",
+  "non_destructive_base": {
+    "runtime_v0_3": "config/T2_runtime_contract_v0_3_0.json",
+    "visual_v0_3_release": "t2-avant-apres-v0.3.0-text-motion",
+    "visual_video_stream_sha256": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5",
+    "visual_logic_changed": false,
+    "music_changed": true,
+    "voice_speed_changed": false,
+    "runtime_v0_6": "config/T2_runtime_contract_v0_6_0.json",
+    "music_change_reason": "user-approved replacement of Content ID registered candidate B"
+  },
+  "reference": {
+    "repository": "https://github.com/j9028379-hue/vitrine-video-t1-pilot",
+    "commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
+    "mode": "read_only_architecture_reference",
+    "ported_mechanics": [
+      "explicit 12-screen state machine",
+      "complete capture media metadata",
+      "music and voice attachment to the same plan",
+      "RenderResult and RenderError contracts",
+      "server-side immutable reference verification"
+    ]
+  },
+  "runtime_order": [
+    {
+      "step": 1,
+      "id": "MERCHANT_INPUT",
+      "consumes": "six merchant answers",
+      "produces": "merchant_payload"
+    },
+    {
+      "step": 2,
+      "id": "GUIDED_CAPTURE",
+      "consumes": "camera plus optional microphone",
+      "produces": [
+        "captures.S1",
+        "captures.S2",
+        "captures.S3",
+        "captures.S4"
+      ],
+      "contract": "config/T2_capture_flow_v1_0_0.json",
+      "stable_screens": 12
+    },
+    {
+      "step": 3,
+      "id": "UNIFIED_RENDER_JOB",
+      "consumes": [
+        "merchant_payload",
+        "four accepted captures",
+        "explicit approved music choice D",
+        "voice source mode"
+      ],
+      "produces": "RenderJob schema 1.1.0"
+    },
+    {
+      "step": 4,
+      "id": "DETERMINISTIC_VISUAL_RENDER",
+      "consumes": "the same RenderJob",
+      "produces": "silent visual intermediate with dynamic merchant fields"
+    },
+    {
+      "step": 5,
+      "id": "VOICE_MUSIC_DUCKING",
+      "consumes": [
+        "the same RenderJob",
+        "registered or accepted captured voice",
+        "locked music source D (Afrofire)"
+      ],
+      "produces": "single complete MP4"
+    },
+    {
+      "step": 6,
+      "id": "QC_RESULT_RELEASE",
+      "consumes": [
+        "single MP4",
+        "job hash",
+        "input hashes"
+      ],
+      "produces": [
+        "RenderResult",
+        "objective QC",
+        "GitHub artifact or Release"
+      ]
+    }
+  ],
+  "merchant_bindings": [
+    {
+      "source": "merchant_payload.nom",
+      "targets": [
+        "T2_G01_IDENTITY",
+        "T2_G03_REVEAL",
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.produit",
+      "targets": [
+        "T2_G01_IDENTITY",
+        "T2_G02_OFFER",
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.prix",
+      "targets": [
+        "T2_G02_OFFER",
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.whatsapp",
+      "targets": [
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.quartier",
+      "targets": [
+        "T2_G04_FINAL"
+      ]
+    },
+    {
+      "source": "merchant_payload.accroche",
+      "targets": [
+        "T2_G03_REVEAL"
+      ]
+    }
+  ],
+  "capture_bindings": [
+    {
+      "source": "captures.S1.uri",
+      "scene": "S1",
+      "duration_ms": 6000,
+      "timeline_start_ms": 0,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    },
+    {
+      "source": "captures.S2.uri",
+      "scene": "S2",
+      "duration_ms": 8000,
+      "timeline_start_ms": 6000,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    },
+    {
+      "source": "captures.S3.uri",
+      "scene": "S3",
+      "duration_ms": 7000,
+      "timeline_start_ms": 14000,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    },
+    {
+      "source": "captures.S4.uri",
+      "scene": "S4",
+      "duration_ms": 9000,
+      "timeline_start_ms": 21000,
+      "source_time_map": "identity",
+      "audio_time_map": "identity"
+    }
+  ],
+  "audio_handoff": {
+    "voice_modes": [
+      "registered_voice_clips",
+      "captured_scene_audio",
+      "captured_or_registered_fallback"
+    ],
+    "selected_exemplar_mode": "registered_voice_clips",
+    "source_speed": 1.0,
+    "audio_time_map": "identity",
+    "automatic_subtitles": false,
+    "music_candidate_for_this_exemplar": "D",
+    "music_template_default": false,
+    "music_source_sha256": "24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61",
+    "ducking": {
+      "open_gain_db": -3.0,
+      "under_voice_gain_db": -10.0,
+      "attack_ms": 120,
+      "release_ms": 450
+    },
+    "source_audio_publish": false,
+    "fallback_speech_gate": {
+      "applies_to": "captured_or_registered_fallback",
+      "minimum_active_speech_s": 0.35,
+      "minimum_peak_dbfs": -42.0,
+      "fallback": "registered clip for the same scene when accepted capture has no usable speech"
+    },
+    "music_content_id_status": "not_displayed_on_source_page",
+    "music_ai_generated_badge": "displayed",
+    "music_source_page": "https://pixabay.com/music/afrobeat-afrofire-300338/"
+  },
+  "server_handoff": {
+    "control_planes": [
+      "github_actions_manual",
+      "cloudflare_worker"
+    ],
+    "render_plane": "GitHub Actions only",
+    "cloudflare_role": "validate, store captures and jobs, enforce idempotency, dispatch GitHub, receive result callback",
+    "cloudflare_never_renders_video": true,
+    "workflow": ".github/workflows/server-render-unified.yml",
+    "security": {
+      "client_mutations": "Bearer CLIENT_API_TOKEN",
+      "github_callback_and_materialization": "Bearer CALLBACK_TOKEN",
+      "capture_integrity": "client SHA-256 checked by R2 then checked again on GitHub",
+      "idempotency": "conditional R2 claim by Idempotency-Key"
+    },
+    "result_contract": "schemas/render_result.schema.json",
+    "error_contract": "schemas/render_error.schema.json"
+  },
+  "acceptance_gates": [
+    "the complete mixer receives the same RenderJob that supplied merchant_payload and captures",
+    "visual rendering is rebuilt from that job and remains exactly 900 frames",
+    "music D Afrofire and the four registered voices remain byte-locked for the reference exemplar",
+    "captured audio, when selected, remains at identity speed 1x",
+    "music source hash is checked before mixing",
+    "RenderResult contains the job hash and all input hashes",
+    "one MP4 and no standalone source audio are published",
+    "all production rendering occurs on GitHub Actions"
+  ],
+  "capture_runtime": {
+    "application": "cloudflare/public/app.js",
+    "contract_endpoint": "/v1/contracts/capture-flow",
+    "form_endpoint": "/v1/contracts/form",
+    "stable_screens": 12,
+    "countdown_transient": true,
+    "camera_and_microphone": true,
+    "review_audio_at_1x": true,
+    "retake_supported": true,
+    "accepted_media_types": [
+      "video/mp4",
+      "video/webm",
+      "video/quicktime"
+    ],
+    "storage": "Cloudflare R2 until GitHub materialization"
+  }
+}

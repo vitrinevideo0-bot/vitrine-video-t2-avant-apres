@@ -1,7 +1,7 @@
 {
   "schema_version": "1.1.0",
-  "job_id": "t2-complete-b14ce737fd2d967a",
-  "idempotency_key": "t2-avant-apres-v0.6.0-unified-runtime-b14ce737fd2d967a",
+  "job_id": "t2-complete-8376c1491f9ed6a4",
+  "idempotency_key": "t2-avant-apres-v0.7.0-afrofire-voice-mix-8376c1491f9ed6a4",
   "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
   "template_version": "0.1.0",
   "execution_profile": "T2_GITHUB_ACTIONS_COMPLETE",
@@ -77,7 +77,7 @@
     }
   },
   "capture_manifest": "rushes/manifest.json",
-  "runtime_contract": "config/T2_runtime_contract_v0_6_0.json",
+  "runtime_contract": "config/T2_runtime_contract_v0_7_0.json",
   "text_motion_config": "config/T2_text_motion_v0_3_0.json",
   "audio_contract": {
     "capture_voice_mode": "optional_per_scene",
@@ -87,7 +87,7 @@
     "audio_time_map": "identity",
     "automatic_subtitles": false,
     "current_output_audio": true,
-    "music_status": "selected_for_single_validation_exemplar",
+    "music_status": "selected_for_current_production",
     "future_mix": "active_voice_plus_selected_T2_music_with_ducking",
     "voice_source_mode": "registered_voice_clips"
   },
@@ -96,7 +96,7 @@
   "render_business_text": true,
   "render_audio": true,
   "output": {
-    "uri": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+    "uri": "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4",
     "container": "mp4",
     "video_mime": "video/avc",
     "width": 720,
@@ -128,18 +128,18 @@
     "cloudflare_job_id": null
   },
   "audio_plan": {
-    "config": "config/T2_complete_voice_mix_v0_5_0.json",
-    "config_sha256": "6f58c9fbbd4f9305ba9a2f46e84a002db5577499f94e6933a0f8fc54cec620db",
+    "config": "config/T2_complete_voice_mix_v0_7_0.json",
+    "config_sha256": "0f5dd52b4340d34453f212a4b2c4d7dd5760d915525f94d8a3831ee5db021d3e",
     "music": {
       "selection_mode": "explicit_user_choice",
-      "requested_candidate_id": "B",
-      "selected_candidate_id": "B",
+      "requested_candidate_id": "D",
+      "selected_candidate_id": "D",
       "previous_candidate_id": null,
       "candidate_count": 4,
-      "source_page": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/",
-      "source_audio_url": "https://cdn.pixabay.com/download/audio/2026/07/25/audio_f820d61128.mp3?filename=alex-morgan-afro-pop-vlog-sunshine-573643.mp3",
-      "source_sha256": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec",
-      "content_id_status": "registered",
+      "source_page": "https://pixabay.com/music/afrobeat-afrofire-300338/",
+      "source_audio_url": "https://cdn.pixabay.com/download/audio/2025/02/12/audio_bf52f1c5ad.mp3?filename=dpstudiomusic-afrofire-300338.mp3",
+      "source_sha256": "24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61",
+      "content_id_status": "not_displayed_on_source_page",
       "template_default_selection": false,
       "source_audio_publish": false
     },
@@ -215,7 +215,7 @@
       "delivery_audio": "AAC stereo 48 kHz 192 kb/s"
     },
     "publication": {
-      "output_file": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+      "output_file": "VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4",
       "publish_exactly_one_mp4": true,
       "publish_standalone_audio": false
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the one T2 v0.5 voice+music validation MP4 on GitHub Actions.
+"""Build an approved T2 voice+music validation MP4 on GitHub Actions.
 
 The audio architecture intentionally mirrors the locked public T1 reference:
 one 30 s voice stem, deterministic clip-span ducking, two-pass EBU R128
@@ -26,7 +26,10 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = ROOT / "config/T2_complete_voice_mix_v0_5_0.json"
-SCHEMA = ROOT / "schemas/T2_complete_voice_mix.schema.json"
+SCHEMAS = {
+    "restaurants_maquis_T2_complete_voice_mix_v0_5_0": ROOT / "schemas/T2_complete_voice_mix.schema.json",
+    "restaurants_maquis_T2_complete_voice_mix_v0_7_0": ROOT / "schemas/T2_complete_voice_mix_v0_7_0.schema.json",
+}
 RENDER_JOB_SCHEMA = ROOT / "schemas/render_job.schema.json"
 SR = 48_000
 TOTAL_S = 30.0
@@ -447,7 +450,11 @@ def write_automation_csv(path: Path, music_gain_db: np.ndarray, spans: list[tupl
 
 
 def draw_ducking_plot(
-    path: Path, voice: np.ndarray, music_gain_db: np.ndarray, spans: list[tuple[float, float]]
+    path: Path,
+    voice: np.ndarray,
+    music_gain_db: np.ndarray,
+    spans: list[tuple[float, float]],
+    music_label: str = "musique B",
 ) -> None:
     from PIL import Image, ImageDraw, ImageFont
 
@@ -464,7 +471,7 @@ def draw_ducking_plot(
     bottom_box = (left, 390, right, 625)
     draw.rounded_rectangle(top_box, 18, fill="#fffaf4", outline="#ded2c5", width=2)
     draw.rounded_rectangle(bottom_box, 18, fill="#fffaf4", outline="#ded2c5", width=2)
-    draw.text((left, 28), "T2 — stem voix 30 s et ducking musique B", fill="#201d19", font=title_font)
+    draw.text((left, 28), f"T2 — stem voix 30 s et ducking {music_label}", fill="#201d19", font=title_font)
 
     def x_at(time_s: float) -> int:
         return int(round(left + time_s / TOTAL_S * (right - left)))
@@ -522,8 +529,11 @@ def write_human_report(path: Path, report: dict[str, Any]) -> None:
     final = report["final_mp4"]
     speech = report["intelligibility_proxy"]
     mix = report["ducking"]
+    music = report["music"]
+    candidate_id = music["candidate_id"]
+    music_label = "Afrofire — DPStudioMusic" if candidate_id == "D" else "musique B historique"
     lines = [
-        "# Rapport des niveaux — T2 complet voix + musique B",
+        f"# Rapport des niveaux — T2 complet voix + {music_label}",
         "",
         f"**Contrôle objectif : {report['status']}**",
         "",
@@ -568,8 +578,8 @@ def write_human_report(path: Path, report: dict[str, Any]) -> None:
             "- Le flux vidéo final est identique bit à bit au visuel 900 images reconstruit depuis le même RenderJob.",
             "- Les quatre textes sont les exemples exacts des scènes S1 à S4.",
             "- Les voix restent à vitesse 1×, réunies dans un stem de 30 s, sans sous-titres.",
-            "- Le morceau B a été choisi pour cet exemplaire unique uniquement ; il n’est pas défini comme choix par défaut du gabarit.",
-            "- La page Pixabay du morceau B affiche un statut Content ID enregistré.",
+            f"- La musique {candidate_id} est une sélection explicite du catalogue ; elle n’est pas un défaut implicite du gabarit.",
+            f"- Statut Content ID observé et verrouillé dans le contrat : `{music['content_id_status']}`.",
             "- Aucun MP3 musical, WAV voix ou stem audio autonome n’est publié dans la Release.",
             "",
             "L’approbation finale reste une écoute humaine du MP4.",
@@ -580,14 +590,19 @@ def write_human_report(path: Path, report: dict[str, Any]) -> None:
 
 
 def validate_source_config(config: dict[str, Any]) -> None:
-    schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    try:
+        schema_path = SCHEMAS[config["id"]]
+    except KeyError as error:
+        raise ValueError(f"Contrat audio T2 inconnu : {config.get('id')}") from error
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(config)
     if config["duration_s"] != TOTAL_S or config["sample_rate_hz"] != SR:
         raise ValueError("La durée ou la fréquence du contrat T2 ne correspond pas au moteur.")
-    if config["music_selection"]["candidate_id"] != "B":
-        raise ValueError("Cet exemplaire doit utiliser le choix utilisateur B.")
+    candidate_id = config["music_selection"]["candidate_id"]
+    if candidate_id not in {"B", "D"}:
+        raise ValueError("Le mixeur de production accepte uniquement les contrats approuvés B ou D.")
     if config["music_selection"]["template_default_selection"] is not False:
-        raise ValueError("Le morceau B ne doit pas devenir un défaut du gabarit.")
+        raise ValueError("La piste sélectionnée ne doit pas devenir un défaut du gabarit.")
 
 
 def validate_unified_job(job: dict[str, Any], config: dict[str, Any], config_path: Path) -> None:
@@ -734,7 +749,8 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory(prefix="t2-complete-voice-mix-") as temporary_name:
         temporary = Path(temporary_name)
-        music_source = temporary / "pixabay_candidate_B_source.mp3"
+        candidate_id = selection["candidate_id"]
+        music_source = temporary / f"pixabay_candidate_{candidate_id}_source.mp3"
         if args.visual_source:
             visual = args.visual_source.resolve()
             if not visual.is_file():
@@ -752,7 +768,7 @@ def main() -> None:
         music_download = download(selection["source_audio_url"], music_source)
         if music_download["sha256"] != selection["source_sha256"]:
             raise RuntimeError(
-                "Le SHA-256 de la source musicale B ne correspond pas au verrou v0.4/v0.5."
+                f"Le SHA-256 de la source musicale {candidate_id} ne correspond pas au contrat chargé."
             )
 
         visual_probe = probe(visual)
@@ -788,8 +804,8 @@ def main() -> None:
         if source_duration + 0.05 < required_music_duration:
             raise RuntimeError(f"La source musicale est trop courte: {source_duration:.3f} s")
 
-        faded_music = temporary / "music_B_faded_30s.wav"
-        music_program_file = temporary / "music_B_program_master_30s.wav"
+        faded_music = temporary / f"music_{candidate_id}_faded_30s.wav"
+        music_program_file = temporary / f"music_{candidate_id}_program_master_30s.wav"
         music_before, music_after = prepare_music_program(
             music_source, faded_music, music_program_file, selection
         )
@@ -925,7 +941,13 @@ def main() -> None:
         premix = music_stem + voice_stereo
 
         write_automation_csv(automation_path, music_gain_db, spans)
-        draw_ducking_plot(plot_path, voice, music_gain_db, spans)
+        draw_ducking_plot(
+            plot_path,
+            voice,
+            music_gain_db,
+            spans,
+            "Afrofire" if candidate_id == "D" else "musique B",
+        )
         intelligibility = frame_speech_metrics(voice, music_stem, spans)
 
         raw_mix = temporary / "t2_voice_music_premix.wav"
@@ -970,11 +992,11 @@ def main() -> None:
                 "-map_metadata",
                 "-1",
                 "-metadata",
-                "title=T2 complet voix francaise + musique B",
+                f"title=T2 complet voix francaise + musique {candidate_id}",
                 "-metadata",
                 "artist=Vitrine Video",
                 "-metadata",
-                "comment=Exemplaire unique a valider; musique B non definie comme choix par defaut",
+                f"comment=Musique {candidate_id} explicite; aucune selection implicite du gabarit",
                 "-movflags",
                 "+faststart",
                 str(output_mp4),
@@ -1072,7 +1094,7 @@ def main() -> None:
             ),
             "voice_stem_exact_30s": len(voice) == N,
             "four_voice_clips_in_scene_windows": len(voice_entries) == 4,
-            "music_candidate_B_only": selection["candidate_id"] == "B",
+            "approved_music_contract": selection["candidate_id"] in {"B", "D"},
             "music_not_template_default": selection["template_default_selection"] is False,
         }
         status = "PASS" if all(checks.values()) else "FAIL"

@@ -36,7 +36,7 @@ jobs:
           python tools/build_render_job.py \
             --answers demo/reponses_textes_demo.json \
             --stage complete_voice_music_render \
-            --music B \
+            --music D \
             --voice-mode registered_voice_clips \
             --control-plane github_actions_manual \
             --output /tmp/render_job_complete.json
@@ -45,18 +45,26 @@ jobs:
         run: |
           python tools/verify_existing_tests_unchanged.py
           python tools/verify_visual_pipeline.py
-      - name: Contrats RenderResult et RenderError
+      - name: Contrats RenderResult, RenderError et Afrofire
         run: |
           python - <<'PY'
           import json
-          from jsonschema import Draft202012Validator
+          from jsonschema import Draft202012Validator, FormatChecker
           for schema, fixture in [
               ('schemas/render_result.schema.json', 'fixtures/t2-avant-apres/render_result.valid.json'),
               ('schemas/render_error.schema.json', 'fixtures/t2-avant-apres/render_error.unsupported_media.json'),
+              ('schemas/T2_complete_voice_mix_v0_7_0.schema.json', 'config/T2_complete_voice_mix_v0_7_0.json'),
+              ('schemas/T2_music_selection_v0_7_0.schema.json', 'config/T2_music_selection_v0_7_0.json'),
           ]:
-              Draft202012Validator(json.load(open(schema))).validate(json.load(open(fixture)))
+              definition = json.load(open(schema))
+              Draft202012Validator.check_schema(definition)
+              Draft202012Validator(definition, format_checker=FormatChecker()).validate(json.load(open(fixture)))
               print('T2_SCHEMA_FIXTURE_OK', fixture)
           PY
+      - name: Contrats Cloudflare générés sans dérive
+        run: |
+          python tools/build_cloudflare_contracts.py
+          git diff --exit-code -- cloudflare/src/capture_flow_contract.ts cloudflare/src/form_contract.ts cloudflare/src/render_job_template.ts
       - name: Contrat T2
         run: python tools/validate_contract.py
       - name: Tests formulaire, caméras, scènes, textes, voix et mix final

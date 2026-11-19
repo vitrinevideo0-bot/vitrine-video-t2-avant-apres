@@ -2,70 +2,71 @@
 
 Dépôt public indépendant du gabarit **Restaurants / Maquis — T2**. T1 reste intact et sert uniquement de référence technique publique en lecture seule.
 
-## Étape actuelle : runtime unifié v0.6
+## État actuel : Afrofire approuvé, préparation runtime v0.7
 
-T2 dispose maintenant d’un parcours interconnecté : **formulaire exécutable + 12 écrans + caméra/micro + RenderJob complet + rendu GitHub + voix/musique + QC + résultat/erreur + statut Cloudflare**. Le montage visuel v0.3, ses 900 images, ses textes dynamiques, ses polices et ses mouvements restent la base inchangée. La musique et les quatre voix v0.5 ne sont pas modifiées.
+La piste B historique a été rejetée à cause du badge **Content ID Registered** affiché par sa page. La sélection T2 courante est désormais **D — Afrofire · DPStudioMusic**, approuvée explicitement pour l’ambiance Afrobeat Restaurants/Maquis.
 
-- [Architecture et déploiement du runtime unifié](docs/T2_UNIFIED_RUNTIME_CLOUDFLARE.md)
-- `cloudflare/public/` — application mobile qui consomme réellement les contrats formulaire/capture ;
-- `cloudflare/src/index.ts` — plan de contrôle Worker + R2, sans rendu vidéo ;
-- `.github/workflows/server-render-unified.yml` — unique plan de rendu de production ;
-- `demo/render_job_complete_demo.json` — fixture canonique complète `1.1.0`.
+Cette évolution change uniquement la sélection musicale et les contrats d’orchestration associés :
 
-## Exemplaire complet voix + musique déjà validé
+- `template_id` reste `T2` ;
+- la version du gabarit reste `0.1.0` ;
+- `audio_profile` vaut `afrobeat_restaurants_maquis` et ne contient ni nom de piste ni nom de fichier ;
+- les scènes restent 6 / 8 / 7 / 9 s, soit 30 s et 900 images ;
+- les douze écrans, les six champs commerçant, le visuel v0.3 et ses liaisons dynamiques restent inchangés ;
+- les quatre voix restent à vitesse naturelle `1×` ;
+- le ducking reste à −3 dB hors parole et −10 dB sous parole, attaque 120 ms, relâchement 450 ms ;
+- aucune source musicale ou stem audio n’est publié comme fichier autonome.
 
-Le montage visuel v0.3 validé reste inchangé. La v0.5 lui ajoute quatre voix françaises réunies dans un stem de 30 s et la musique **B — Afro Pop Vlog Sunshine**, avec le ducking exact de T1.
+Aucun nouveau MP4 n’est publié par ce changement de code. Tout futur rendu de production doit être déclenché explicitement et exécuté exclusivement sur GitHub Actions.
 
-- [Ouvrir la Release complète v0.5](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.5.0-complete-voice-mix)
-- [Télécharger directement l’unique MP4](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/download/t2-avant-apres-v0.5.0-complete-voice-mix/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4)
-- [Lire le contrat et les contrôles](docs/T2_COMPLETE_VOICE_MIX.md)
-- [Conserver le rendu visuel v0.3 validé comme base](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.3.0-text-motion)
-- [Voir la présélection A/B/C/D historique](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.4.0-music-shortlist)
+## Sources de vérité v0.7
 
-Le choix B vaut pour **cet exemplaire unique de validation** et n’est pas défini comme musique par défaut du gabarit. La page Pixabay de B affiche « Content ID Registered ».
+- `config/T2_avant_apres_template_v0_1_0.json` — identité canonique du gabarit et profil audio sémantique ;
+- `config/T2_music_selection_v0_7_0.json` — décision approuvée, remplacement de B, preuve de droits observée et invariants ;
+- `config/T2_complete_voice_mix_v0_7_0.json` — quatre voix, Afrofire et calibrations audio ;
+- `config/T2_runtime_contract_v0_7_0.json` — liaisons formulaire, captures, visuel, audio et serveur ;
+- `demo/render_job_complete_demo.json` — RenderJob complet courant, sélection explicite D ;
+- `schemas/render_job.schema.json` — corrélation stricte entre candidat D, contrat v0.7 et sortie Afrofire ;
+- `.github/workflows/server-render-unified.yml` — plan de rendu GitHub, sans écrasement de Release existante ;
+- `cloudflare/src/render_job_template.ts` — snapshot généré du même RenderJob ;
+- [Intégration Afrofire v0.7 et preuve de provenance](docs/T2_AFROFIRE_INTEGRATION_V0_7.md) ;
+- [Rapport QC prépublication](reports/T2_AFROFIRE_INTEGRATION_QC_V0_7_0.md) ;
+- [Architecture et plan de contrôle Cloudflare](docs/T2_UNIFIED_RUNTIME_CLOUDFLARE.md).
 
-## Audio v0.5
+## Preuve musicale conservée
 
-- une seule identité vocale française pour S1 à S4 ;
-- quatre exemples exacts de `capture-guide/consignes_T2.json` ;
-- départs : 1,20 s · 6,80 s · 14,70 s · 21,80 s ;
-- voix à vitesse naturelle `1×`, sans sous-titres ;
-- musique à −3 dB hors parole et −10 dB sous parole ;
-- attaque 120 ms, relâchement 450 ms ;
-- master −16 LUFS, plafond WAV −2 dBTP ;
-- AAC stéréo 48 kHz, cible 192 kb/s ;
-- un seul MP4 public, aucun fichier audio source autonome.
+| Élément | Valeur verrouillée |
+|---|---|
+| Candidat | `D` |
+| Titre / auteur | Afrofire — DPStudioMusic |
+| Page | `https://pixabay.com/music/afrobeat-afrofire-300338/` |
+| Licence | Pixabay Content License — usage commercial et adaptation permis, attribution non obligatoire |
+| Source | CDN Pixabay, téléchargée seulement de façon éphémère au moment du rendu |
+| Taille | `7 680 768` octets |
+| SHA-256 | `24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61` |
+| Observation datée | badge AI generated visible ; aucun badge Content ID visible le 2026-11-19 |
+| Publication autonome | interdite |
 
-## Questions commerçant qui alimentent le JSON
+L’absence de badge Content ID visible est une observation datée, pas une garantie juridique absolue. La licence Pixabay et d’éventuels droits tiers restent à respecter.
 
-1. Comment s’appelle ton restaurant ou ton maquis ?
-2. Quel plat allons-nous montrer avant et après ?
-3. Quel est le prix de ce plat ?
-4. Quel numéro WhatsApp les clients doivent-ils utiliser ?
-5. Dans quel quartier peut-on te trouver ?
-6. Veux-tu ajouter une petite phrase ? — facultatif.
+## Parcours commerçant inchangé
 
-La définition machine est `form/questions_T2.json`. L’application la charge par `/v1/contracts/form`. Les réponses deviennent `merchant_payload.nom`, `merchant_payload.produit`, `merchant_payload.prix`, `merchant_payload.whatsapp`, `merchant_payload.quartier` et `merchant_payload.accroche`. Elles restent liées aux captures et aux quatre blocs graphiques par `config/T2_runtime_contract_v0_6_0.json`.
+Les six réponses définies par `form/questions_T2.json` alimentent `merchant_payload.nom`, `produit`, `prix`, `whatsapp`, `quartier` et `accroche`. Elles restent reliées aux quatre captures et aux blocs graphiques par `config/T2_runtime_contract_v0_7_0.json`.
 
-## Contrat visuel conservé
-
-- quatre scènes : 6 s · 8 s · 7 s · 9 s ;
-- douze écrans stables : quatre scènes × A Guide / B Enregistrement / C Validation ;
-- 720 × 1280, 30 i/s, 900 images, 30,000 s ;
-- six transitions de 0,42 s ;
-- Pinyon Script et textes dynamiques incorporés ;
-- flux vidéo v0.3 copié bit à bit dans le MP4 v0.5 ;
-- pour une reconstruction v0.6, l’invariant bloquant est le SHA-256 du flux H.264 copié ; le SHA-256 du conteneur MP4 complet reste consigné comme provenance, car l’empaquetage peut varier sans changer une seule image.
+Le parcours conserve quatre scènes et trois états stables par scène : **A Guide / B Enregistrement / C Validation**. Caméra et microphone sont relus à `1×`; le décompte 3–2–1 reste transitoire et ne crée pas un treizième écran.
 
 ## Production exclusivement sur GitHub
 
-Le workflow canonique `.github/workflows/server-render-unified.yml` reçoit le même RenderJob que le formulaire et les quatre captures, reconstruit le visuel, sélectionne les voix capturées ou leur fallback enregistré, vérifie la musique B, applique le ducking, exécute le QC indépendant et produit `RenderResult` ou `RenderError`. Le Worker Cloudflare ne rend jamais la vidéo.
+Le Worker Cloudflare valide, stocke, orchestre et déclenche GitHub ; il ne rend jamais de vidéo. GitHub Actions reçoit le même RenderJob que le formulaire et les captures, reconstruit le visuel, vérifie la source Afrofire par SHA-256, applique voix et ducking, puis exécute le QC indépendant.
 
-Le workflow v0.5 historique `.github/workflows/server-render-complete-voice.yml` reste conservé comme preuve de l’exemplaire déjà validé. Il vérifie l’architecture audio T1 au commit canonique, exécute tous les tests, télécharge temporairement la source Pixabay, construit le stem voix et le mix, mesure les niveaux, effectue une validation indépendante puis publie une Release avec :
+Le workflow refuse la publication d’audio autonome et refuse d’écraser une Release portant déjà le même tag. Son option de publication de Release est désactivée par défaut.
 
-1. `VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4` — unique vidéo ;
-2. le rapport des niveaux LUFS/dBTP, débit AAC et rapport parole/musique ;
-3. l’automation de ducking à 10 ms et son graphique ;
-4. les empreintes SHA-256 et le verrou T1.
+## Historique public conservé
+
+Les Releases v0.3, v0.5 et v0.6 restent accessibles comme preuves historiques et ne sont ni remplacées ni écrasées. Les MP4 v0.5/v0.6 contiennent toutefois la piste B désormais rejetée et ne représentent plus la sélection musicale courante.
+
+- [Base visuelle v0.3 à préserver](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.3.0-text-motion)
+- [Présélection A/B/C/D historique](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.4.0-music-shortlist)
+- [Runtime v0.6 historique, musique B rejetée](https://github.com/vitrinevideo0-bot/vitrine-video-t2-avant-apres/releases/tag/t2-avant-apres-v0.6.0-unified-runtime)
 
 Aucun rendu de production local n’est autorisé. T1 n’est jamais modifié.

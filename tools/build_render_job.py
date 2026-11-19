@@ -93,7 +93,7 @@ def build_job(
     *,
     capture_overrides: dict[str, dict[str, Any]] | None = None,
     capture_manifest: str = "rushes/manifest.json",
-    requested_music: str = "B",
+    requested_music: str = "D",
     previous_music: str | None = None,
     voice_mode: str = "registered_voice_clips",
     control_plane: str = "github_actions_manual",
@@ -101,7 +101,14 @@ def build_job(
 ) -> dict[str, Any]:
     if stage not in STAGES:
         raise ValueError(f"Étape inconnue : {stage}")
-    stage_spec = STAGES[stage]
+    stage_spec = dict(STAGES[stage])
+    if stage == "complete_voice_music_render" and requested_music == "D":
+        stage_spec.update(
+            {
+                "release_version": "v0.7.0-afrofire-voice-mix",
+                "output_uri": "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4",
+            }
+        )
     questions = _read(QUESTIONS)
     manifest = _read(MANIFEST)
     answers = normalize_answers(raw_answers, questions)
@@ -171,7 +178,11 @@ def build_job(
         "captures": captures,
         "capture_manifest": capture_manifest if stage == "complete_voice_music_render" else "rushes/manifest.json",
         "runtime_contract": (
-            "config/T2_runtime_contract_v0_6_0.json"
+            (
+                "config/T2_runtime_contract_v0_7_0.json"
+                if requested_music == "D"
+                else "config/T2_runtime_contract_v0_6_0.json"
+            )
             if stage == "complete_voice_music_render"
             else "config/T2_runtime_contract_v0_3_0.json"
         ),
@@ -258,7 +269,7 @@ def main() -> None:
     )
     parser.add_argument("--captures-json", help="Complete S1…S4 capture map supplied by the runtime control plane.")
     parser.add_argument("--capture-manifest", default="rushes/manifest.json")
-    parser.add_argument("--music", choices=["A", "B", "C", "D", "auto"], default="B")
+    parser.add_argument("--music", choices=["A", "B", "C", "D", "auto"], default="D")
     parser.add_argument("--previous-music", choices=["A", "B", "C", "D"])
     parser.add_argument(
         "--voice-mode",

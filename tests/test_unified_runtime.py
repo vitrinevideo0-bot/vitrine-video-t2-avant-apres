@@ -44,13 +44,13 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
             for key in ("uri", "duration_ms", "source_in_ms", "has_audio", "sha256"):
                 self.assertEqual(complete["captures"][slot][key], dynamic["captures"][slot][key])
         self.assertEqual(complete["text_motion_config"], dynamic["text_motion_config"])
-        self.assertEqual(complete["runtime_contract"], "config/T2_runtime_contract_v0_6_0.json")
+        self.assertEqual(complete["runtime_contract"], "config/T2_runtime_contract_v0_7_0.json")
         self.assertTrue(complete["visual_plan"]["rebuild_from_job"])
         self.assertTrue(complete["visual_plan"]["preserve_900_frames"])
 
     def test_complete_job_has_voice_music_ducking_and_one_output(self) -> None:
         job = load("demo/render_job_complete_demo.json")
-        self.assertEqual(job["audio_plan"]["music"]["selected_candidate_id"], "B")
+        self.assertEqual(job["audio_plan"]["music"]["selected_candidate_id"], "D")
         self.assertFalse(job["audio_plan"]["music"]["template_default_selection"])
         self.assertFalse(job["audio_plan"]["music"]["source_audio_publish"])
         self.assertEqual(job["audio_plan"]["voice"]["source_speed"], 1.0)
@@ -110,7 +110,7 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
         self.assertIn("repository_dispatch", workflow)
         self.assertIn("tools/render_complete_job.py", workflow)
         self.assertIn("tools/cloudflare_runtime.py fetch", workflow)
-        self.assertIn("T2_RENDER_RESULT_V0_6_0.json", workflow)
+        self.assertIn("T2_RENDER_RESULT_V0_7_0.json", workflow)
 
     def test_browser_webm_and_mobile_mp4_are_accepted_additively(self) -> None:
         schema = load("schemas/render_job.schema.json")
@@ -193,7 +193,7 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/server-render-unified.yml").read_text(encoding="utf-8")
         self.assertIn("Enforce one MP4 and no standalone audio", workflow)
         self.assertIn("assert audio == []", workflow)
-        runtime = load("config/T2_runtime_contract_v0_6_0.json")
+        runtime = load("config/T2_runtime_contract_v0_7_0.json")
         self.assertFalse(runtime["audio_handoff"]["source_audio_publish"])
         self.assertTrue(runtime["server_handoff"]["cloudflare_never_renders_video"])
 

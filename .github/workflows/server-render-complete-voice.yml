@@ -1,4 +1,4 @@
-name: Rendu T2 complet — voix française + musique B
+name: Archive T2 v0.5 — musique B rejetée (désactivé)
 
 on:
   workflow_dispatch:
@@ -12,6 +12,9 @@ concurrency:
 
 jobs:
   render-validate-publish:
+    # Archive audit-only: B is rejected for current production. This repository
+    # variable is intentionally unset; the old recipe is skipped by default.
+    if: ${{ vars.T2_ENABLE_REJECTED_B_ARCHIVE == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -126,7 +129,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG=t2-avant-apres-v0.5.0-complete-voice-mix
-          gh release delete "$TAG" --cleanup-tag --yes || true
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Archive stable $TAG : refus de l’écraser." >&2
+            exit 1
+          fi
           gh release create "$TAG" \
             release/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4 \
             release/T2_VOICE_MUSIC_LEVELS_VALIDATION_V0_5_0.json \

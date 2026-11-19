@@ -1,8 +1,8 @@
-# T2 « Avant / Après » — runtime unifié v0.6 et plan de contrôle Cloudflare
+# T2 « Avant / Après » — runtime unifié v0.7 et plan de contrôle Cloudflare
 
 ## Portée
 
-Cette implémentation relie réellement le formulaire T2, les douze écrans de capture, les quatre médias caméra/micro, les textes commerçant, le rendu visuel v0.3, les voix, la musique B, le ducking, le contrôle qualité et la publication GitHub.
+Cette implémentation relie réellement le formulaire T2, les douze écrans de capture, les quatre médias caméra/micro, les textes commerçant, le rendu visuel v0.3, les voix, Afrofire (candidat D), le ducking, le contrôle qualité et la publication GitHub.
 
 T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31d413dc4dfd74b42671532cd978`. Ses mécanismes génériques utiles sont repris, mais le domaine reste exclusivement T2 **« Avant / Après »**. Le dépôt T1 public ne contient pas de Worker Cloudflare : la présente implémentation Cloudflare est propre à T2.
 
@@ -25,7 +25,7 @@ T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31
 |---|---|
 | Navigateur | six réponses commerçant, machine à 12 écrans, caméra/micro, relecture, SHA-256 |
 | Cloudflare Worker + R2 | authentification pilote, idempotence, stockage, RenderJob, dispatch, statuts et callback |
-| GitHub Actions | FFmpeg/OpenCV, rendu 900 images, voix 1×, musique B, ducking, QC, artefact ou Release |
+| GitHub Actions | FFmpeg/OpenCV, rendu 900 images, voix 1×, Afrofire (D), ducking, QC, artefact ou Release |
 
 Cloudflare ne lance ni FFmpeg, ni OpenCV, ni mixage. Tout rendu de production est refusé hors GitHub Actions par le code Python lui-même.
 
@@ -43,13 +43,17 @@ Le parcours navigateur demande `captured_or_registered_fallback`. Le garde de pa
 
 ## Musique
 
-La musique **B** reste le choix explicite de cet exemplaire unique. Elle ne devient pas la musique par défaut du gabarit. Avant tout mixage, GitHub vérifie :
+La sélection courante est explicitement **D — Afrofire · DPStudioMusic**. B est rejetée pour la production courante en raison du badge Content ID Registered affiché par sa page historique. D ne devient pas un choix implicite : le RenderJob la sélectionne explicitement et le JSON canonique conserve uniquement le profil sémantique `afrobeat_restaurants_maquis`.
+
+Avant tout mixage, GitHub vérifie exactement :
 
 ```text
-1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec
+24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61
 ```
 
-La source Pixabay, les WAV voix et les stems restent éphémères. Ils ne sont jamais publiés comme fichiers autonomes.
+La source vérifiée mesure `7 680 768` octets. Lors de la vérification datée du 2026-11-19, la page affichait le badge AI generated et aucun badge Content ID. Cette observation n’est pas une garantie juridique absolue.
+
+La source Pixabay, les WAV voix et les stems restent éphémères. Ils ne sont jamais publiés comme fichiers autonomes. Les détails sont verrouillés dans `config/T2_music_selection_v0_7_0.json`.
 
 ## API Worker
 
@@ -76,7 +80,7 @@ Les captures acceptées sont `video/mp4`, `video/webm` ou `video/quicktime`. Les
 - `GET /v1/jobs/{job_id}/captures/{slot}`
 - `POST /v1/jobs/{job_id}/events`
 
-Un callback `COMPLETED` doit contenir un `RenderResult` rattaché au bon job avec QC `PASS`. Un callback `FAILED` doit contenir un `RenderError` rattaché au bon job.
+Un callback `COMPLETED` doit contenir un `RenderResult` rattaché au bon job avec QC `PASS`. Le Worker recroise aussi le profil, l’URI de sortie, les quatre empreintes de capture et le SHA-256 Afrofire avec le RenderJob stocké. Un callback `FAILED` doit contenir un `RenderError` rattaché au bon job.
 
 ## Déploiement Cloudflare
 
@@ -125,6 +129,6 @@ Ce test couvre le formulaire canonique, le contrat des 12 écrans, l’authentif
 
 ## Rendu de référence unique
 
-Le workflow `.github/workflows/server-render-unified.yml` peut être lancé manuellement sur GitHub avec `publish_release=true`. Il reconstruit l’exemplaire canonique, prouve que les anciennes fixtures sont octet-identiques, vérifie les verrous T1/T2, exécute tous les tests, rend une seule vidéo et publie `t2-avant-apres-v0.6.0-unified-runtime`.
+Le workflow `.github/workflows/server-render-unified.yml` peut être lancé manuellement sur GitHub. Il reconstruit l’exemplaire canonique D/Afrofire, prouve les verrous historiques et visuels, exécute les tests, puis rend une seule vidéo. L’option `publish_release` est désactivée par défaut.
 
-Les jobs Cloudflare utilisent le même workflow par `repository_dispatch`, mais publient un artefact GitHub privé plutôt qu’une nouvelle Release publique à chaque commerçant.
+Si une Release v0.7 est demandée explicitement, le workflow refuse d’écraser un tag existant et publie exactement un MP4, les rapports et les checksums — jamais la source musicale seule. Les jobs Cloudflare utilisent le même workflow par `repository_dispatch`, mais publient un artefact GitHub privé plutôt qu’une nouvelle Release publique à chaque commerçant.

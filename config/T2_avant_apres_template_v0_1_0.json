@@ -3,6 +3,7 @@
   "template_id": "T2",
   "render_template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
   "version": "0.1.0",
+  "audio_profile": "afrobeat_restaurants_maquis",
   "status": "silent_transition_validation",
   "sector": "restaurants_maquis",
   "name": "Avant / Après",
