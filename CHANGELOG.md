@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — textes dynamiques liés aux scènes
+
+- six réponses commerçant liées à quatre blocs graphiques S1 à S4 ;
+- police calligraphique Pinyon Script incorporée et verrouillée ;
+- un RenderJob réunit `merchant_payload`, `captures` et sortie ;
+- tests de pixels prouvant que les changements de données changent réellement les images ;
+- timeline caméra/voix à 1,0× réservée pour le futur mixage ;
+- rendu et publication exclusivement sur GitHub Actions ;
+- contrôle actuel encore sans musique ni voix.
+
 ## 0.2.0 — correction de phase
 
 - rendu déplacé intégralement sur GitHub Actions ;

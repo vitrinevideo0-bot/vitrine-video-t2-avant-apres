@@ -9,12 +9,15 @@ La structure technique reprend le modèle du dépôt T1 public, sans le modifier
 - `capture-guide/consignes_T2.json` : quatre guides validés ;
 - `config/T2_avant_apres_template_v0_1_0.json` : chronologie et transitions ;
 - `schemas/render_job.schema.json` : contrat strict du RenderJob (`merchant_payload`, quatre `captures`, sortie) ;
-- `engine/render_silent.py` : rendu actuel, sans texte et sans audio ;
+- `engine/render_silent.py` : référence v0.2 du montage sans texte ;
+- `config/T2_runtime_contract_v0_3_0.json` : liaison formulaire, caméras, scènes et future voix ;
+- `config/T2_text_motion_v0_3_0.json` : police, blocs et fenêtres des textes dynamiques ;
+- `engine/render_text_motion.py` : rendu v0.3 des informations commerçant ;
 - `.github/workflows/server-render-silent.yml` : seul chemin de production de la vidéo actuelle.
 
 ## Règle d’étape
 
-La musique et la voix n’existent pas dans l’étape actuelle. Elles seront ajoutées dans des workflows séparés seulement après validation du montage silencieux.
+La musique et la voix ne sont pas encore mixées dans l’étape actuelle. Les quatre captures conservent toutefois une timeline audio identité à 1,0× ; la future voix et le ducking musical sont réservés dans le contrat, puis seront activés seulement après les validations prévues.
 
 ## Passage questions → RenderJob → montage
 
@@ -25,4 +28,4 @@ Le mécanisme reprend les noms publics de T1 au commit verrouillé :
 3. `tools/build_render_job.py` valide le tout avec `schemas/render_job.schema.json` ;
 4. `engine/render_silent.py` lit les captures et la sortie depuis ce RenderJob.
 
-À l’étape actuelle, `merchant_payload` est stocké mais `render_business_text=false` et `render_audio=false`. Le moteur ne contient aucune API de dessin de texte et l’export supprime tout flux audio.
+Le profil v0.2 garde `render_business_text=false`. Le profil v0.3 utilise `render_business_text=true`, lit les mêmes champs et les dessine après les transitions. `render_audio=false` reste imposé uniquement pendant le contrôle des textes.

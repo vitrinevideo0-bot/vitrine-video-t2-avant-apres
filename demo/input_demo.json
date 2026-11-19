@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
-  "job_id": "t2-silent-7b2713186c729dc7",
-  "idempotency_key": "t2-avant-apres-v0.2.0-silent-7b2713186c729dc7",
+  "job_id": "t2-silent-ccd8d7698e663d86",
+  "idempotency_key": "t2-avant-apres-v0.2.0-silent-ccd8d7698e663d86",
   "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
   "template_version": "0.1.0",
   "execution_profile": "T2_GITHUB_ACTIONS_SILENT",
@@ -45,6 +45,19 @@
     }
   },
   "capture_manifest": "rushes/manifest.json",
+  "runtime_contract": "config/T2_runtime_contract_v0_3_0.json",
+  "text_motion_config": null,
+  "audio_contract": {
+    "capture_voice_mode": "optional_per_scene",
+    "preserve_captured_voice": true,
+    "source_speed": 1.0,
+    "source_time_map": "identity",
+    "audio_time_map": "identity",
+    "automatic_subtitles": false,
+    "current_output_audio": false,
+    "music_status": "deferred_until_visual_and_music_approval",
+    "future_mix": "captured_voice_plus_selected_T2_music_with_ducking"
+  },
   "audio_mode": "silent_no_audio_stream",
   "render_stage": "silent_transition_validation",
   "render_business_text": false,

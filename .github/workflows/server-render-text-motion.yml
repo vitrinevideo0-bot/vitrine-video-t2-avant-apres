@@ -1,0 +1,101 @@
+name: Rendu T2 textes dynamiques sur GitHub
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: t2-text-motion-release
+  cancel-in-progress: false
+
+jobs:
+  render-text-motion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout T2
+        uses: actions/checkout@v5
+
+      - name: Vérifier T1 en lecture seule au commit canonique
+        run: |
+          git clone --filter=blob:none --no-checkout \
+            https://github.com/j9028379-hue/vitrine-video-t1-pilot \
+            /tmp/t1-reference
+          git -C /tmp/t1-reference sparse-checkout init --cone
+          git -C /tmp/t1-reference sparse-checkout set capture-guide config schemas tools .github
+          git -C /tmp/t1-reference checkout --detach c656510ab81d31d413dc4dfd74b42671532cd978
+          python tools/verify_t1_baseline.py /tmp/t1-reference
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - name: Dépendances
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          pip install -r requirements.txt
+
+      - name: Formulaire vers RenderJob textes + caméras
+        run: |
+          python tools/build_render_job.py \
+            --answers demo/reponses_textes_demo.json \
+            --stage dynamic_text_validation \
+            --output demo/render_job_textes_server.json
+
+      - name: Tests liés aux scènes, textes, caméras et future voix
+        run: |
+          python -m compileall -q engine tools tests
+          python tools/validate_contract.py
+          python -m unittest discover -s tests -v
+
+      - name: Télécharger les quatre captures sur le runner GitHub
+        run: python tools/fetch_rushes.py
+
+      - name: Monter rushes, transitions et textes dynamiques sur GitHub
+        run: python engine/render_text_motion.py --job demo/render_job_textes_server.json
+
+      - name: Vérifier vidéo, textes dynamiques et zéro audio
+        run: |
+          python tools/validate_text_motion.py \
+            output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4 \
+            --job demo/render_job_textes_server.json
+          python tools/make_text_motion_sheet.py \
+            output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4
+
+      - name: Artefact GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0
+          path: |
+            output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4
+            output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.sha256
+            proofs/text_motion_validation.json
+            proofs/text_motion_render_manifest.json
+            proofs/T2_TEXTES_POLICE_MOTION_CONTACT_SHEET.jpg
+            demo/render_job_textes_server.json
+            config/T2_runtime_contract_v0_3_0.json
+            config/T2_text_motion_v0_3_0.json
+          retention-days: 30
+
+      - name: Publier la Release de contrôle des textes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=t2-avant-apres-v0.3.0-text-motion
+          gh release delete "$TAG" --cleanup-tag --yes || true
+          gh release create "$TAG" \
+            output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4 \
+            output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.sha256 \
+            proofs/text_motion_validation.json \
+            proofs/text_motion_render_manifest.json \
+            proofs/T2_TEXTES_POLICE_MOTION_CONTACT_SHEET.jpg \
+            demo/render_job_textes_server.json \
+            config/T2_runtime_contract_v0_3_0.json \
+            config/T2_text_motion_v0_3_0.json \
+            --target "${GITHUB_SHA}" \
+            --title "T2 Avant / Après — textes dynamiques v0.3.0" \
+            --notes "Test des informations commerçant liées au JSON et aux quatre scènes. Police calligraphique Pinyon Script inspirée de la capture fournie. Rendu produit exclusivement sur GitHub Actions. Cette étape reste sans musique et sans voix afin de valider d’abord les textes et leur motion design."

@@ -59,5 +59,6 @@
     "commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
     "path": "config/T1_special_menu_reference_v3_1.json#/implementation_handoff/merchant_payload_schema"
   },
-  "current_stage_rule": "Les réponses alimentent merchant_payload dans le RenderJob. Elles ne sont jamais affichées dans la vidéo silencieuse de validation des transitions."
+  "current_stage_rule": "Les réponses alimentent merchant_payload dans le même RenderJob que les quatre captures. Le profil dynamic_text_validation les affiche avec motion design; la musique et la voix restent différées jusqu’aux validations prévues.",
+  "runtime_contract": "config/T2_runtime_contract_v0_3_0.json"
 }
