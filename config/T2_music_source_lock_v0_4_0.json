@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "id": "T2_music_source_lock_v0_4_0",
+  "purpose": "pin_the_four_existing_T2_shortlist_sources_without_changing_music_or_selection",
+  "proof_release": "t2-avant-apres-v0.4.0-music-shortlist",
+  "source_audio_publish": false,
+  "candidates": [
+    {
+      "id": "A",
+      "sha256": "fe19fce9b4374f05eb53d090bb4d38a875c43a6d5f52fc5ee778be609c5009cd",
+      "bytes": 4941949
+    },
+    {
+      "id": "B",
+      "sha256": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec",
+      "bytes": 1946880
+    },
+    {
+      "id": "C",
+      "sha256": "ffed4f7cdd43d9bb72b6963ec47bd7aaa903a524c594658848e0039c4c538728",
+      "bytes": 4702464
+    },
+    {
+      "id": "D",
+      "sha256": "24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61",
+      "bytes": 7680768
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+name: T2 — plan de contrôle Cloudflare
+
+on:
+  pull_request:
+    paths:
+      - 'cloudflare/**'
+      - 'config/T2_capture_flow_v1_0_0.json'
+      - 'form/questions_T2.json'
+      - 'demo/render_job_complete_demo.json'
+      - 'schemas/**'
+      - 'tools/build_cloudflare_contracts.py'
+      - '.github/workflows/cloudflare-control-plane.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/**'
+      - 'config/T2_capture_flow_v1_0_0.json'
+      - 'form/questions_T2.json'
+      - 'demo/render_job_complete_demo.json'
+      - 'schemas/**'
+      - 'tools/build_cloudflare_contracts.py'
+      - '.github/workflows/cloudflare-control-plane.yml'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Déployer réellement le Worker et ses assets
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate-worker-and-capture-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: cloudflare/package-lock.json
+
+      - name: Install locked dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          npm ci --prefix cloudflare
+
+      - name: Prove generated Worker contracts are synchronized
+        run: |
+          cp cloudflare/src/render_job_template.ts /tmp/render_job_template.ts
+          cp cloudflare/src/capture_flow_contract.ts /tmp/capture_flow_contract.ts
+          cp cloudflare/src/form_contract.ts /tmp/form_contract.ts
+          python tools/build_cloudflare_contracts.py
+          cmp /tmp/render_job_template.ts cloudflare/src/render_job_template.ts
+          cmp /tmp/capture_flow_contract.ts cloudflare/src/capture_flow_contract.ts
+          cmp /tmp/form_contract.ts cloudflare/src/form_contract.ts
+
+      - name: Type-check, audit and dry-build Worker
+        working-directory: cloudflare
+        run: |
+          npm audit --audit-level=low
+          npm test
+          node --check public/app.js
+
+      - name: Integration — form, 12-screen contracts, R2, RenderJob, dispatch and callback
+        run: |
+          set -euo pipefail
+          python cloudflare/test/mock_github_api.py --port 8790 >/tmp/mock-github.log 2>&1 &
+          MOCK_PID=$!
+          (
+            cd cloudflare
+            npx wrangler dev --local --port 8787 \
+              --var CLIENT_API_TOKEN:test-client \
+              --var CALLBACK_TOKEN:test-callback \
+              --var GITHUB_TOKEN:test-token \
+              --var PUBLIC_API_BASE:http://127.0.0.1:8787 \
+              --var GITHUB_API_BASE:http://127.0.0.1:8790
+          ) >/tmp/wrangler.log 2>&1 &
+          WORKER_PID=$!
+          trap 'kill "$WORKER_PID" "$MOCK_PID" 2>/dev/null || true; cat /tmp/wrangler.log; cat /tmp/mock-github.log' EXIT
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:8787/health >/dev/null; then break; fi
+            sleep 0.5
+          done
+          curl --fail --silent http://127.0.0.1:8787/health >/dev/null
+          python cloudflare/test/control_plane_integration.py
+
+  deploy-worker:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy
+    needs: validate-worker-and-capture-app
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: t2-cloudflare-production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GITHUB_DISPATCH_TOKEN: ${{ secrets.GITHUB_DISPATCH_TOKEN }}
+      CALLBACK_TOKEN: ${{ secrets.CLOUDFLARE_CALLBACK_TOKEN }}
+      CLIENT_API_TOKEN: ${{ secrets.T2_CLIENT_API_TOKEN }}
+      PUBLIC_API_BASE: ${{ vars.T2_PUBLIC_API_BASE }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: cloudflare/package-lock.json
+
+      - name: Require deployment prerequisites
+        run: |
+          set -eu
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$GITHUB_DISPATCH_TOKEN"
+          test -n "$CALLBACK_TOKEN"
+          test -n "$CLIENT_API_TOKEN"
+          test -n "$PUBLIC_API_BASE"
+          case "$PUBLIC_API_BASE" in https://*) ;; *) echo 'T2_PUBLIC_API_BASE doit être une URL HTTPS' >&2; exit 1;; esac
+
+      - run: npm ci --prefix cloudflare
+
+      - name: Provision R2 if needed and install Worker secrets
+        working-directory: cloudflare
+        run: |
+          npx wrangler r2 bucket create t2-avant-apres-media || true
+          npx wrangler r2 bucket create t2-avant-apres-media-preview || true
+          printf '%s' "$GITHUB_DISPATCH_TOKEN" | npx wrangler secret put GITHUB_TOKEN
+          printf '%s' "$CALLBACK_TOKEN" | npx wrangler secret put CALLBACK_TOKEN
+          printf '%s' "$CLIENT_API_TOKEN" | npx wrangler secret put CLIENT_API_TOKEN
+
+      - name: Deploy control plane and executable 12-screen app
+        working-directory: cloudflare
+        run: npx wrangler deploy --var "PUBLIC_API_BASE:$PUBLIC_API_BASE"

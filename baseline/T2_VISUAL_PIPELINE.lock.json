@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "purpose": "lock the approved T2 v0.3 visual mechanics while allowing merchant text and captures to remain dynamic",
+  "approved_reference": {
+    "release_tag": "t2-avant-apres-v0.3.0-text-motion",
+    "file_sha256": "67c447dae81241fc9ecc34ee9edfbf8c354a6ddf76e7fa465a62cdac59550ada",
+    "video_stream_sha256": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5",
+    "frames": 900,
+    "width": 720,
+    "height": 1280,
+    "fps": "30/1"
+  },
+  "files": {
+    "engine/render_text_motion.py": "3c6015668b815c20c3d6febe8f7038c1868f2933745df9b8da2a01a42a78f298",
+    "engine/media.py": "c1e793da68c1187ce592e64f6aeb9c074b2f3982d9aaae91bfd215b833b7aa3a",
+    "engine/text_motion.py": "00e686eaba9eba629fed46194bb3267c5d6877ce0052fff3b8dca6f2c4524c18",
+    "engine/transitions.py": "433a0a03357adeef3289000a62a1f25e1a62c30fb4828dc47baa52de3a3e5004",
+    "engine/audio_contract.py": "fd779131f9c28092c3d56cfdebe9692e59dcffaf11cc97aaa5054a0381265fab",
+    "config/T2_avant_apres_template_v0_1_0.json": "7bceb71ac3f5d56b2a30c425efd6d1e00868384cfe9c39f170a5229d1cc22a3e",
+    "config/T2_text_motion_v0_3_0.json": "0dff8b682248465c0965625d563bb03fe66365ad1f96d4dd0acbf947e11e9fd2",
+    "assets/fonts/PinyonScript-Regular.ttf": "4aab130a6ed27f8b8117738c84a5602edf9300cdcc0651a9a65bf96f451ac29a",
+    "assets/fonts/PlayfairDisplay[wght].ttf": "c40f2293766a503bc70cce9e512ef844a4ccb7cbcde792fe2ea31d191917d8d6",
+    "assets/fonts/DejaVuSans.ttf": "57f73e11f51999432bf7ab22ce55b6f945d5eca1bf824404cfa9ec2e3718c84e",
+    "assets/fonts/DejaVuSans-Bold.ttf": "a4c5bc453ca281d90ea079e596da7ae0dfeb5777497c29ec254e76d97ff6f890"
+  },
+  "runtime_visual_sections_sha256": "8ab3d18c12548614fa52d33773fbef2089822d26749af5c49c209794c111d881"
+}

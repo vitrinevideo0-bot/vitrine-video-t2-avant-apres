@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17110d">
+  <title>Vitrine Vidéo — Avant / Après</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main id="app" aria-live="polite">
+    <section id="loading" class="center-panel">
+      <div class="mark" aria-hidden="true">A<span>→</span>A</div>
+      <p>Préparation du parcours Avant / Après…</p>
+    </section>
+  </main>
+  <template id="form-template">
+    <section class="form-shell">
+      <header class="brand-block">
+        <p class="eyebrow">VITRINE VIDÉO · T2</p>
+        <h1>Ton Avant / Après,<br><em>prêt à être vu.</em></h1>
+        <p class="lede">Réponds à 6 questions, puis filme 4 scènes guidées. Les réponses, les images et le son resteront reliés au même rendu.</p>
+      </header>
+      <form id="merchant-form" autocomplete="on">
+        <div id="form-fields" class="fields"></div>
+        <details class="pilot-access">
+          <summary>Accès pilote sécurisé</summary>
+          <label for="access-token">Code d’accès</label>
+          <input id="access-token" name="access-token" type="password" autocomplete="current-password" required>
+          <small>Le code reste dans cet onglet et n’est jamais ajouté à la vidéo.</small>
+        </details>
+        <label class="consent"><input id="consent" type="checkbox" required><span>J’ai l’accord des personnes filmées et je peux utiliser ces images.</span></label>
+        <button class="primary" type="submit">COMMENCER LES 12 ÉCRANS <span>→</span></button>
+        <p id="form-error" class="error" role="alert"></p>
+      </form>
+    </section>
+  </template>
+  <template id="capture-template">
+    <section class="capture-shell">
+      <video id="camera" class="camera" playsinline muted></video>
+      <div class="shade"></div>
+      <header class="capture-top">
+        <div><p class="eyebrow">AVANT / APRÈS</p><strong id="scene-counter"></strong></div>
+        <div class="screen-count"><span id="screen-ordinal"></span><small>/12</small></div>
+      </header>
+      <div id="countdown" class="countdown" hidden></div>
+      <div id="capture-content" class="capture-content"></div>
+      <div id="recording-hud" class="recording-hud" hidden>
+        <span class="record-dot"></span><strong id="timer">00:00</strong>
+        <div class="progress-track"><i id="record-progress"></i></div>
+        <p>Micro actif · vitesse naturelle 1×</p>
+      </div>
+      <p id="capture-error" class="capture-error" role="alert"></p>
+    </section>
+  </template>
+  <template id="status-template">
+    <section class="status-shell">
+      <div id="status-symbol" class="status-symbol"><i></i><i></i><i></i></div>
+      <p class="eyebrow">RENDU SERVEUR</p>
+      <h1 id="status-title">Ton Avant / Après est en préparation</h1>
+      <p id="status-copy">Les 4 scènes, leur son, tes informations et la musique B viennent d’être transmis au rendu GitHub.</p>
+      <div class="status-steps">
+        <span class="done">4 captures acceptées</span>
+        <span class="done">RenderJob unifié créé</span>
+        <span id="render-step">Rendu + mix + contrôle qualité</span>
+      </div>
+      <a id="github-link" class="primary link-button" hidden target="_blank" rel="noopener">OUVRIR SUR GITHUB <span>↗</span></a>
+      <button id="restart" class="secondary" type="button">NOUVEAU PARCOURS</button>
+      <p id="job-reference" class="job-reference"></p>
+    </section>
+  </template>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

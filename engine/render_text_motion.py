@@ -43,15 +43,18 @@ def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def render(job_path: Path) -> Path:
+def render(job_path: Path, output_override: Path | None = None) -> Path:
     job = load_json(job_path)
     Draft202012Validator(load_json(ROOT / "schemas/render_job.schema.json")).validate(job)
-    if job["render_stage"] != "dynamic_text_validation":
-        raise ValueError("Ce moteur attend l’étape dynamic_text_validation.")
+    if job["render_stage"] not in {"dynamic_text_validation", "complete_voice_music_render"}:
+        raise ValueError("Ce moteur attend un profil T2 avec textes dynamiques.")
     if job["render_business_text"] is not True:
         raise ValueError("Les textes dynamiques doivent être activés.")
-    if job["render_audio"] is not False or job["audio_mode"] != "silent_no_audio_stream":
-        raise ValueError("Le contrôle des textes doit encore rester sans flux audio.")
+    if job["render_stage"] == "dynamic_text_validation":
+        if job["render_audio"] is not False or job["audio_mode"] != "silent_no_audio_stream":
+            raise ValueError("Le contrôle des textes doit encore rester sans flux audio.")
+    elif job["render_audio"] is not True or job["audio_mode"] != "voice_music_ducking":
+        raise ValueError("Le profil complet doit réserver le mix voix + musique.")
 
     output_spec = job["output"]
     width = int(output_spec["width"])
@@ -94,7 +97,7 @@ def render(job_path: Path) -> Path:
             )
         )
 
-    output = ROOT / output_spec["uri"]
+    output = output_override.resolve() if output_override else ROOT / output_spec["uri"]
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix(".server-text-motion.mp4")
     writer = cv2.VideoWriter(
@@ -261,11 +264,13 @@ def render(job_path: Path) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--job", default="demo/render_job_textes_demo.json")
+    parser.add_argument("--output", help="Silent visual intermediate for the complete unified profile.")
     args = parser.parse_args()
     job_path = Path(args.job)
     if not job_path.is_absolute():
         job_path = ROOT / job_path
-    render(job_path)
+    output = Path(args.output).resolve() if args.output else None
+    render(job_path, output_override=output)
 
 
 if __name__ == "__main__":

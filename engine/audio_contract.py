@@ -43,7 +43,7 @@ def build_voice_timeline(job: dict[str, Any]) -> dict[str, Any]:
         "segments": segments,
         "scene_boundaries_ms": [0, 6000, 14000, 21000, 30000],
         "automatic_subtitles": False,
-        "current_preview_output_audio": False,
+        "current_preview_output_audio": bool(contract["current_output_audio"]),
         "future_mix": contract["future_mix"],
         "music_status": contract["music_status"],
     }

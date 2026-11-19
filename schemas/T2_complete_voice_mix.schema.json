@@ -25,104 +25,264 @@
     "publication"
   ],
   "properties": {
-    "$schema": {"const": "../schemas/T2_complete_voice_mix.schema.json"},
-    "schema_version": {"const": "1.0.0"},
-    "id": {"const": "restaurants_maquis_T2_complete_voice_mix_v0_5_0"},
-    "display_name": {"type": "string", "minLength": 1},
-    "status": {"const": "single_validation_exemplar"},
-    "requested_on": {"const": "2026-11-18"},
-    "duration_s": {"const": 30.0},
-    "sample_rate_hz": {"const": 48000},
-    "frames": {"const": 900},
-    "fps": {"const": 30},
-    "runtime_visual_contract": {"const": "config/T2_runtime_contract_v0_3_0.json"},
+    "$schema": {
+      "const": "../schemas/T2_complete_voice_mix.schema.json"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "const": "restaurants_maquis_T2_complete_voice_mix_v0_5_0"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "const": "single_validation_exemplar"
+    },
+    "requested_on": {
+      "const": "2026-11-18"
+    },
+    "duration_s": {
+      "const": 30.0
+    },
+    "sample_rate_hz": {
+      "const": 48000
+    },
+    "frames": {
+      "const": 900
+    },
+    "fps": {
+      "const": 30
+    },
+    "runtime_visual_contract": {
+      "const": "config/T2_runtime_contract_v0_3_0.json"
+    },
     "reference_t1": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repository", "commit", "voice_mix_contract", "mixer", "workflow", "mode"],
+      "required": [
+        "repository",
+        "commit",
+        "voice_mix_contract",
+        "mixer",
+        "workflow",
+        "mode"
+      ],
       "properties": {
-        "repository": {"const": "https://github.com/j9028379-hue/vitrine-video-t1-pilot"},
-        "commit": {"const": "c656510ab81d31d413dc4dfd74b42671532cd978"},
-        "voice_mix_contract": {"const": "config/T1_special_menu_voice_mix_v1_0_0.json"},
-        "mixer": {"const": "audio/scripts/mix_t1_voice_music_v1.py"},
-        "workflow": {"const": ".github/workflows/render_t1_complete_voice.yml"},
-        "mode": {"const": "read_only_exact_audio_architecture_reference"}
+        "repository": {
+          "const": "https://github.com/j9028379-hue/vitrine-video-t1-pilot"
+        },
+        "commit": {
+          "const": "c656510ab81d31d413dc4dfd74b42671532cd978"
+        },
+        "voice_mix_contract": {
+          "const": "config/T1_special_menu_voice_mix_v1_0_0.json"
+        },
+        "mixer": {
+          "const": "audio/scripts/mix_t1_voice_music_v1.py"
+        },
+        "workflow": {
+          "const": ".github/workflows/render_t1_complete_voice.yml"
+        },
+        "mode": {
+          "const": "read_only_exact_audio_architecture_reference"
+        }
       }
     },
     "visual_source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["release_tag", "asset_name", "url", "sha256", "video_stream_sha256", "policy"],
+      "required": [
+        "release_tag",
+        "asset_name",
+        "url",
+        "sha256",
+        "video_stream_sha256",
+        "policy"
+      ],
       "properties": {
-        "release_tag": {"const": "t2-avant-apres-v0.3.0-text-motion"},
-        "asset_name": {"const": "T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"},
-        "url": {"type": "string", "format": "uri", "pattern": "^https://github\\.com/vitrinevideo0-bot/"},
-        "sha256": {"const": "67c447dae81241fc9ecc34ee9edfbf8c354a6ddf76e7fa465a62cdac59550ada"},
-        "video_stream_sha256": {"const": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5"},
-        "policy": {"const": "bitstream_copy_no_visual_reencode"}
+        "release_tag": {
+          "const": "t2-avant-apres-v0.3.0-text-motion"
+        },
+        "asset_name": {
+          "const": "T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://github\\.com/vitrinevideo0-bot/"
+        },
+        "sha256": {
+          "const": "67c447dae81241fc9ecc34ee9edfbf8c354a6ddf76e7fa465a62cdac59550ada"
+        },
+        "video_stream_sha256": {
+          "const": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5"
+        },
+        "policy": {
+          "const": "bitstream_copy_no_visual_reencode"
+        }
       }
     },
     "music_selection": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "candidate_id", "title", "artist", "source_page", "source_audio_url", "license",
-        "license_url", "content_id_status", "user_selected_for_this_exemplar", "selected_on",
-        "scope", "template_default_selection", "source_audio_publish", "source_start_s",
-        "program_duration_s", "program_target_lufs", "program_true_peak_dbtp_max",
-        "fade_in_s", "fade_out_s"
+        "candidate_id",
+        "title",
+        "artist",
+        "source_page",
+        "source_audio_url",
+        "source_sha256",
+        "license",
+        "license_url",
+        "content_id_status",
+        "user_selected_for_this_exemplar",
+        "selected_on",
+        "scope",
+        "template_default_selection",
+        "source_audio_publish",
+        "source_start_s",
+        "program_duration_s",
+        "program_target_lufs",
+        "program_true_peak_dbtp_max",
+        "fade_in_s",
+        "fade_out_s"
       ],
       "properties": {
-        "candidate_id": {"const": "B"},
-        "title": {"const": "Afro Pop Vlog Sunshine"},
-        "artist": {"const": "alex-morgan"},
-        "source_page": {"const": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/"},
-        "source_audio_url": {"type": "string", "format": "uri", "pattern": "^https://cdn\\.pixabay\\.com/download/audio/"},
-        "license": {"const": "Pixabay Content License"},
-        "license_url": {"const": "https://pixabay.com/service/license-summary/"},
-        "content_id_status": {"const": "registered"},
-        "user_selected_for_this_exemplar": {"const": true},
-        "selected_on": {"const": "2026-11-18"},
-        "scope": {"const": "this_single_validation_exemplar_only"},
-        "template_default_selection": {"const": false},
-        "source_audio_publish": {"const": false},
-        "source_start_s": {"const": 0.0},
-        "program_duration_s": {"const": 30.0},
-        "program_target_lufs": {"const": -17.0},
-        "program_true_peak_dbtp_max": {"const": -1.0},
-        "fade_in_s": {"const": 0.35},
-        "fade_out_s": {"const": 0.8}
+        "candidate_id": {
+          "const": "B"
+        },
+        "title": {
+          "const": "Afro Pop Vlog Sunshine"
+        },
+        "artist": {
+          "const": "alex-morgan"
+        },
+        "source_page": {
+          "const": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/"
+        },
+        "source_audio_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://cdn\\.pixabay\\.com/download/audio/"
+        },
+        "source_sha256": {
+          "const": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec"
+        },
+        "license": {
+          "const": "Pixabay Content License"
+        },
+        "license_url": {
+          "const": "https://pixabay.com/service/license-summary/"
+        },
+        "content_id_status": {
+          "const": "registered"
+        },
+        "user_selected_for_this_exemplar": {
+          "const": true
+        },
+        "selected_on": {
+          "const": "2026-11-18"
+        },
+        "scope": {
+          "const": "this_single_validation_exemplar_only"
+        },
+        "template_default_selection": {
+          "const": false
+        },
+        "source_audio_publish": {
+          "const": false
+        },
+        "source_start_s": {
+          "const": 0.0
+        },
+        "program_duration_s": {
+          "const": 30.0
+        },
+        "program_target_lufs": {
+          "const": -17.0
+        },
+        "program_true_peak_dbtp_max": {
+          "const": -1.0
+        },
+        "fade_in_s": {
+          "const": 0.35
+        },
+        "fade_out_s": {
+          "const": 0.8
+        }
       }
     },
     "voice": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "provider", "voice_id", "language", "identity", "same_identity_for_all_scenes",
-        "source_speed", "audio_time_map", "automatic_subtitles", "normalization_target_lufs",
-        "normalization_true_peak_dbtp_max", "stem_duration_s", "clips"
+        "provider",
+        "voice_id",
+        "language",
+        "identity",
+        "same_identity_for_all_scenes",
+        "source_speed",
+        "audio_time_map",
+        "automatic_subtitles",
+        "normalization_target_lufs",
+        "normalization_true_peak_dbtp_max",
+        "stem_duration_s",
+        "clips"
       ],
       "properties": {
-        "provider": {"const": "Arena.ai Agent Mode"},
-        "voice_id": {"const": "voice-01"},
-        "language": {"const": "fr"},
-        "identity": {"const": "masculine advertising"},
-        "same_identity_for_all_scenes": {"const": true},
-        "source_speed": {"const": 1.0},
-        "audio_time_map": {"const": "identity"},
-        "automatic_subtitles": {"const": false},
-        "normalization_target_lufs": {"const": -20.0},
-        "normalization_true_peak_dbtp_max": {"const": -3.0},
-        "stem_duration_s": {"const": 30.0},
+        "provider": {
+          "const": "Arena.ai Agent Mode"
+        },
+        "voice_id": {
+          "const": "voice-01"
+        },
+        "language": {
+          "const": "fr"
+        },
+        "identity": {
+          "const": "masculine advertising"
+        },
+        "same_identity_for_all_scenes": {
+          "const": true
+        },
+        "source_speed": {
+          "const": 1.0
+        },
+        "audio_time_map": {
+          "const": "identity"
+        },
+        "automatic_subtitles": {
+          "const": false
+        },
+        "normalization_target_lufs": {
+          "const": -20.0
+        },
+        "normalization_true_peak_dbtp_max": {
+          "const": -3.0
+        },
+        "stem_duration_s": {
+          "const": 30.0
+        },
         "clips": {
           "type": "array",
           "minItems": 4,
           "maxItems": 4,
           "prefixItems": [
-            {"$ref": "#/$defs/scene1"},
-            {"$ref": "#/$defs/scene2"},
-            {"$ref": "#/$defs/scene3"},
-            {"$ref": "#/$defs/scene4"}
+            {
+              "$ref": "#/$defs/scene1"
+            },
+            {
+              "$ref": "#/$defs/scene2"
+            },
+            {
+              "$ref": "#/$defs/scene3"
+            },
+            {
+              "$ref": "#/$defs/scene4"
+            }
           ],
           "items": false
         }
@@ -132,75 +292,180 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "music_open_gain_db", "music_under_voice_gain_db", "duck_depth_db", "duck_attack_ms",
-        "duck_release_ms", "duck_attack_curve", "duck_release_curve", "voice_gain_db", "sfx",
-        "master_target_lufs", "master_true_peak_dbtp_max", "delivery_audio"
+        "music_open_gain_db",
+        "music_under_voice_gain_db",
+        "duck_depth_db",
+        "duck_attack_ms",
+        "duck_release_ms",
+        "duck_attack_curve",
+        "duck_release_curve",
+        "voice_gain_db",
+        "sfx",
+        "master_target_lufs",
+        "master_true_peak_dbtp_max",
+        "delivery_audio"
       ],
       "properties": {
-        "music_open_gain_db": {"const": -3.0},
-        "music_under_voice_gain_db": {"const": -10.0},
-        "duck_depth_db": {"const": -7.0},
-        "duck_attack_ms": {"const": 120},
-        "duck_release_ms": {"const": 450},
-        "duck_attack_curve": {"const": "linear_db"},
-        "duck_release_curve": {"const": "linear_db"},
-        "voice_gain_db": {"const": 0.0},
-        "sfx": {"const": "none"},
-        "master_target_lufs": {"const": -16.0},
-        "master_true_peak_dbtp_max": {"const": -2.0},
-        "delivery_audio": {"const": "AAC stereo 48 kHz 192 kb/s"}
+        "music_open_gain_db": {
+          "const": -3.0
+        },
+        "music_under_voice_gain_db": {
+          "const": -10.0
+        },
+        "duck_depth_db": {
+          "const": -7.0
+        },
+        "duck_attack_ms": {
+          "const": 120
+        },
+        "duck_release_ms": {
+          "const": 450
+        },
+        "duck_attack_curve": {
+          "const": "linear_db"
+        },
+        "duck_release_curve": {
+          "const": "linear_db"
+        },
+        "voice_gain_db": {
+          "const": 0.0
+        },
+        "sfx": {
+          "const": "none"
+        },
+        "master_target_lufs": {
+          "const": -16.0
+        },
+        "master_true_peak_dbtp_max": {
+          "const": -2.0
+        },
+        "delivery_audio": {
+          "const": "AAC stereo 48 kHz 192 kb/s"
+        }
       }
     },
     "quality_gates": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "exact_output_video_count", "duration_tolerance_s", "integrated_lufs_min",
-        "integrated_lufs_max", "wav_true_peak_dbtp_max", "aac_true_peak_dbtp_max",
-        "minimum_active_speech_to_music_db", "clipped_sample_count_max", "required_video_frames",
-        "required_video_fps", "required_width", "required_height", "required_audio_codec",
-        "required_audio_sample_rate_hz", "required_audio_channels", "required_audio_bitrate_bps",
-        "visual_stream_must_match_v0_3", "source_music_must_not_be_published",
+        "exact_output_video_count",
+        "duration_tolerance_s",
+        "integrated_lufs_min",
+        "integrated_lufs_max",
+        "wav_true_peak_dbtp_max",
+        "aac_true_peak_dbtp_max",
+        "minimum_active_speech_to_music_db",
+        "clipped_sample_count_max",
+        "required_video_frames",
+        "required_video_fps",
+        "required_width",
+        "required_height",
+        "required_audio_codec",
+        "required_audio_sample_rate_hz",
+        "required_audio_channels",
+        "required_audio_bitrate_bps",
+        "visual_stream_must_match_v0_3",
+        "source_music_must_not_be_published",
         "human_listening_required_for_final_approval"
       ],
       "properties": {
-        "exact_output_video_count": {"const": 1},
-        "duration_tolerance_s": {"const": 0.05},
-        "integrated_lufs_min": {"const": -16.5},
-        "integrated_lufs_max": {"const": -15.5},
-        "wav_true_peak_dbtp_max": {"const": -1.9},
-        "aac_true_peak_dbtp_max": {"const": -1.0},
-        "minimum_active_speech_to_music_db": {"const": 4.0},
-        "clipped_sample_count_max": {"const": 0},
-        "required_video_frames": {"const": 900},
-        "required_video_fps": {"const": "30/1"},
-        "required_width": {"const": 720},
-        "required_height": {"const": 1280},
-        "required_audio_codec": {"const": "aac"},
-        "required_audio_sample_rate_hz": {"const": 48000},
-        "required_audio_channels": {"const": 2},
-        "required_audio_bitrate_bps": {"const": 192000},
-        "visual_stream_must_match_v0_3": {"const": true},
-        "source_music_must_not_be_published": {"const": true},
-        "human_listening_required_for_final_approval": {"const": true}
+        "exact_output_video_count": {
+          "const": 1
+        },
+        "duration_tolerance_s": {
+          "const": 0.05
+        },
+        "integrated_lufs_min": {
+          "const": -16.5
+        },
+        "integrated_lufs_max": {
+          "const": -15.5
+        },
+        "wav_true_peak_dbtp_max": {
+          "const": -1.9
+        },
+        "aac_true_peak_dbtp_max": {
+          "const": -1.0
+        },
+        "minimum_active_speech_to_music_db": {
+          "const": 4.0
+        },
+        "clipped_sample_count_max": {
+          "const": 0
+        },
+        "required_video_frames": {
+          "const": 900
+        },
+        "required_video_fps": {
+          "const": "30/1"
+        },
+        "required_width": {
+          "const": 720
+        },
+        "required_height": {
+          "const": 1280
+        },
+        "required_audio_codec": {
+          "const": "aac"
+        },
+        "required_audio_sample_rate_hz": {
+          "const": 48000
+        },
+        "required_audio_channels": {
+          "const": 2
+        },
+        "required_audio_bitrate_bps": {
+          "const": 192000
+        },
+        "visual_stream_must_match_v0_3": {
+          "const": true
+        },
+        "source_music_must_not_be_published": {
+          "const": true
+        },
+        "human_listening_required_for_final_approval": {
+          "const": true
+        }
       }
     },
     "publication": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "output_file", "validation_report", "human_report", "automation_csv", "timeline_plot",
-        "release_tag", "publish_exactly_one_mp4", "publish_standalone_audio"
+        "output_file",
+        "validation_report",
+        "human_report",
+        "automation_csv",
+        "timeline_plot",
+        "release_tag",
+        "publish_exactly_one_mp4",
+        "publish_standalone_audio"
       ],
       "properties": {
-        "output_file": {"const": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"},
-        "validation_report": {"const": "T2_VOICE_MUSIC_LEVELS_VALIDATION_V0_5_0.json"},
-        "human_report": {"const": "RAPPORT_NIVEAUX_T2.md"},
-        "automation_csv": {"const": "T2_DUCKING_AUTOMATION_10MS.csv"},
-        "timeline_plot": {"const": "T2_DUCKING_VOICE_TIMELINE.png"},
-        "release_tag": {"const": "t2-avant-apres-v0.5.0-complete-voice-mix"},
-        "publish_exactly_one_mp4": {"const": true},
-        "publish_standalone_audio": {"const": false}
+        "output_file": {
+          "const": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+        },
+        "validation_report": {
+          "const": "T2_VOICE_MUSIC_LEVELS_VALIDATION_V0_5_0.json"
+        },
+        "human_report": {
+          "const": "RAPPORT_NIVEAUX_T2.md"
+        },
+        "automation_csv": {
+          "const": "T2_DUCKING_AUTOMATION_10MS.csv"
+        },
+        "timeline_plot": {
+          "const": "T2_DUCKING_VOICE_TIMELINE.png"
+        },
+        "release_tag": {
+          "const": "t2-avant-apres-v0.5.0-complete-voice-mix"
+        },
+        "publish_exactly_one_mp4": {
+          "const": true
+        },
+        "publish_standalone_audio": {
+          "const": false
+        }
       }
     }
   },
@@ -208,45 +473,170 @@
     "clip": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["scene", "scene_window_s", "start_s", "text", "source", "source_sha256", "source_duration_s"],
+      "required": [
+        "scene",
+        "scene_window_s",
+        "start_s",
+        "text",
+        "source",
+        "source_sha256",
+        "source_duration_s"
+      ],
       "properties": {
-        "scene": {"type": "integer", "minimum": 1, "maximum": 4},
+        "scene": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
         "scene_window_s": {
           "type": "array",
-          "prefixItems": [{"type": "number"}, {"type": "number"}],
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
           "items": false,
           "minItems": 2,
           "maxItems": 2
         },
-        "start_s": {"type": "number"},
-        "text": {"type": "string", "minLength": 1},
-        "source": {"type": "string", "pattern": "^audio/voice/t2-voice-v0\\.5/voix_fr_scene[1-4]\\.wav$"},
-        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "source_duration_s": {"type": "number", "exclusiveMinimum": 0}
+        "start_s": {
+          "type": "number"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^audio/voice/t2-voice-v0\\.5/voix_fr_scene[1-4]\\.wav$"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_duration_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
       }
     },
     "scene1": {
       "allOf": [
-        {"$ref": "#/$defs/clip"},
-        {"properties": {"scene": {"const": 1}, "scene_window_s": {"const": [0.0, 6.0]}, "start_s": {"const": 1.2}, "text": {"const": "Voici le poulet, l'alloco et les épices avant la préparation."}, "source_sha256": {"const": "ae5deb1a2e7e423010374c5347a0c4cd66db32c972a5ec12e062c6655bba2673"}}}
+        {
+          "$ref": "#/$defs/clip"
+        },
+        {
+          "properties": {
+            "scene": {
+              "const": 1
+            },
+            "scene_window_s": {
+              "const": [
+                0.0,
+                6.0
+              ]
+            },
+            "start_s": {
+              "const": 1.2
+            },
+            "text": {
+              "const": "Voici le poulet, l'alloco et les épices avant la préparation."
+            },
+            "source_sha256": {
+              "const": "ae5deb1a2e7e423010374c5347a0c4cd66db32c972a5ec12e062c6655bba2673"
+            }
+          }
+        }
       ]
     },
     "scene2": {
       "allOf": [
-        {"$ref": "#/$defs/clip"},
-        {"properties": {"scene": {"const": 2}, "scene_window_s": {"const": [6.0, 14.0]}, "start_s": {"const": 6.8}, "text": {"const": "Regardez, nous retournons le poulet sur le feu pour bien le griller."}, "source_sha256": {"const": "aeb711bba8f0bca564244ae9093429e1f1a046a8fac3282581f950fbb224c72a"}}}
+        {
+          "$ref": "#/$defs/clip"
+        },
+        {
+          "properties": {
+            "scene": {
+              "const": 2
+            },
+            "scene_window_s": {
+              "const": [
+                6.0,
+                14.0
+              ]
+            },
+            "start_s": {
+              "const": 6.8
+            },
+            "text": {
+              "const": "Regardez, nous retournons le poulet sur le feu pour bien le griller."
+            },
+            "source_sha256": {
+              "const": "aeb711bba8f0bca564244ae9093429e1f1a046a8fac3282581f950fbb224c72a"
+            }
+          }
+        }
       ]
     },
     "scene3": {
       "allOf": [
-        {"$ref": "#/$defs/clip"},
-        {"properties": {"scene": {"const": 3}, "scene_window_s": {"const": [14.0, 21.0]}, "start_s": {"const": 14.7}, "text": {"const": "Voilà notre poulet braisé avec alloco, le plat est prêt !"}, "source_sha256": {"const": "aad8283f7e5adcffc7e18bc69886d25f16f02821f12a8b8093061c935f4499c7"}}}
+        {
+          "$ref": "#/$defs/clip"
+        },
+        {
+          "properties": {
+            "scene": {
+              "const": 3
+            },
+            "scene_window_s": {
+              "const": [
+                14.0,
+                21.0
+              ]
+            },
+            "start_s": {
+              "const": 14.7
+            },
+            "text": {
+              "const": "Voilà notre poulet braisé avec alloco, le plat est prêt !"
+            },
+            "source_sha256": {
+              "const": "aad8283f7e5adcffc7e18bc69886d25f16f02821f12a8b8093061c935f4499c7"
+            }
+          }
+        }
       ]
     },
     "scene4": {
       "allOf": [
-        {"$ref": "#/$defs/clip"},
-        {"properties": {"scene": {"const": 4}, "scene_window_s": {"const": [21.0, 30.0]}, "start_s": {"const": 21.8}, "text": {"const": "Notre poulet braisé avec alloco est prêt. Venez goûter !"}, "source_sha256": {"const": "e6488bcb215f9eb26a0839151de7bdf41046fcf2b538f478f42ed9c2dadac2b6"}}}
+        {
+          "$ref": "#/$defs/clip"
+        },
+        {
+          "properties": {
+            "scene": {
+              "const": 4
+            },
+            "scene_window_s": {
+              "const": [
+                21.0,
+                30.0
+              ]
+            },
+            "start_s": {
+              "const": 21.8
+            },
+            "text": {
+              "const": "Notre poulet braisé avec alloco est prêt. Venez goûter !"
+            },
+            "source_sha256": {
+              "const": "e6488bcb215f9eb26a0839151de7bdf41046fcf2b538f478f42ed9c2dadac2b6"
+            }
+          }
+        }
       ]
     }
   }

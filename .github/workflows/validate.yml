@@ -21,7 +21,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Compiler les sources Python
         run: python -m compileall -q engine tools tests
-      - name: Reconstruire les deux RenderJobs depuis les réponses
+      - name: Reconstruire les trois RenderJobs depuis les mêmes réponses
         run: |
           python tools/build_render_job.py \
             --answers demo/reponses_demo.json \
@@ -33,6 +33,30 @@ jobs:
             --stage dynamic_text_validation \
             --output /tmp/render_job_textes.json
           cmp demo/render_job_textes_demo.json /tmp/render_job_textes.json
+          python tools/build_render_job.py \
+            --answers demo/reponses_textes_demo.json \
+            --stage complete_voice_music_render \
+            --music B \
+            --voice-mode registered_voice_clips \
+            --control-plane github_actions_manual \
+            --output /tmp/render_job_complete.json
+          cmp demo/render_job_complete_demo.json /tmp/render_job_complete.json
+      - name: Verrous de non-régression
+        run: |
+          python tools/verify_existing_tests_unchanged.py
+          python tools/verify_visual_pipeline.py
+      - name: Contrats RenderResult et RenderError
+        run: |
+          python - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+          for schema, fixture in [
+              ('schemas/render_result.schema.json', 'fixtures/t2-avant-apres/render_result.valid.json'),
+              ('schemas/render_error.schema.json', 'fixtures/t2-avant-apres/render_error.unsupported_media.json'),
+          ]:
+              Draft202012Validator(json.load(open(schema))).validate(json.load(open(fixture)))
+              print('T2_SCHEMA_FIXTURE_OK', fixture)
+          PY
       - name: Contrat T2
         run: python tools/validate_contract.py
       - name: Tests formulaire, caméras, scènes, textes, voix et mix final

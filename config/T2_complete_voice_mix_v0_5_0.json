@@ -32,6 +32,7 @@
     "artist": "alex-morgan",
     "source_page": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/",
     "source_audio_url": "https://cdn.pixabay.com/download/audio/2026/07/25/audio_f820d61128.mp3?filename=alex-morgan-afro-pop-vlog-sunshine-573643.mp3",
+    "source_sha256": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec",
     "license": "Pixabay Content License",
     "license_url": "https://pixabay.com/service/license-summary/",
     "content_id_status": "registered",
@@ -62,7 +63,10 @@
     "clips": [
       {
         "scene": 1,
-        "scene_window_s": [0.0, 6.0],
+        "scene_window_s": [
+          0.0,
+          6.0
+        ],
         "start_s": 1.2,
         "text": "Voici le poulet, l'alloco et les épices avant la préparation.",
         "source": "audio/voice/t2-voice-v0.5/voix_fr_scene1.wav",
@@ -71,7 +75,10 @@
       },
       {
         "scene": 2,
-        "scene_window_s": [6.0, 14.0],
+        "scene_window_s": [
+          6.0,
+          14.0
+        ],
         "start_s": 6.8,
         "text": "Regardez, nous retournons le poulet sur le feu pour bien le griller.",
         "source": "audio/voice/t2-voice-v0.5/voix_fr_scene2.wav",
@@ -80,7 +87,10 @@
       },
       {
         "scene": 3,
-        "scene_window_s": [14.0, 21.0],
+        "scene_window_s": [
+          14.0,
+          21.0
+        ],
         "start_s": 14.7,
         "text": "Voilà notre poulet braisé avec alloco, le plat est prêt !",
         "source": "audio/voice/t2-voice-v0.5/voix_fr_scene3.wav",
@@ -89,7 +99,10 @@
       },
       {
         "scene": 4,
-        "scene_window_s": [21.0, 30.0],
+        "scene_window_s": [
+          21.0,
+          30.0
+        ],
         "start_s": 21.8,
         "text": "Notre poulet braisé avec alloco est prêt. Venez goûter !",
         "source": "audio/voice/t2-voice-v0.5/voix_fr_scene4.wav",

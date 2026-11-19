@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.1.0",
+  "job_id": "t2-complete-b14ce737fd2d967a",
+  "idempotency_key": "t2-avant-apres-v0.6.0-unified-runtime-b14ce737fd2d967a",
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "template_version": "0.1.0",
+  "execution_profile": "T2_GITHUB_ACTIONS_COMPLETE",
+  "network_policy": "declared_sources_only",
+  "merchant_payload": {
+    "nom": "Le Jardin de Kandi",
+    "produit": "Poulet braisé à l’alloco",
+    "prix": "2 500",
+    "whatsapp": "01 00 00 00 00",
+    "quartier": "Gansosso — Kandi",
+    "accroche": "De la braise à l’assiette"
+  },
+  "captures": {
+    "S1": {
+      "uri": "rushes/cache/7652493.mp4",
+      "duration_ms": 6000,
+      "source_in_ms": 500,
+      "has_audio": false,
+      "sha256": "9f9703887befc2c2000ed67a45a0189debaf4111c2d7903bc84a62a4ec4025f8",
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 3840,
+      "height": 2160,
+      "fps": 25.0,
+      "frame_count": 229,
+      "rotation_degrees": 0,
+      "audio_codec": null
+    },
+    "S2": {
+      "uri": "rushes/cache/5794186.mp4",
+      "duration_ms": 8000,
+      "source_in_ms": 3000,
+      "has_audio": false,
+      "sha256": "487c790cfec035467c4d2dc5dceffb23c1074e641c97d6620ae3d490901769c7",
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 2160,
+      "height": 3840,
+      "fps": 25.0,
+      "frame_count": 406,
+      "rotation_degrees": 0,
+      "audio_codec": null
+    },
+    "S3": {
+      "uri": "rushes/cache/8094293.mp4",
+      "duration_ms": 7000,
+      "source_in_ms": 4000,
+      "has_audio": false,
+      "sha256": "bd96b04f7c5317a7a73b4eb8a57db6713e0d68230a57c263aafc99324d207425",
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 25.0,
+      "frame_count": 275,
+      "rotation_degrees": 0,
+      "audio_codec": null
+    },
+    "S4": {
+      "uri": "rushes/cache/8448099.mp4",
+      "duration_ms": 9000,
+      "source_in_ms": 200,
+      "has_audio": false,
+      "sha256": "e1f54df1d88d82aabfb15c830130084c02d22ab737ba07719439dbcbd0e4801d",
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": 24.0,
+      "frame_count": 223,
+      "rotation_degrees": 0,
+      "audio_codec": "aac"
+    }
+  },
+  "capture_manifest": "rushes/manifest.json",
+  "runtime_contract": "config/T2_runtime_contract_v0_6_0.json",
+  "text_motion_config": "config/T2_text_motion_v0_3_0.json",
+  "audio_contract": {
+    "capture_voice_mode": "optional_per_scene",
+    "preserve_captured_voice": true,
+    "source_speed": 1.0,
+    "source_time_map": "identity",
+    "audio_time_map": "identity",
+    "automatic_subtitles": false,
+    "current_output_audio": true,
+    "music_status": "selected_for_single_validation_exemplar",
+    "future_mix": "active_voice_plus_selected_T2_music_with_ducking",
+    "voice_source_mode": "registered_voice_clips"
+  },
+  "audio_mode": "voice_music_ducking",
+  "render_stage": "complete_voice_music_render",
+  "render_business_text": true,
+  "render_audio": true,
+  "output": {
+    "uri": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+    "container": "mp4",
+    "video_mime": "video/avc",
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "frames": 900,
+    "duration_ms": 30000,
+    "target_video_bitrate_bps": 5000000,
+    "overwrite": true,
+    "audio_sample_rate_hz": 48000,
+    "audio_channels": 2,
+    "target_audio_bitrate_bps": 192000
+  },
+  "capture_flow_contract": "config/T2_capture_flow_v1_0_0.json",
+  "visual_plan": {
+    "renderer": "engine/render_text_motion.py",
+    "intermediate_uri": "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+    "approved_release_tag": "t2-avant-apres-v0.3.0-text-motion",
+    "approved_file_sha256": "67c447dae81241fc9ecc34ee9edfbf8c354a6ddf76e7fa465a62cdac59550ada",
+    "approved_video_stream_sha256": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5",
+    "rebuild_from_job": true,
+    "preserve_900_frames": true
+  },
+  "provenance": {
+    "t1_reference_commit": "c656510ab81d31d413dc4dfd74b42671532cd978",
+    "t1_mode": "read_only",
+    "control_plane": "github_actions_manual",
+    "render_plane": "github_actions",
+    "cloudflare_job_id": null
+  },
+  "audio_plan": {
+    "config": "config/T2_complete_voice_mix_v0_5_0.json",
+    "config_sha256": "6f58c9fbbd4f9305ba9a2f46e84a002db5577499f94e6933a0f8fc54cec620db",
+    "music": {
+      "selection_mode": "explicit_user_choice",
+      "requested_candidate_id": "B",
+      "selected_candidate_id": "B",
+      "previous_candidate_id": null,
+      "candidate_count": 4,
+      "source_page": "https://pixabay.com/music/afrobeat-afro-pop-vlog-sunshine-573643/",
+      "source_audio_url": "https://cdn.pixabay.com/download/audio/2026/07/25/audio_f820d61128.mp3?filename=alex-morgan-afro-pop-vlog-sunshine-573643.mp3",
+      "source_sha256": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec",
+      "content_id_status": "registered",
+      "template_default_selection": false,
+      "source_audio_publish": false
+    },
+    "voice": {
+      "mode": "registered_voice_clips",
+      "fallback_policy": "registered_clips_are_explicitly_selected_for_this_exemplar",
+      "source_speed": 1.0,
+      "audio_time_map": "identity",
+      "automatic_subtitles": false,
+      "clips": [
+        {
+          "scene": 1,
+          "scene_window_s": [
+            0.0,
+            6.0
+          ],
+          "start_s": 1.2,
+          "text": "Voici le poulet, l'alloco et les épices avant la préparation.",
+          "source": "audio/voice/t2-voice-v0.5/voix_fr_scene1.wav",
+          "source_sha256": "ae5deb1a2e7e423010374c5347a0c4cd66db32c972a5ec12e062c6655bba2673",
+          "source_duration_s": 4.260862
+        },
+        {
+          "scene": 2,
+          "scene_window_s": [
+            6.0,
+            14.0
+          ],
+          "start_s": 6.8,
+          "text": "Regardez, nous retournons le poulet sur le feu pour bien le griller.",
+          "source": "audio/voice/t2-voice-v0.5/voix_fr_scene2.wav",
+          "source_sha256": "aeb711bba8f0bca564244ae9093429e1f1a046a8fac3282581f950fbb224c72a",
+          "source_duration_s": 3.622313
+        },
+        {
+          "scene": 3,
+          "scene_window_s": [
+            14.0,
+            21.0
+          ],
+          "start_s": 14.7,
+          "text": "Voilà notre poulet braisé avec alloco, le plat est prêt !",
+          "source": "audio/voice/t2-voice-v0.5/voix_fr_scene3.wav",
+          "source_sha256": "aad8283f7e5adcffc7e18bc69886d25f16f02821f12a8b8093061c935f4499c7",
+          "source_duration_s": 3.192744
+        },
+        {
+          "scene": 4,
+          "scene_window_s": [
+            21.0,
+            30.0
+          ],
+          "start_s": 21.8,
+          "text": "Notre poulet braisé avec alloco est prêt. Venez goûter !",
+          "source": "audio/voice/t2-voice-v0.5/voix_fr_scene4.wav",
+          "source_sha256": "e6488bcb215f9eb26a0839151de7bdf41046fcf2b538f478f42ed9c2dadac2b6",
+          "source_duration_s": 5.20127
+        }
+      ]
+    },
+    "mix": {
+      "music_open_gain_db": -3.0,
+      "music_under_voice_gain_db": -10.0,
+      "duck_depth_db": -7.0,
+      "duck_attack_ms": 120,
+      "duck_release_ms": 450,
+      "duck_attack_curve": "linear_db",
+      "duck_release_curve": "linear_db",
+      "voice_gain_db": 0.0,
+      "sfx": "none",
+      "master_target_lufs": -16.0,
+      "master_true_peak_dbtp_max": -2.0,
+      "delivery_audio": "AAC stereo 48 kHz 192 kb/s"
+    },
+    "publication": {
+      "output_file": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+      "publish_exactly_one_mp4": true,
+      "publish_standalone_audio": false
+    }
+  }
+}

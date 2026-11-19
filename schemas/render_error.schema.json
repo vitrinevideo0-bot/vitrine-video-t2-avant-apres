@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vitrine.video/schemas/T2/render_error.schema.json",
+  "title": "T2 Avant / Après — RenderError",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "status", "job_id", "template_id", "code", "message",
+    "retryable", "stage", "control_plane", "render_plane", "details"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "status": {"const": "FAILED"},
+    "job_id": {"type": "string", "minLength": 1},
+    "template_id": {"const": "restaurants_maquis_T2_avant_apres_v0_1_0"},
+    "code": {
+      "enum": [
+        "T2_INVALID_RENDER_JOB",
+        "T2_INVALID_MERCHANT_PAYLOAD",
+        "T2_MISSING_CAPTURE",
+        "T2_UNSUPPORTED_MEDIA",
+        "T2_CAPTURE_DURATION_OUT_OF_RANGE",
+        "T2_CAPTURE_AUDIO_MISSING",
+        "T2_CAPTURE_CORRUPT",
+        "T2_ASSET_CHECKSUM_MISMATCH",
+        "T2_MUSIC_CHECKSUM_MISMATCH",
+        "T2_FONT_LOAD_FAILED",
+        "T2_VISUAL_RENDER_FAILED",
+        "T2_AUDIO_MIX_FAILED",
+        "T2_OUTPUT_VALIDATION_FAILED",
+        "T2_RENDER_CANCELLED",
+        "T2_RENDER_FAILED"
+      ]
+    },
+    "message": {"type": "string", "minLength": 1},
+    "retryable": {"type": "boolean"},
+    "stage": {
+      "enum": [
+        "VALIDATING", "MATERIALIZING_CAPTURES", "RENDERING_VISUAL", "MIXING_AUDIO",
+        "VALIDATING_OUTPUT", "PUBLISHING", "CALLBACK"
+      ]
+    },
+    "scene_id": {"enum": ["S1", "S2", "S3", "S4"]},
+    "control_plane": {"enum": ["github_actions_manual", "cloudflare_worker"]},
+    "render_plane": {"const": "github_actions"},
+    "details": {"type": "object"}
+  }
+}

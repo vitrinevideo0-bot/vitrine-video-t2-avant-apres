@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "purpose": "prove the four pre-v0.6 T2 test files remain byte-for-byte unchanged",
+  "files": {
+    "tests/test_complete_voice_mix.py": "110f5899e1dd394fd548da87bb4cd4cd8aef3a861e2bb589b80a871abc9b89d9",
+    "tests/test_contract.py": "01b6c9fdc2ee46a5097212ebdade80ab757f9b91861d6ac7bc8e3cd8f5e39f37",
+    "tests/test_dynamic_text_pipeline.py": "fc337a0ea2c70e2ddeacba4f7cf2028a334bdec9e1ec6ca7d2364449284dc421",
+    "tests/test_music_shortlist.py": "61f2e6059c0b9708a29e7c8b435ab9b93fed44b66b791a21b13034491a9e8ba8"
+  }
+}

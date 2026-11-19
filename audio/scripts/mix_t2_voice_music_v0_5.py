@@ -27,6 +27,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = ROOT / "config/T2_complete_voice_mix_v0_5_0.json"
 SCHEMA = ROOT / "schemas/T2_complete_voice_mix.schema.json"
+RENDER_JOB_SCHEMA = ROOT / "schemas/render_job.schema.json"
 SR = 48_000
 TOTAL_S = 30.0
 N = int(SR * TOTAL_S)
@@ -535,7 +536,7 @@ def write_human_report(path: Path, report: dict[str, Any]) -> None:
             "",
             "## Intégrité et portée",
             "",
-            "- Le flux vidéo est identique bit à bit au montage v0.3 validé.",
+            "- Le flux vidéo final est identique bit à bit au visuel 900 images reconstruit depuis le même RenderJob.",
             "- Les quatre textes sont les exemples exacts des scènes S1 à S4.",
             "- Les voix restent à vitesse 1×, réunies dans un stem de 30 s, sans sous-titres.",
             "- Le morceau B a été choisi pour cet exemplaire unique uniquement ; il n’est pas défini comme choix par défaut du gabarit.",
@@ -560,10 +561,118 @@ def validate_source_config(config: dict[str, Any]) -> None:
         raise ValueError("Le morceau B ne doit pas devenir un défaut du gabarit.")
 
 
+def validate_unified_job(job: dict[str, Any], config: dict[str, Any], config_path: Path) -> None:
+    Draft202012Validator(
+        json.loads(RENDER_JOB_SCHEMA.read_text(encoding="utf-8")),
+        format_checker=FormatChecker(),
+    ).validate(job)
+    if job["render_stage"] != "complete_voice_music_render":
+        raise ValueError("Le mixeur unifié exige complete_voice_music_render.")
+    if job["render_audio"] is not True or job["audio_mode"] != "voice_music_ducking":
+        raise ValueError("Le RenderJob complet doit activer voix, musique et ducking.")
+    plan = job["audio_plan"]
+    if plan["config"] != str(config_path.relative_to(ROOT)):
+        raise ValueError("Le RenderJob ne référence pas le contrat audio chargé.")
+    if plan["config_sha256"] != sha256(config_path):
+        raise ValueError("Le SHA-256 du contrat audio référencé par le RenderJob est invalide.")
+    selection = config["music_selection"]
+    music = plan["music"]
+    expected_music = {
+        "selected_candidate_id": selection["candidate_id"],
+        "source_page": selection["source_page"],
+        "source_audio_url": selection["source_audio_url"],
+        "source_sha256": selection["source_sha256"],
+        "content_id_status": selection["content_id_status"],
+        "template_default_selection": selection["template_default_selection"],
+        "source_audio_publish": selection["source_audio_publish"],
+    }
+    for key, expected in expected_music.items():
+        if music[key] != expected:
+            raise ValueError(f"Le plan musical du RenderJob diverge du contrat : {key}")
+    if plan["voice"]["clips"] != config["voice"]["clips"]:
+        raise ValueError("Les quatre voix du RenderJob divergent du contrat v0.5 verrouillé.")
+    if plan["mix"] != config["mix_contract"]:
+        raise ValueError("Le ducking/mastering du RenderJob diverge du contrat T1 recopié.")
+    if plan["publication"]["output_file"] != config["publication"]["output_file"]:
+        raise ValueError("Le nom de sortie du RenderJob diverge du contrat de publication.")
+    if Path(job["output"]["uri"]).name != config["publication"]["output_file"]:
+        raise ValueError("La sortie finale du RenderJob n'est pas l'unique MP4 attendu.")
+
+
+def is_reference_exemplar(job: dict[str, Any] | None) -> bool:
+    if job is None:
+        return True
+    reference = json.loads((ROOT / "demo/render_job_complete_demo.json").read_text(encoding="utf-8"))
+    return (
+        job["merchant_payload"] == reference["merchant_payload"]
+        and all(
+            job["captures"][slot]["sha256"] == reference["captures"][slot]["sha256"]
+            for slot in ("S1", "S2", "S3", "S4")
+        )
+        and job["audio_plan"]["voice"]["mode"] == "registered_voice_clips"
+    )
+
+
+def extract_capture_audio(source: Path, target: Path, source_in_s: float, duration_s: float) -> None:
+    """Extract accepted camera audio at identity speed; never retime words."""
+    run(
+        [
+            "ffmpeg", "-y", "-v", "error", "-ss", f"{source_in_s:.6f}", "-i", str(source),
+            "-t", f"{duration_s:.6f}", "-map", "0:a:0", "-vn", "-ar", str(SR), "-ac", "1",
+            "-map_metadata", "-1", "-c:a", "pcm_s16le", str(target),
+        ]
+    )
+
+
+def captured_audio_qc(clip: np.ndarray) -> dict[str, Any]:
+    """Conservative speech usability gate used by captured-or-registered fallback."""
+    frame = int(0.020 * SR)
+    powers = np.array(
+        [float(np.mean(clip[index : index + frame] ** 2)) for index in range(0, len(clip), frame)],
+        dtype=np.float64,
+    )
+    levels = 10 * np.log10(np.maximum(powers, 1e-20))
+    noise_floor = float(np.percentile(levels, 20)) if len(levels) else -200.0
+    speech_level = float(np.percentile(levels, 90)) if len(levels) else -200.0
+    active_threshold = max(-48.0, min(noise_floor + 9.0, speech_level - 3.0))
+    active = levels > active_threshold
+    active_s = float(np.count_nonzero(active) * frame / SR)
+    peak_dbfs = float(20 * np.log10(max(float(np.max(np.abs(clip))) if len(clip) else 0.0, 1e-12)))
+    usable = bool(len(clip) and active_s >= 0.35 and peak_dbfs >= -42.0)
+    return {
+        "usable": usable,
+        "active_speech_s": round(active_s, 3),
+        "peak_dbfs": round(peak_dbfs, 3),
+        "noise_floor_dbfs": round(noise_floor, 3),
+        "speech_level_dbfs": round(speech_level, 3),
+        "active_threshold_dbfs": round(active_threshold, 3),
+    }
+
+
+def detected_voice_window(clip: np.ndarray, timeline_start_s: float, threshold_db: float = -38.0) -> tuple[float, float]:
+    """Return one conservative speech window for ducking within a captured scene."""
+    frame = int(0.020 * SR)
+    active: list[int] = []
+    for index in range(0, len(clip), frame):
+        block = clip[index : index + frame]
+        if len(block) == 0:
+            continue
+        power = float(np.mean(block ** 2))
+        if 10 * np.log10(max(power, 1e-20)) > threshold_db:
+            active.append(index)
+    if not active:
+        raise RuntimeError("Aucune parole active détectée dans la prise audio acceptée.")
+    start = timeline_start_s + active[0] / SR
+    end = timeline_start_s + min(len(clip), active[-1] + frame) / SR
+    return (start, end)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--job", type=Path, help="Unified T2 RenderJob; required by the v0.6 orchestrator.")
+    parser.add_argument("--visual-source", type=Path, help="Visual rebuilt from the same RenderJob on GitHub Actions.")
     args = parser.parse_args()
     if os.environ.get("GITHUB_ACTIONS") != "true":
         raise RuntimeError("Rendu de production interdit hors GitHub Actions.")
@@ -573,11 +682,20 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     config = json.loads(config_path.read_text(encoding="utf-8"))
     validate_source_config(config)
+    unified_job: dict[str, Any] | None = None
+    unified_job_path: Path | None = None
+    if args.job:
+        unified_job_path = args.job.resolve()
+        unified_job = json.loads(unified_job_path.read_text(encoding="utf-8"))
+        validate_unified_job(unified_job, config, config_path)
+    if args.visual_source and unified_job is None:
+        raise ValueError("--visual-source exige --job afin de prouver la filiation du visuel.")
     publication = config["publication"]
     mix = config["mix_contract"]
     gates = config["quality_gates"]
     voice_config = config["voice"]
     selection = config["music_selection"]
+    reference_exemplar = is_reference_exemplar(unified_job)
 
     output_mp4 = output_dir / publication["output_file"]
     report_path = output_dir / publication["validation_report"]
@@ -587,20 +705,46 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory(prefix="t2-complete-voice-mix-") as temporary_name:
         temporary = Path(temporary_name)
-        visual = temporary / config["visual_source"]["asset_name"]
         music_source = temporary / "pixabay_candidate_B_source.mp3"
-        visual_download = download(config["visual_source"]["url"], visual)
+        if args.visual_source:
+            visual = args.visual_source.resolve()
+            if not visual.is_file():
+                raise FileNotFoundError(f"Visuel unifié absent : {visual}")
+            visual_download = {
+                "mode": "rebuilt_from_same_render_job",
+                "path": str(visual),
+                "bytes": visual.stat().st_size,
+                "sha256": sha256(visual),
+                "published_as_standalone_asset": False,
+            }
+        else:
+            visual = temporary / config["visual_source"]["asset_name"]
+            visual_download = download(config["visual_source"]["url"], visual)
         music_download = download(selection["source_audio_url"], music_source)
+        if music_download["sha256"] != selection["source_sha256"]:
+            raise RuntimeError(
+                "Le SHA-256 de la source musicale B ne correspond pas au verrou v0.4/v0.5."
+            )
 
-        if sha256(visual) != config["visual_source"]["sha256"]:
-            raise RuntimeError("Le SHA-256 de la base visuelle v0.3 ne correspond pas au verrou.")
         visual_probe = probe(visual)
         visual_video = only_streams(visual_probe, "video")
         if len(visual_video) != 1 or only_streams(visual_probe, "audio"):
-            raise RuntimeError("La base v0.3 doit contenir une vidéo et aucun audio.")
+            raise RuntimeError("Le visuel reconstruit doit contenir une vidéo et aucun audio.")
+        visual_stream = visual_video[0]
         visual_hash = stream_hash(visual, "0:v:0")
-        if visual_hash != config["visual_source"]["video_stream_sha256"]:
-            raise RuntimeError("Le flux vidéo v0.3 ne correspond pas au verrou.")
+        visual_shape_ok = (
+            int(visual_stream.get("width", 0)) == int(gates["required_width"])
+            and int(visual_stream.get("height", 0)) == int(gates["required_height"])
+            and visual_stream.get("r_frame_rate") == gates["required_video_fps"]
+            and int(visual_stream.get("nb_frames", 0)) == int(gates["required_video_frames"])
+        )
+        if not visual_shape_ok:
+            raise RuntimeError("Le visuel reconstruit ne respecte pas les 720×1280, 30 i/s et 900 images verrouillés.")
+        if reference_exemplar:
+            if sha256(visual) != config["visual_source"]["sha256"]:
+                raise RuntimeError("Le SHA-256 du visuel de référence v0.3 ne correspond pas au verrou.")
+            if visual_hash != config["visual_source"]["video_stream_sha256"]:
+                raise RuntimeError("Le flux vidéo de référence v0.3 ne correspond pas au verrou.")
 
         music_probe = probe(music_source)
         source_audio_streams = only_streams(music_probe, "audio")
@@ -623,40 +767,104 @@ def main() -> None:
 
         voice = np.zeros(N, dtype=np.float64)
         voice_entries: list[dict[str, Any]] = []
-        clips: list[np.ndarray] = []
+        duck_spans: list[tuple[float, float]] = []
+        voice_mode = (
+            unified_job["audio_plan"]["voice"]["mode"]
+            if unified_job is not None
+            else "registered_voice_clips"
+        )
         for item in voice_config["clips"]:
-            source = ROOT / item["source"]
-            if sha256(source) != item["source_sha256"]:
-                raise RuntimeError(f"La prise voix S{item['scene']} ne correspond pas au contrat.")
-            raw = decode_audio(source, 1)
-            raw_duration = len(raw) / SR
-            if abs(raw_duration - float(item["source_duration_s"])) > 0.002:
-                raise RuntimeError(f"Durée source voix S{item['scene']} inattendue: {raw_duration:.6f}")
-            processed = temporary / f"voice_scene{item['scene']}_norm.wav"
+            scene = int(item["scene"])
+            capture = unified_job["captures"][f"S{scene}"] if unified_job is not None else None
+            capture_requested = voice_mode in {"captured_scene_audio", "captured_or_registered_fallback"}
+            use_capture = capture_requested
+            scene_start, scene_end = [float(value) for value in item["scene_window_s"]]
+            capture_quality: dict[str, Any] | None = None
+            fallback_reason: str | None = None
+            extracted: Path | None = None
+            if capture_requested:
+                if capture is None or not capture["has_audio"]:
+                    if voice_mode == "captured_scene_audio":
+                        raise RuntimeError(f"La prise S{scene} ne contient aucun audio accepté.")
+                    use_capture = False
+                    fallback_reason = "capture_has_no_audio_stream"
+                else:
+                    source = ROOT / capture["uri"]
+                    if sha256(source) != capture["sha256"]:
+                        raise RuntimeError(f"La capture audio S{scene} ne correspond pas au RenderJob.")
+                    extracted = temporary / f"captured_scene{scene}_identity.wav"
+                    extract_capture_audio(
+                        source,
+                        extracted,
+                        float(capture["source_in_ms"]) / 1000.0,
+                        float(capture["duration_ms"]) / 1000.0,
+                    )
+                    captured_raw = decode_audio(extracted, 1)
+                    capture_quality = captured_audio_qc(captured_raw)
+                    if not capture_quality["usable"]:
+                        if voice_mode == "captured_scene_audio":
+                            raise RuntimeError(f"La prise S{scene} ne contient aucune parole exploitable.")
+                        use_capture = False
+                        fallback_reason = "capture_audio_failed_speech_usability_gate"
+            if use_capture:
+                assert capture is not None and extracted is not None
+                normalization_source = extracted
+                raw = decode_audio(extracted, 1)
+                raw_duration = len(raw) / SR
+                start_s = scene_start
+                effective_item = {
+                    **item,
+                    "source": capture["uri"],
+                    "source_sha256": capture["sha256"],
+                    "source_duration_s": round(raw_duration, 6),
+                    "text": "captured_scene_audio_no_transcript",
+                }
+                source_mode = "captured_scene_audio"
+            else:
+                source = ROOT / item["source"]
+                if sha256(source) != item["source_sha256"]:
+                    raise RuntimeError(f"La prise voix S{scene} ne correspond pas au contrat.")
+                normalization_source = source
+                raw = decode_audio(source, 1)
+                raw_duration = len(raw) / SR
+                if abs(raw_duration - float(item["source_duration_s"])) > 0.002:
+                    raise RuntimeError(f"Durée source voix S{scene} inattendue: {raw_duration:.6f}")
+                start_s = float(item["start_s"])
+                effective_item = dict(item)
+                source_mode = (
+                    "registered_voice_fallback"
+                    if capture_requested
+                    else "registered_voice_clip"
+                )
+
+            processed = temporary / f"voice_scene{scene}_norm.wav"
             normalization = normalize_voice(
-                source,
+                normalization_source,
                 processed,
                 float(voice_config["normalization_target_lufs"]),
                 float(voice_config["normalization_true_peak_dbtp_max"]),
             )
             clip = decode_audio(processed, 1)
-            start_s = float(item["start_s"])
             end_s = start_s + len(clip) / SR
-            scene_start, scene_end = [float(value) for value in item["scene_window_s"]]
-            if start_s < scene_start or end_s > scene_end + 0.001:
+            if start_s < scene_start or end_s > scene_end + 0.05:
                 raise RuntimeError(
-                    f"La voix S{item['scene']} sort de sa scène: {start_s:.3f}–{end_s:.3f} / {scene_start:.3f}–{scene_end:.3f}"
+                    f"La voix S{scene} sort de sa scène: {start_s:.3f}–{end_s:.3f} / {scene_start:.3f}–{scene_end:.3f}"
                 )
             start_sample = int(round(start_s * SR))
             count = min(len(clip), N - start_sample)
             voice[start_sample : start_sample + count] += clip[:count]
-            clips.append(clip)
+            duck_span = detected_voice_window(clip, start_s) if use_capture else (start_s, end_s)
+            duck_spans.append(duck_span)
             voice_entries.append(
                 {
-                    **item,
+                    **effective_item,
+                    "source_mode": source_mode,
+                    "capture_audio_qc": capture_quality,
+                    "fallback_reason": fallback_reason,
                     "source_decoded_duration_s": round(raw_duration, 6),
                     "start_sample_48khz": start_sample,
                     "end_s": round(end_s, 6),
+                    "duck_span_s": [round(duck_span[0], 6), round(duck_span[1], 6)],
                     "processed_duration_s": round(len(clip) / SR, 6),
                     "processed_samples_48khz": len(clip),
                     "processed_sha256": sha256(processed),
@@ -670,7 +878,7 @@ def main() -> None:
         write_float_wav(voice_stem_file, voice, "pcm_s24le")
         stem_stats = loudness_stats(voice_stem_file, -20.0, -3.0)
         stem_qc = sample_qc(voice)
-        spans = [(float(item["start_s"]), float(item["end_s"])) for item in voice_entries]
+        spans = duck_spans
 
         attack_s = float(mix["duck_attack_ms"]) / 1000.0
         release_s = float(mix["duck_release_ms"]) / 1000.0
@@ -768,6 +976,12 @@ def main() -> None:
             "video_codec": video_stream.get("codec_name"),
             "video_stream_sha256": final_video_hash,
             "visual_stream_identical_to_v0_3": final_video_hash == visual_hash,
+            "visual_stream_identical_to_rebuilt_input": final_video_hash == visual_hash,
+            "reference_v0_3_hash_match": (
+                visual_hash == config["visual_source"]["video_stream_sha256"]
+                if reference_exemplar
+                else None
+            ),
             "audio_codec": audio_stream.get("codec_name"),
             "sample_rate_hz": int(audio_stream.get("sample_rate", 0)),
             "channels": int(audio_stream.get("channels", 0)),
@@ -839,10 +1053,31 @@ def main() -> None:
             "workflow_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
             "commit": os.environ.get("GITHUB_SHA"),
             "configuration": str(config_path.relative_to(ROOT)),
+            "render_job": (
+                {
+                    "file": str(unified_job_path),
+                    "job_id": unified_job["job_id"],
+                    "idempotency_key": unified_job["idempotency_key"],
+                    "sha256": sha256(unified_job_path),
+                    "merchant_payload": unified_job["merchant_payload"],
+                    "capture_sha256": {
+                        slot: unified_job["captures"][slot]["sha256"]
+                        for slot in ("S1", "S2", "S3", "S4")
+                    },
+                    "control_plane": unified_job["provenance"]["control_plane"],
+                    "render_plane": unified_job["provenance"]["render_plane"],
+                }
+                if unified_job is not None and unified_job_path is not None
+                else None
+            ),
             "t1_audio_reference": config["reference_t1"],
             "visual_source": {
                 **config["visual_source"],
+                "mode": "reference_v0_3_exact" if reference_exemplar else "dynamic_rebuild_same_render_job",
+                "reference_exemplar": reference_exemplar,
+                "reference_hash_enforced": reference_exemplar,
                 "download": visual_download,
+                "observed_file_sha256": sha256(visual),
                 "observed_video_stream_sha256": visual_hash,
             },
             "music": {

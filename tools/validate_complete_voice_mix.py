@@ -18,6 +18,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = ROOT / "schemas/T2_complete_voice_mix.schema.json"
+RENDER_JOB_SCHEMA = ROOT / "schemas/render_job.schema.json"
 SR = 48_000
 
 
@@ -124,6 +125,8 @@ def main() -> None:
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--proof", type=Path, required=True)
+    parser.add_argument("--job", type=Path, help="Unified RenderJob used to rebuild the visual and mix.")
+    parser.add_argument("--visual-source", type=Path, help="Silent visual rebuilt from that same RenderJob.")
     args = parser.parse_args()
     if os.environ.get("GITHUB_ACTIONS") != "true":
         raise RuntimeError("Validation de production interdite hors GitHub Actions.")
@@ -136,6 +139,22 @@ def main() -> None:
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(config)
     publication = config["publication"]
     gates = config["quality_gates"]
+    job: dict[str, Any] | None = None
+    job_path: Path | None = None
+    if args.job:
+        job_path = args.job.resolve()
+        job = json.loads(job_path.read_text(encoding="utf-8"))
+        Draft202012Validator(
+            json.loads(RENDER_JOB_SCHEMA.read_text(encoding="utf-8")),
+            format_checker=FormatChecker(),
+        ).validate(job)
+        if job["render_stage"] != "complete_voice_music_render":
+            raise ValueError("La validation unifiée exige le profil complet T2.")
+    visual_source = args.visual_source.resolve() if args.visual_source else None
+    if visual_source and job is None:
+        raise ValueError("--visual-source exige --job.")
+    if visual_source and not visual_source.is_file():
+        raise FileNotFoundError(visual_source)
 
     mp4s = sorted(output_dir.glob("*.mp4"))
     if len(mp4s) != 1 or mp4s[0].name != publication["output_file"]:
@@ -169,6 +188,11 @@ def main() -> None:
         raise ValueError("L’avertissement Content ID doit rester visible.")
     if report["publication"]["source_music_published"] or report["publication"]["voice_stem_published"]:
         raise ValueError("Une source audio autonome est marquée publiée.")
+    if job is not None and job_path is not None:
+        if not report.get("render_job") or report["render_job"]["job_id"] != job["job_id"]:
+            raise ValueError("Le rapport de mixage n'est pas rattaché au RenderJob validé.")
+        if report["render_job"]["sha256"] != digest(job_path):
+            raise ValueError("L'empreinte RenderJob du rapport de mixage est invalide.")
 
     mp4 = mp4s[0]
     metadata = probe(mp4)
@@ -180,6 +204,15 @@ def main() -> None:
     video, audio = videos[0], audios[0]
     duration = float(metadata["format"]["duration"])
     video_hash = stream_hash(mp4, "0:v:0")
+    if visual_source:
+        source_metadata = probe(visual_source)
+        source_videos = [item for item in source_metadata["streams"] if item.get("codec_type") == "video"]
+        source_audio = [item for item in source_metadata["streams"] if item.get("codec_type") == "audio"]
+        if len(source_videos) != 1 or source_audio:
+            raise ValueError("Le visuel intermédiaire doit contenir une vidéo et aucun audio.")
+        expected_visual_hash = stream_hash(visual_source, "0:v:0")
+    else:
+        expected_visual_hash = config["visual_source"]["video_stream_sha256"]
     independent_loudness = loudness(mp4)
     qc = decoded_qc(mp4)
     observed_bitrate = int(audio.get("bit_rate") or 0)
@@ -192,7 +225,12 @@ def main() -> None:
         "height": int(video.get("height", 0)) == int(gates["required_height"]),
         "fps": video.get("r_frame_rate") == gates["required_video_fps"],
         "frames": int(video.get("nb_frames", 0)) == int(gates["required_video_frames"]),
-        "visual_bitstream": video_hash == config["visual_source"]["video_stream_sha256"],
+        "visual_bitstream": video_hash == expected_visual_hash,
+        "visual_matches_mix_report": video_hash == report["visual_source"]["observed_video_stream_sha256"],
+        "reference_visual_lock_when_applicable": (
+            not report["visual_source"].get("reference_exemplar", False)
+            or video_hash == config["visual_source"]["video_stream_sha256"]
+        ),
         "audio_codec": audio.get("codec_name") == gates["required_audio_codec"],
         "audio_sample_rate": int(audio.get("sample_rate", 0)) == int(gates["required_audio_sample_rate_hz"]),
         "audio_channels": int(audio.get("channels", 0)) == int(gates["required_audio_channels"]),
@@ -235,6 +273,16 @@ def main() -> None:
         "commit": os.environ.get("GITHUB_SHA"),
         "config": str(config_path.relative_to(ROOT)),
         "config_sha256": digest(config_path),
+        "render_job": (
+            {"file": str(job_path), "job_id": job["job_id"], "sha256": digest(job_path)}
+            if job is not None and job_path is not None
+            else None
+        ),
+        "visual_source": (
+            {"file": str(visual_source), "sha256": digest(visual_source), "video_stream_sha256": expected_visual_hash}
+            if visual_source
+            else {"mode": "locked_reference", "video_stream_sha256": expected_visual_hash}
+        ),
         "mix_report": report_path.name,
         "mix_report_sha256": digest(report_path),
         "human_report_sha256": digest(human_report_path),
