@@ -1,6 +1,7 @@
 import { CAPTURE_FLOW_CONTRACT } from "./capture_flow_contract";
 import { FORM_CONTRACT } from "./form_contract";
 import { RENDER_JOB_TEMPLATE } from "./render_job_template";
+import { MUSIC_POOL_CONTRACT } from "./music_pool_contract";
 
 export interface Env {
   ASSETS: Fetcher;
@@ -15,6 +16,7 @@ export interface Env {
 }
 
 type CaptureSlot = "S1" | "S2" | "S3" | "S4";
+type MusicId = "A" | "B" | "C" | "D";
 type JobStatus = "UPLOADING" | "READY" | "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
 
 interface MerchantPayload {
@@ -52,6 +54,9 @@ interface StoredJob {
   merchant_payload: MerchantPayload;
   captures: Partial<Record<CaptureSlot, CaptureMeta>>;
   voice_mode: "registered_voice_clips" | "captured_scene_audio" | "captured_or_registered_fallback";
+  requested_music_id: "auto" | MusicId;
+  selected_music_id?: MusicId;
+  last_successful_music_id?: MusicId | null;
   job?: Record<string, unknown>;
   github?: Record<string, unknown>;
   result?: unknown;
@@ -59,8 +64,17 @@ interface StoredJob {
 }
 
 const SLOTS: CaptureSlot[] = ["S1", "S2", "S3", "S4"];
+const MUSIC_IDS: MusicId[] = ["A", "B", "C", "D"];
 const DURATIONS: Record<CaptureSlot, number> = { S1: 6000, S2: 8000, S3: 7000, S4: 9000 };
 const ALLOWED_MIME = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const MUSIC_STATE_KEY = "music/t2-last-success.json";
+
+interface MusicState {
+  schema_version: "1.0.0";
+  last_successful_music_id: MusicId | null;
+  last_successful_render_job_id: string | null;
+  successful_render_count: number;
+}
 
 function json(data: unknown, status = 200): Response {
   return Response.json(data, { status, headers: { "cache-control": "no-store" } });
@@ -100,6 +114,70 @@ function jobKey(jobId: string): string { return `jobs/${jobId}/state.json`; }
 function idemKey(key: string): string { return `idempotency/${key}.txt`; }
 function captureKey(jobId: string, slot: CaptureSlot): string { return `jobs/${jobId}/captures/${slot}.bin`; }
 
+function initialMusicState(): MusicState {
+  return { schema_version: "1.0.0", last_successful_music_id: null, last_successful_render_job_id: null, successful_render_count: 0 };
+}
+
+function validateMusicState(state: MusicState): MusicState {
+  if (
+    state.schema_version !== "1.0.0"
+    || (state.last_successful_music_id !== null && !MUSIC_IDS.includes(state.last_successful_music_id))
+    || !Number.isInteger(state.successful_render_count)
+    || state.successful_render_count < 0
+    || ((state.last_successful_music_id === null) !== (state.last_successful_render_job_id === null))
+  ) throw new Error("État musical T2 persistant invalide.");
+  return state;
+}
+
+async function readMusicState(env: Env): Promise<MusicState> {
+  const object = await env.T2_MEDIA.get(MUSIC_STATE_KEY);
+  return object ? validateMusicState(await object.json<MusicState>()) : initialMusicState();
+}
+
+async function selectMusic(jobId: string, requested: "auto" | MusicId, last: MusicId | null): Promise<any> {
+  const candidates = MUSIC_POOL_CONTRACT.candidates;
+  let selected: (typeof candidates)[number];
+  let mode: string;
+  if (requested !== "auto") {
+    if (requested === last) throw new Error("Répétition musicale immédiate interdite.");
+    const found = candidates.find((candidate) => candidate.id === requested);
+    if (!found) throw new Error("Musique T2 demandée inconnue.");
+    selected = found;
+    mode = "explicit_user_choice";
+  } else {
+    const eligible = candidates.filter((candidate) => candidate.id !== last);
+    const digest = await sha256Text(jobId);
+    selected = eligible[Number(BigInt(`0x${digest.slice(0, 16)}`) % BigInt(eligible.length))];
+    mode = "deterministic_no_immediate_repeat";
+  }
+  return { ...selected, selection_mode: mode, requested_candidate_id: requested, previous_candidate_id: last };
+}
+
+async function commitMusicSuccess(env: Env, jobId: string, selected: MusicId): Promise<void> {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const object = await env.T2_MEDIA.get(MUSIC_STATE_KEY);
+    const current = object ? validateMusicState(await object.json<MusicState>()) : initialMusicState();
+    if (current.last_successful_render_job_id === jobId) {
+      if (current.last_successful_music_id !== selected) throw new Error("Un callback T2 rejoué ne peut pas changer de musique.");
+      return;
+    }
+    if (current.last_successful_music_id === selected) throw new Error("Répétition musicale immédiate interdite au commit.");
+    const updated: MusicState = {
+      schema_version: "1.0.0",
+      last_successful_music_id: selected,
+      last_successful_render_job_id: jobId,
+      successful_render_count: current.successful_render_count + 1,
+    };
+    const written = await env.T2_MEDIA.put(MUSIC_STATE_KEY, JSON.stringify(updated), {
+      onlyIf: object ? { etagMatches: object.etag } : { etagDoesNotMatch: "*" },
+      httpMetadata: { contentType: "application/json" },
+      customMetadata: { last_successful_music_id: selected, last_successful_render_job_id: jobId },
+    });
+    if (written) return;
+  }
+  throw new Error("Conflit concurrent persistant sur l'état musical T2.");
+}
+
 async function sha256Text(text: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -128,7 +206,7 @@ function runtimeCaptureUri(jobId: string, slot: CaptureSlot, mime: string): stri
   return `rushes/runtime/${jobId}/${slot}.${extension}`;
 }
 
-function buildRenderJob(state: StoredJob): Record<string, unknown> {
+async function buildRenderJob(state: StoredJob, env: Env): Promise<Record<string, unknown>> {
   const job = structuredClone(RENDER_JOB_TEMPLATE) as unknown as Record<string, any>;
   job.job_id = state.job_id;
   job.idempotency_key = state.idempotency_key;
@@ -153,6 +231,33 @@ function buildRenderJob(state: StoredJob): Record<string, unknown> {
       audio_codec: capture.audio_codec,
     }];
   }));
+  const musicState = await readMusicState(env);
+  const selectedMusic = await selectMusic(state.job_id, state.requested_music_id, musicState.last_successful_music_id);
+  state.selected_music_id = selectedMusic.id;
+  state.last_successful_music_id = musicState.last_successful_music_id;
+  job.runtime_contract = "config/T2_runtime_contract_v1_0_0.json";
+  job.audio_plan.config = selectedMusic.mix_config;
+  job.audio_plan.config_sha256 = selectedMusic.mix_config_sha256;
+  job.output.uri = `output/runtime/${state.job_id}/${selectedMusic.production_output_file}`;
+  job.audio_plan.publication.output_file = selectedMusic.production_output_file;
+  job.audio_plan.music = {
+    selection_mode: selectedMusic.selection_mode,
+    requested_candidate_id: selectedMusic.requested_candidate_id,
+    selected_candidate_id: selectedMusic.id,
+    previous_candidate_id: selectedMusic.previous_candidate_id,
+    last_successful_music_id: selectedMusic.previous_candidate_id,
+    state_update_policy: "after_success_only",
+    candidate_count: 4,
+    source_page: selectedMusic.source_page,
+    source_audio_url: selectedMusic.source_audio_url,
+    source_sha256: selectedMusic.source_sha256,
+    source_bytes: selectedMusic.source_bytes,
+    content_id_status: selectedMusic.content_id_status,
+    owner_approved: true,
+    template_default_selection: false,
+    source_audio_publish: false,
+  };
+  job.audio_contract.music_status = "selected_from_owner_approved_four_track_rotation";
   job.audio_contract.voice_source_mode = state.voice_mode;
   job.audio_plan.voice.mode = state.voice_mode;
   job.audio_plan.voice.fallback_policy = state.voice_mode === "registered_voice_clips"
@@ -180,10 +285,14 @@ async function createJob(request: Request, env: Env): Promise<Response> {
   if (!["registered_voice_clips", "captured_scene_audio", "captured_or_registered_fallback"].includes(String(mode))) {
     return fail(400, "T2_INVALID_VOICE_MODE", "Mode voix invalide.");
   }
+  const requestedMusic = String(body.music_id || "auto") as "auto" | MusicId;
+  if (requestedMusic !== "auto" && !MUSIC_IDS.includes(requestedMusic as MusicId)) {
+    return fail(400, "T2_INVALID_MUSIC_ID", "music_id doit valoir auto, A, B, C ou D.");
+  }
   const seed = `${idempotencyKey}\n${JSON.stringify(merchant)}\n${Date.now()}\n${crypto.randomUUID()}`;
   const jobId = `t2-complete-${(await sha256Text(seed)).slice(0, 24)}`;
   const now = new Date().toISOString();
-  const state: StoredJob = { status: "UPLOADING", job_id: jobId, idempotency_key: idempotencyKey, created_at: now, updated_at: now, merchant_payload: merchant, captures: {}, voice_mode: mode as StoredJob["voice_mode"] };
+  const state: StoredJob = { status: "UPLOADING", job_id: jobId, idempotency_key: idempotencyKey, created_at: now, updated_at: now, merchant_payload: merchant, captures: {}, voice_mode: mode as StoredJob["voice_mode"], requested_music_id: requestedMusic };
   await writeJob(env, state);
   const claim = await env.T2_MEDIA.put(idemKey(idempotencyKey), jobId, {
     onlyIf: { etagDoesNotMatch: "*" },
@@ -242,7 +351,7 @@ async function dispatch(request: Request, env: Env, jobId: string): Promise<Resp
   if (state.status === "QUEUED" || state.status === "RUNNING" || state.status === "COMPLETED") return json({ job_id: jobId, status: state.status, idempotent_replay: true });
   const retryingDispatch = state.status === "FAILED" && record(state.error)?.code === "T2_GITHUB_DISPATCH_FAILED";
   if ((!retryingDispatch && state.status !== "READY") || !SLOTS.every((slot) => state.captures[slot])) return fail(409, "T2_CAPTURES_INCOMPLETE", "Les quatre captures acceptées sont requises.");
-  state.job = buildRenderJob(state);
+  state.job = await buildRenderJob(state, env);
   state.status = "QUEUED";
   await writeJob(env, state);
   const githubApi = (env.GITHUB_API_BASE || "https://api.github.com").replace(/\/$/, "");
@@ -316,7 +425,16 @@ async function callback(request: Request, env: Env, jobId: string): Promise<Resp
   if (invalid) return fail(422, "T2_INVALID_CALLBACK_PAYLOAD", invalid);
   state.status = status as JobStatus;
   state.github = { run_id: body.github_run_id, run_url: body.github_run_url };
-  if (status === "COMPLETED") state.result = body.result;
+  if (status === "COMPLETED") {
+    if (!state.selected_music_id) return fail(409, "T2_MUSIC_SELECTION_MISSING", "La musique sélectionnée manque au job.");
+    try {
+      await commitMusicSuccess(env, state.job_id, state.selected_music_id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Conflit d'état musical.";
+      return fail(409, "T2_MUSIC_STATE_CONFLICT", message, true);
+    }
+    state.result = body.result;
+  }
   if (status === "FAILED") state.error = body.error;
   await writeJob(env, state);
   return json({ job_id: jobId, status: state.status });
@@ -339,6 +457,11 @@ async function handle(request: Request, env: Env): Promise<Response> {
   if (request.method === "GET" && url.pathname === "/health") return json({ status: "ok", service: "t2-avant-apres-control-plane", render_plane: "github_actions" });
   if (request.method === "GET" && url.pathname === "/v1/contracts/capture-flow") return json(CAPTURE_FLOW_CONTRACT);
   if (request.method === "GET" && url.pathname === "/v1/contracts/form") return json(FORM_CONTRACT);
+  if (request.method === "GET" && url.pathname === "/v1/contracts/music-pool") return json(MUSIC_POOL_CONTRACT);
+  if (request.method === "GET" && url.pathname === "/v1/music-state") {
+    if (!(await authorized(request, env.CALLBACK_TOKEN))) return fail(401, "T2_UNAUTHORIZED", "Authentification requise.");
+    return json(await readMusicState(env));
+  }
   if (request.method === "POST" && url.pathname === "/v1/jobs") {
     if (!(await authorized(request, env.CLIENT_API_TOKEN))) return fail(401, "T2_UNAUTHORIZED", "Jeton client requis.");
     return createJob(request, env);

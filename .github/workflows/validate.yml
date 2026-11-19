@@ -37,6 +37,7 @@ jobs:
             --answers demo/reponses_textes_demo.json \
             --stage complete_voice_music_render \
             --music D \
+            --historical-exemplar \
             --voice-mode registered_voice_clips \
             --control-plane github_actions_manual \
             --output /tmp/render_job_complete.json
@@ -55,16 +56,19 @@ jobs:
               ('schemas/render_error.schema.json', 'fixtures/t2-avant-apres/render_error.unsupported_media.json'),
               ('schemas/T2_complete_voice_mix_v0_7_0.schema.json', 'config/T2_complete_voice_mix_v0_7_0.json'),
               ('schemas/T2_music_selection_v0_7_0.schema.json', 'config/T2_music_selection_v0_7_0.json'),
+              ('schemas/T2_music_pool_v1_0_0.schema.json', 'config/T2_music_pool_v1_0_0.json'),
+              *[('schemas/T2_complete_voice_mix_v1_0_0.schema.json', f'config/T2_complete_voice_mix_v1_0_0_{candidate}.json') for candidate in 'ABCD'],
           ]:
               definition = json.load(open(schema))
               Draft202012Validator.check_schema(definition)
               Draft202012Validator(definition, format_checker=FormatChecker()).validate(json.load(open(fixture)))
               print('T2_SCHEMA_FIXTURE_OK', fixture)
+          Draft202012Validator.check_schema(json.load(open('schemas/T2_music_selection_state.schema.json')))
           PY
       - name: Contrats Cloudflare générés sans dérive
         run: |
           python tools/build_cloudflare_contracts.py
-          git diff --exit-code -- cloudflare/src/capture_flow_contract.ts cloudflare/src/form_contract.ts cloudflare/src/render_job_template.ts
+          git diff --exit-code -- cloudflare/src/capture_flow_contract.ts cloudflare/src/form_contract.ts cloudflare/src/render_job_template.ts cloudflare/src/music_pool_contract.ts
       - name: Contrat T2
         run: python tools/validate_contract.py
       - name: Tests formulaire, caméras, scènes, textes, voix et mix final

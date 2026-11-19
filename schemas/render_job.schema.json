@@ -92,7 +92,8 @@
       "enum": [
         "config/T2_runtime_contract_v0_3_0.json",
         "config/T2_runtime_contract_v0_6_0.json",
-        "config/T2_runtime_contract_v0_7_0.json"
+        "config/T2_runtime_contract_v0_7_0.json",
+        "config/T2_runtime_contract_v1_0_0.json"
       ]
     },
     "text_motion_config": {
@@ -302,7 +303,8 @@
               "music_status": {
                 "enum": [
                   "selected_for_single_validation_exemplar",
-                  "selected_for_current_production"
+                  "selected_for_current_production",
+                  "selected_from_owner_approved_four_track_rotation"
                 ]
               },
               "future_mix": {
@@ -325,9 +327,17 @@
             ],
             "properties": {
               "uri": {
-                "enum": [
-                  "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
-                  "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+                "anyOf": [
+                  {
+                    "enum": [
+                      "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+                      "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^output/runtime/[A-Za-z0-9._-]+/VIDEO_T2_COMPLET_VOIX_[A-Z0-9_]+\\.mp4$"
+                  }
                 ]
               }
             }
@@ -335,7 +345,8 @@
           "runtime_contract": {
             "enum": [
               "config/T2_runtime_contract_v0_6_0.json",
-              "config/T2_runtime_contract_v0_7_0.json"
+              "config/T2_runtime_contract_v0_7_0.json",
+              "config/T2_runtime_contract_v1_0_0.json"
             ]
           }
         }
@@ -346,19 +357,12 @@
         "properties": {
           "audio_plan": {
             "properties": {
-              "music": {
-                "properties": {
-                  "selected_candidate_id": {
-                    "const": "B"
-                  }
-                },
-                "required": [
-                  "selected_candidate_id"
-                ]
+              "config": {
+                "const": "config/T2_complete_voice_mix_v0_5_0.json"
               }
             },
             "required": [
-              "music"
+              "config"
             ]
           }
         },
@@ -419,8 +423,14 @@
                   },
                   "content_id_status": {
                     "const": "registered"
+                  },
+                  "selected_candidate_id": {
+                    "const": "B"
                   }
-                }
+                },
+                "required": [
+                  "selected_candidate_id"
+                ]
               }
             }
           }
@@ -432,19 +442,12 @@
         "properties": {
           "audio_plan": {
             "properties": {
-              "music": {
-                "properties": {
-                  "selected_candidate_id": {
-                    "const": "D"
-                  }
-                },
-                "required": [
-                  "selected_candidate_id"
-                ]
+              "config": {
+                "const": "config/T2_complete_voice_mix_v0_7_0.json"
               }
             },
             "required": [
-              "music"
+              "config"
             ]
           }
         },
@@ -502,6 +505,94 @@
                   },
                   "source_sha256": {
                     "const": "24e9606e14e4708e8c8ffa3a6a97429dbfc95049d388481392d72b971e932c61"
+                  },
+                  "content_id_status": {
+                    "const": "not_displayed_on_source_page"
+                  },
+                  "selected_candidate_id": {
+                    "const": "D"
+                  }
+                },
+                "required": [
+                  "selected_candidate_id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "audio_plan": {
+            "properties": {
+              "config": {
+                "enum": [
+                  "config/T2_complete_voice_mix_v1_0_0_A.json",
+                  "config/T2_complete_voice_mix_v1_0_0_B.json",
+                  "config/T2_complete_voice_mix_v1_0_0_C.json",
+                  "config/T2_complete_voice_mix_v1_0_0_D.json"
+                ]
+              }
+            },
+            "required": [
+              "config"
+            ]
+          }
+        },
+        "required": [
+          "audio_plan"
+        ]
+      },
+      "then": {
+        "properties": {
+          "runtime_contract": {
+            "const": "config/T2_runtime_contract_v1_0_0.json"
+          },
+          "audio_contract": {
+            "properties": {
+              "music_status": {
+                "const": "selected_from_owner_approved_four_track_rotation"
+              }
+            }
+          },
+          "output": {
+            "properties": {
+              "uri": {
+                "type": "string",
+                "pattern": "^output/runtime/[A-Za-z0-9._-]+/VIDEO_T2_COMPLET_VOIX_[A-Z0-9_]+\\.mp4$"
+              }
+            }
+          },
+          "audio_plan": {
+            "properties": {
+              "music": {
+                "required": [
+                  "owner_approved",
+                  "last_successful_music_id",
+                  "state_update_policy",
+                  "source_bytes"
+                ],
+                "properties": {
+                  "owner_approved": {
+                    "const": true
+                  },
+                  "last_successful_music_id": {
+                    "enum": [
+                      null,
+                      "A",
+                      "B",
+                      "C",
+                      "D"
+                    ]
+                  },
+                  "state_update_policy": {
+                    "const": "after_success_only"
+                  },
+                  "source_bytes": {
+                    "type": "integer",
+                    "minimum": 100000
                   },
                   "content_id_status": {
                     "const": "not_displayed_on_source_page"
@@ -728,7 +819,8 @@
           "enum": [
             "deferred_until_visual_and_music_approval",
             "selected_for_single_validation_exemplar",
-            "selected_for_current_production"
+            "selected_for_current_production",
+            "selected_from_owner_approved_four_track_rotation"
           ]
         },
         "future_mix": {
@@ -763,11 +855,19 @@
       ],
       "properties": {
         "uri": {
-          "enum": [
-            "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
-            "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
-            "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
-            "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+          "anyOf": [
+            {
+              "enum": [
+                "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+                "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
+                "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+                "output/t2-complete-v0.7.0/VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+              ]
+            },
+            {
+              "type": "string",
+              "pattern": "^output/runtime/[A-Za-z0-9._-]+/VIDEO_T2_COMPLET_VOIX_[A-Z0-9_]+\\.mp4$"
+            }
           ]
         },
         "container": {
@@ -901,7 +1001,11 @@
         "config": {
           "enum": [
             "config/T2_complete_voice_mix_v0_5_0.json",
-            "config/T2_complete_voice_mix_v0_7_0.json"
+            "config/T2_complete_voice_mix_v0_7_0.json",
+            "config/T2_complete_voice_mix_v1_0_0_A.json",
+            "config/T2_complete_voice_mix_v1_0_0_B.json",
+            "config/T2_complete_voice_mix_v1_0_0_C.json",
+            "config/T2_complete_voice_mix_v1_0_0_D.json"
           ]
         },
         "config_sha256": {
@@ -1081,6 +1185,27 @@
             },
             "source_audio_publish": {
               "const": false
+            },
+            "source_bytes": {
+              "type": "integer",
+              "minimum": 100000
+            },
+            "owner_approved": {
+              "type": "boolean"
+            },
+            "last_successful_music_id": {
+              "enum": [
+                null,
+                "A",
+                "B",
+                "C",
+                "D"
+              ]
+            },
+            "state_update_policy": {
+              "enum": [
+                "after_success_only"
+              ]
             }
           }
         },
@@ -1150,9 +1275,17 @@
           ],
           "properties": {
             "output_file": {
-              "enum": [
-                "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
-                "VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+              "type": "string",
+              "anyOf": [
+                {
+                  "enum": [
+                    "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+                    "VIDEO_T2_COMPLET_VOIX_AFROFIRE_A_VALIDER.mp4"
+                  ]
+                },
+                {
+                  "pattern": "^VIDEO_T2_COMPLET_VOIX_[A-Z0-9_]+\\.mp4$"
+                }
               ]
             },
             "publish_exactly_one_mp4": {
@@ -1199,6 +1332,82 @@
             "properties": {
               "config_sha256": {
                 "const": "0f5dd52b4340d34453f212a4b2c4d7dd5760d915525f94d8a3831ee5db021d3e"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v1_0_0_A.json"
+              }
+            },
+            "required": [
+              "config"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config_sha256": {
+                "const": "2c3889d822facc2111ab1d9b88f279a09a6545bea081beba39310c894e0c2c95"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v1_0_0_B.json"
+              }
+            },
+            "required": [
+              "config"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config_sha256": {
+                "const": "7af3455f33dbf615ae08c6c29e455980ec8af3534f51f3de2b99d2b0828df68b"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v1_0_0_C.json"
+              }
+            },
+            "required": [
+              "config"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config_sha256": {
+                "const": "f17243f55055c8313c29bad52532204069e03960ee77ebc34708f6e6779cce11"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "config": {
+                "const": "config/T2_complete_voice_mix_v1_0_0_D.json"
+              }
+            },
+            "required": [
+              "config"
+            ]
+          },
+          "then": {
+            "properties": {
+              "config_sha256": {
+                "const": "d870f7ba9b34d48d193d4b1b03b4a9a14775e222004b510805c68c5f458e86a4"
               }
             }
           }

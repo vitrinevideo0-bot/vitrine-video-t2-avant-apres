@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vitrine-video.example/schemas/T2_music_pool_v1_0_0.schema.json",
+  "title": "T2 owner-approved four-track production pool",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema", "schema_version", "id", "template_id", "status", "approved_on",
+    "approval_contract", "historical_shortlist", "provider", "license", "license_url",
+    "selection_contract", "publication_contract", "candidates"
+  ],
+  "properties": {
+    "$schema": {"const": "../schemas/T2_music_pool_v1_0_0.schema.json"},
+    "schema_version": {"const": "1.0.0"},
+    "id": {"const": "restaurants_maquis_T2_music_pool_v1_0_0"},
+    "template_id": {"const": "restaurants_maquis_T2_avant_apres_v0_1_0"},
+    "status": {"const": "all_four_owner_approved_for_rotation"},
+    "approved_on": {"const": "2026-11-18"},
+    "approval_contract": {"const": "approvals/T2_MUSIC_POOL_APPROVAL_2026-11-18.json"},
+    "historical_shortlist": {"const": "music/T2_music_shortlist_v0_4_0.json"},
+    "provider": {"const": "Pixabay"},
+    "license": {"const": "Pixabay Content License"},
+    "license_url": {"const": "https://pixabay.com/service/license-summary/"},
+    "selection_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_count", "allowed_candidate_ids", "default_request", "automatic_algorithm",
+        "no_immediate_repeat", "explicit_repeat_policy", "state_key", "state_update_policy",
+        "failed_render_state_policy", "persistent_state_schema", "cloudflare_state_object",
+        "first_render_pool", "subsequent_pool_size"
+      ],
+      "properties": {
+        "candidate_count": {"const": 4},
+        "allowed_candidate_ids": {"const": ["A", "B", "C", "D"]},
+        "default_request": {"const": "auto"},
+        "automatic_algorithm": {"type": "string", "minLength": 1},
+        "no_immediate_repeat": {"const": true},
+        "explicit_repeat_policy": {"const": "reject"},
+        "state_key": {"const": "last_successful_music_id"},
+        "state_update_policy": {"const": "after_success_only"},
+        "failed_render_state_policy": {"const": "unchanged"},
+        "persistent_state_schema": {"const": "schemas/T2_music_selection_state.schema.json"},
+        "cloudflare_state_object": {"const": "music/t2-last-success.json"},
+        "first_render_pool": {"const": "all_four_owner_approved_candidates"},
+        "subsequent_pool_size": {"const": 3}
+      }
+    },
+    "publication_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full_pixabay_sources_bundled", "source_audio_publish", "auditions_are_voice_plus_music_derivatives", "standalone_music_release_forbidden"],
+      "properties": {
+        "full_pixabay_sources_bundled": {"const": false},
+        "source_audio_publish": {"const": false},
+        "auditions_are_voice_plus_music_derivatives": {"const": true},
+        "standalone_music_release_forbidden": {"const": true}
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        {"allOf": [{"$ref": "#/$defs/candidate"}, {"properties": {"id": {"const": "A"}}}]},
+        {"allOf": [{"$ref": "#/$defs/candidate"}, {"properties": {"id": {"const": "B"}}}]},
+        {"allOf": [{"$ref": "#/$defs/candidate"}, {"properties": {"id": {"const": "C"}}}]},
+        {"allOf": [{"$ref": "#/$defs/candidate"}, {"properties": {"id": {"const": "D"}}}]}
+      ],
+      "items": false
+    }
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "artist", "source_page", "source_audio_url", "source_sha256",
+        "source_bytes", "source_duration_s", "source_page_checked_on", "content_id_status",
+        "ai_generated_badge", "owner_approved", "production_eligible", "mix_config",
+        "mix_config_sha256", "production_output_file", "audition_file", "audition_sha256"
+      ],
+      "properties": {
+        "id": {"enum": ["A", "B", "C", "D"]},
+        "title": {"type": "string", "minLength": 1},
+        "artist": {"const": "DPStudioMusic"},
+        "source_page": {"type": "string", "format": "uri", "pattern": "^https://pixabay\\.com/music/"},
+        "source_audio_url": {"type": "string", "format": "uri", "pattern": "^https://cdn\\.pixabay\\.com/(audio|download/audio)/"},
+        "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "source_bytes": {"type": "integer", "minimum": 100000},
+        "source_duration_s": {"type": "number", "minimum": 30},
+        "source_page_checked_on": {"const": "2026-11-19"},
+        "content_id_status": {"const": "not_displayed_on_source_page"},
+        "ai_generated_badge": {"const": "displayed"},
+        "owner_approved": {"const": true},
+        "production_eligible": {"const": true},
+        "mix_config": {"type": "string", "pattern": "^config/T2_complete_voice_mix_"},
+        "mix_config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "production_output_file": {"type": "string", "pattern": "^VIDEO_T2_COMPLET_VOIX_.*\\.mp4$"},
+        "audition_file": {"type": "string", "pattern": "^music/auditions/v1/.*\\.m4a$"},
+        "audition_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

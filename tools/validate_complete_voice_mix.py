@@ -20,6 +20,10 @@ ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS = {
     "restaurants_maquis_T2_complete_voice_mix_v0_5_0": ROOT / "schemas/T2_complete_voice_mix.schema.json",
     "restaurants_maquis_T2_complete_voice_mix_v0_7_0": ROOT / "schemas/T2_complete_voice_mix_v0_7_0.schema.json",
+    **{
+        f"restaurants_maquis_T2_complete_voice_mix_v1_0_0_{candidate}": ROOT / "schemas/T2_complete_voice_mix_v1_0_0.schema.json"
+        for candidate in "ABCD"
+    },
 }
 RENDER_JOB_SCHEMA = ROOT / "schemas/render_job.schema.json"
 SR = 48_000
