@@ -14,7 +14,7 @@ T1 reste une référence publique **en lecture seule** au commit `c656510ab81d31
 4. Chaque scène demande caméra et microphone, s’arrête automatiquement après 6, 8, 7 ou 9 secondes, puis se relit **avec le son à vitesse 1×**.
 5. `REFAIRE` détruit la prise locale. L’acceptation calcule son SHA-256 et l’envoie à R2.
 6. Après S4, le Worker produit un seul `RenderJob` complet `1.1.0` et déclenche `repository_dispatch` sur GitHub.
-7. GitHub télécharge les quatre captures avec vérification SHA-256, valide les médias, reconstruit les 900 images depuis ce même job, puis mixe voix et musique.
+7. GitHub télécharge les quatre captures avec vérification SHA-256, valide les médias, reconstruit les 900 images depuis ce même job, vérifie le SHA-256 du flux H.264 (l’empreinte du conteneur MP4 est seulement consignée), puis mixe voix et musique.
 8. Le ducking conserve −3 dB hors parole, −10 dB sous parole, attaque 120 ms et relâchement 450 ms.
 9. Le QC indépendant produit `RenderResult` ou `RenderError`, puis GitHub rappelle le Worker.
 10. Le client suit `UPLOADING → READY → QUEUED → RUNNING → COMPLETED|FAILED` et ouvre le run GitHub.

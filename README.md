@@ -54,7 +54,8 @@ La définition machine est `form/questions_T2.json`. L’application la charge p
 - 720 × 1280, 30 i/s, 900 images, 30,000 s ;
 - six transitions de 0,42 s ;
 - Pinyon Script et textes dynamiques incorporés ;
-- flux vidéo v0.3 copié bit à bit dans le MP4 v0.5.
+- flux vidéo v0.3 copié bit à bit dans le MP4 v0.5 ;
+- pour une reconstruction v0.6, l’invariant bloquant est le SHA-256 du flux H.264 copié ; le SHA-256 du conteneur MP4 complet reste consigné comme provenance, car l’empaquetage peut varier sans changer une seule image.
 
 ## Production exclusivement sur GitHub
 
