@@ -25,68 +25,308 @@
     "output"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
-    "job_id": {"type": "string", "minLength": 1, "maxLength": 80},
-    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 120},
-    "template_id": {"const": "restaurants_maquis_T2_avant_apres_v0_1_0"},
-    "template_version": {"const": "0.1.0"},
-    "execution_profile": {
-      "enum": ["T2_GITHUB_ACTIONS_SILENT", "T2_GITHUB_ACTIONS_TEXT_MOTION"]
+    "schema_version": {
+      "enum": [
+        "1.0.0",
+        "1.1.0"
+      ]
     },
-    "network_policy": {"const": "declared_sources_only"},
-    "merchant_payload": {"$ref": "#/$defs/merchantPayload"},
+    "job_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "template_id": {
+      "const": "restaurants_maquis_T2_avant_apres_v0_1_0"
+    },
+    "template_version": {
+      "const": "0.1.0"
+    },
+    "execution_profile": {
+      "enum": [
+        "T2_GITHUB_ACTIONS_SILENT",
+        "T2_GITHUB_ACTIONS_TEXT_MOTION",
+        "T2_GITHUB_ACTIONS_COMPLETE"
+      ]
+    },
+    "network_policy": {
+      "const": "declared_sources_only"
+    },
+    "merchant_payload": {
+      "$ref": "#/$defs/merchantPayload"
+    },
     "captures": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["S1", "S2", "S3", "S4"],
+      "required": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ],
       "properties": {
-        "S1": {"$ref": "#/$defs/captureS1"},
-        "S2": {"$ref": "#/$defs/captureS2"},
-        "S3": {"$ref": "#/$defs/captureS3"},
-        "S4": {"$ref": "#/$defs/captureS4"}
+        "S1": {
+          "$ref": "#/$defs/captureS1"
+        },
+        "S2": {
+          "$ref": "#/$defs/captureS2"
+        },
+        "S3": {
+          "$ref": "#/$defs/captureS3"
+        },
+        "S4": {
+          "$ref": "#/$defs/captureS4"
+        }
       }
     },
-    "capture_manifest": {"const": "rushes/manifest.json"},
-    "runtime_contract": {"const": "config/T2_runtime_contract_v0_3_0.json"},
+    "capture_manifest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runtime_contract": {
+      "enum": [
+        "config/T2_runtime_contract_v0_3_0.json",
+        "config/T2_runtime_contract_v0_6_0.json"
+      ]
+    },
     "text_motion_config": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
-    "audio_contract": {"$ref": "#/$defs/audioContract"},
-    "audio_mode": {"const": "silent_no_audio_stream"},
+    "audio_contract": {
+      "$ref": "#/$defs/audioContract"
+    },
+    "audio_mode": {
+      "enum": [
+        "silent_no_audio_stream",
+        "voice_music_ducking"
+      ]
+    },
     "render_stage": {
-      "enum": ["silent_transition_validation", "dynamic_text_validation"]
+      "enum": [
+        "silent_transition_validation",
+        "dynamic_text_validation",
+        "complete_voice_music_render"
+      ]
     },
-    "render_business_text": {"type": "boolean"},
-    "render_audio": {"const": false},
-    "output": {"$ref": "#/$defs/output"}
+    "render_business_text": {
+      "type": "boolean"
+    },
+    "render_audio": {
+      "type": "boolean"
+    },
+    "output": {
+      "$ref": "#/$defs/output"
+    },
+    "capture_flow_contract": {
+      "const": "config/T2_capture_flow_v1_0_0.json"
+    },
+    "visual_plan": {
+      "$ref": "#/$defs/visualPlan"
+    },
+    "audio_plan": {
+      "$ref": "#/$defs/audioPlan"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    }
   },
   "allOf": [
     {
-      "if": {"properties": {"render_stage": {"const": "silent_transition_validation"}}},
+      "if": {
+        "properties": {
+          "render_stage": {
+            "const": "silent_transition_validation"
+          }
+        }
+      },
       "then": {
         "properties": {
-          "execution_profile": {"const": "T2_GITHUB_ACTIONS_SILENT"},
-          "render_business_text": {"const": false},
-          "text_motion_config": {"const": null},
+          "execution_profile": {
+            "const": "T2_GITHUB_ACTIONS_SILENT"
+          },
+          "render_business_text": {
+            "const": false
+          },
+          "text_motion_config": {
+            "const": null
+          },
           "output": {
             "properties": {
-              "uri": {"const": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4"}
+              "uri": {
+                "const": "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4"
+              }
             }
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "capture_manifest": {
+            "const": "rushes/manifest.json"
+          },
+          "audio_mode": {
+            "const": "silent_no_audio_stream"
+          },
+          "render_audio": {
+            "const": false
+          },
+          "runtime_contract": {
+            "const": "config/T2_runtime_contract_v0_3_0.json"
           }
         }
       }
     },
     {
-      "if": {"properties": {"render_stage": {"const": "dynamic_text_validation"}}},
+      "if": {
+        "properties": {
+          "render_stage": {
+            "const": "dynamic_text_validation"
+          }
+        }
+      },
       "then": {
         "properties": {
-          "execution_profile": {"const": "T2_GITHUB_ACTIONS_TEXT_MOTION"},
-          "render_business_text": {"const": true},
-          "text_motion_config": {"const": "config/T2_text_motion_v0_3_0.json"},
+          "execution_profile": {
+            "const": "T2_GITHUB_ACTIONS_TEXT_MOTION"
+          },
+          "render_business_text": {
+            "const": true
+          },
+          "text_motion_config": {
+            "const": "config/T2_text_motion_v0_3_0.json"
+          },
           "output": {
             "properties": {
-              "uri": {"const": "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"}
+              "uri": {
+                "const": "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"
+              }
             }
+          },
+          "schema_version": {
+            "const": "1.0.0"
+          },
+          "capture_manifest": {
+            "const": "rushes/manifest.json"
+          },
+          "audio_mode": {
+            "const": "silent_no_audio_stream"
+          },
+          "render_audio": {
+            "const": false
+          },
+          "runtime_contract": {
+            "const": "config/T2_runtime_contract_v0_3_0.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "render_stage": {
+            "const": "complete_voice_music_render"
+          }
+        },
+        "required": [
+          "render_stage"
+        ]
+      },
+      "then": {
+        "required": [
+          "capture_flow_contract",
+          "visual_plan",
+          "audio_plan",
+          "provenance"
+        ],
+        "properties": {
+          "schema_version": {
+            "const": "1.1.0"
+          },
+          "execution_profile": {
+            "const": "T2_GITHUB_ACTIONS_COMPLETE"
+          },
+          "capture_manifest": {
+            "anyOf": [
+              {
+                "const": "rushes/manifest.json"
+              },
+              {
+                "pattern": "^rushes/runtime/[A-Za-z0-9._/-]+\\.json$"
+              }
+            ]
+          },
+          "render_business_text": {
+            "const": true
+          },
+          "text_motion_config": {
+            "const": "config/T2_text_motion_v0_3_0.json"
+          },
+          "audio_mode": {
+            "const": "voice_music_ducking"
+          },
+          "render_audio": {
+            "const": true
+          },
+          "captures": {
+            "properties": {
+              "S1": {
+                "$ref": "#/$defs/captureS1Complete"
+              },
+              "S2": {
+                "$ref": "#/$defs/captureS2Complete"
+              },
+              "S3": {
+                "$ref": "#/$defs/captureS3Complete"
+              },
+              "S4": {
+                "$ref": "#/$defs/captureS4Complete"
+              }
+            }
+          },
+          "audio_contract": {
+            "required": [
+              "voice_source_mode"
+            ],
+            "properties": {
+              "current_output_audio": {
+                "const": true
+              },
+              "music_status": {
+                "const": "selected_for_single_validation_exemplar"
+              },
+              "future_mix": {
+                "const": "active_voice_plus_selected_T2_music_with_ducking"
+              },
+              "voice_source_mode": {
+                "enum": [
+                  "registered_voice_clips",
+                  "captured_scene_audio",
+                  "captured_or_registered_fallback"
+                ]
+              }
+            }
+          },
+          "output": {
+            "required": [
+              "audio_sample_rate_hz",
+              "audio_channels",
+              "target_audio_bitrate_bps"
+            ],
+            "properties": {
+              "uri": {
+                "const": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+              }
+            }
+          },
+          "runtime_contract": {
+            "const": "config/T2_runtime_contract_v0_6_0.json"
           }
         }
       }
@@ -96,50 +336,174 @@
     "merchantPayload": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["nom", "produit", "prix", "whatsapp", "quartier"],
+      "required": [
+        "nom",
+        "produit",
+        "prix",
+        "whatsapp",
+        "quartier"
+      ],
       "properties": {
-        "nom": {"type": "string", "minLength": 1, "maxLength": 40},
-        "produit": {"type": "string", "minLength": 1, "maxLength": 32},
-        "prix": {"type": "string", "minLength": 1, "maxLength": 7, "pattern": "^[0-9 .]+$"},
-        "whatsapp": {"type": "string", "minLength": 4, "maxLength": 20},
-        "quartier": {"type": "string", "minLength": 1, "maxLength": 40},
-        "accroche": {"type": "string", "minLength": 0, "maxLength": 48}
+        "nom": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "produit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "prix": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 7,
+          "pattern": "^[0-9 .]+$"
+        },
+        "whatsapp": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 20
+        },
+        "quartier": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "accroche": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 48
+        }
       }
     },
     "captureBase": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["uri", "duration_ms", "source_in_ms", "has_audio", "sha256"],
+      "required": [
+        "uri",
+        "duration_ms",
+        "source_in_ms",
+        "has_audio",
+        "sha256"
+      ],
       "properties": {
-        "uri": {"type": "string", "minLength": 1},
-        "duration_ms": {"type": "integer", "minimum": 1},
-        "source_in_ms": {"type": "integer", "minimum": 0},
-        "has_audio": {"type": "boolean"},
-        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_in_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "has_audio": {
+          "type": "boolean"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mime_type": {
+          "enum": [
+            "video/mp4",
+            "video/webm",
+            "video/quicktime"
+          ]
+        },
+        "video_codec": {
+          "type": "string",
+          "minLength": 1
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 320
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 320
+        },
+        "fps": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "frame_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rotation_degrees": {
+          "enum": [
+            0,
+            90,
+            180,
+            270
+          ]
+        },
+        "audio_codec": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "captureS1": {
       "allOf": [
-        {"$ref": "#/$defs/captureBase"},
-        {"properties": {"duration_ms": {"const": 6000}}}
+        {
+          "$ref": "#/$defs/captureBase"
+        },
+        {
+          "properties": {
+            "duration_ms": {
+              "const": 6000
+            }
+          }
+        }
       ]
     },
     "captureS2": {
       "allOf": [
-        {"$ref": "#/$defs/captureBase"},
-        {"properties": {"duration_ms": {"const": 8000}}}
+        {
+          "$ref": "#/$defs/captureBase"
+        },
+        {
+          "properties": {
+            "duration_ms": {
+              "const": 8000
+            }
+          }
+        }
       ]
     },
     "captureS3": {
       "allOf": [
-        {"$ref": "#/$defs/captureBase"},
-        {"properties": {"duration_ms": {"const": 7000}}}
+        {
+          "$ref": "#/$defs/captureBase"
+        },
+        {
+          "properties": {
+            "duration_ms": {
+              "const": 7000
+            }
+          }
+        }
       ]
     },
     "captureS4": {
       "allOf": [
-        {"$ref": "#/$defs/captureBase"},
-        {"properties": {"duration_ms": {"const": 9000}}}
+        {
+          "$ref": "#/$defs/captureBase"
+        },
+        {
+          "properties": {
+            "duration_ms": {
+              "const": 9000
+            }
+          }
+        }
       ]
     },
     "audioContract": {
@@ -157,15 +521,46 @@
         "future_mix"
       ],
       "properties": {
-        "capture_voice_mode": {"const": "optional_per_scene"},
-        "preserve_captured_voice": {"const": true},
-        "source_speed": {"const": 1.0},
-        "source_time_map": {"const": "identity"},
-        "audio_time_map": {"const": "identity"},
-        "automatic_subtitles": {"const": false},
-        "current_output_audio": {"const": false},
-        "music_status": {"const": "deferred_until_visual_and_music_approval"},
-        "future_mix": {"const": "captured_voice_plus_selected_T2_music_with_ducking"}
+        "capture_voice_mode": {
+          "const": "optional_per_scene"
+        },
+        "preserve_captured_voice": {
+          "const": true
+        },
+        "source_speed": {
+          "const": 1.0
+        },
+        "source_time_map": {
+          "const": "identity"
+        },
+        "audio_time_map": {
+          "const": "identity"
+        },
+        "automatic_subtitles": {
+          "const": false
+        },
+        "current_output_audio": {
+          "type": "boolean"
+        },
+        "music_status": {
+          "enum": [
+            "deferred_until_visual_and_music_approval",
+            "selected_for_single_validation_exemplar"
+          ]
+        },
+        "future_mix": {
+          "enum": [
+            "captured_voice_plus_selected_T2_music_with_ducking",
+            "active_voice_plus_selected_T2_music_with_ducking"
+          ]
+        },
+        "voice_source_mode": {
+          "enum": [
+            "registered_voice_clips",
+            "captured_scene_audio",
+            "captured_or_registered_fallback"
+          ]
+        }
       }
     },
     "output": {
@@ -187,18 +582,466 @@
         "uri": {
           "enum": [
             "output/T2_AVANT_APRES_TRANSITIONS_SILENT_V0_2_0.mp4",
-            "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"
+            "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4",
+            "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
           ]
         },
-        "container": {"const": "mp4"},
-        "video_mime": {"const": "video/avc"},
-        "width": {"const": 720},
-        "height": {"const": 1280},
-        "fps": {"const": 30},
-        "frames": {"const": 900},
-        "duration_ms": {"const": 30000},
-        "target_video_bitrate_bps": {"type": "integer", "minimum": 4000000, "maximum": 6000000},
-        "overwrite": {"const": true}
+        "container": {
+          "const": "mp4"
+        },
+        "video_mime": {
+          "const": "video/avc"
+        },
+        "width": {
+          "const": 720
+        },
+        "height": {
+          "const": 1280
+        },
+        "fps": {
+          "const": 30
+        },
+        "frames": {
+          "const": 900
+        },
+        "duration_ms": {
+          "const": 30000
+        },
+        "target_video_bitrate_bps": {
+          "type": "integer",
+          "minimum": 4000000,
+          "maximum": 6000000
+        },
+        "overwrite": {
+          "const": true
+        },
+        "audio_sample_rate_hz": {
+          "const": 48000
+        },
+        "audio_channels": {
+          "const": 2
+        },
+        "target_audio_bitrate_bps": {
+          "const": 192000
+        }
+      }
+    },
+    "captureS1Complete": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/captureS1"
+        },
+        {
+          "required": [
+            "mime_type",
+            "video_codec",
+            "width",
+            "height",
+            "fps",
+            "frame_count",
+            "rotation_degrees",
+            "audio_codec"
+          ]
+        }
+      ]
+    },
+    "captureS2Complete": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/captureS2"
+        },
+        {
+          "required": [
+            "mime_type",
+            "video_codec",
+            "width",
+            "height",
+            "fps",
+            "frame_count",
+            "rotation_degrees",
+            "audio_codec"
+          ]
+        }
+      ]
+    },
+    "captureS3Complete": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/captureS3"
+        },
+        {
+          "required": [
+            "mime_type",
+            "video_codec",
+            "width",
+            "height",
+            "fps",
+            "frame_count",
+            "rotation_degrees",
+            "audio_codec"
+          ]
+        }
+      ]
+    },
+    "captureS4Complete": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/captureS4"
+        },
+        {
+          "required": [
+            "mime_type",
+            "video_codec",
+            "width",
+            "height",
+            "fps",
+            "frame_count",
+            "rotation_degrees",
+            "audio_codec"
+          ]
+        }
+      ]
+    },
+    "audioPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "config",
+        "config_sha256",
+        "voice",
+        "music",
+        "mix",
+        "publication"
+      ],
+      "properties": {
+        "config": {
+          "const": "config/T2_complete_voice_mix_v0_5_0.json"
+        },
+        "config_sha256": {
+          "const": "6f58c9fbbd4f9305ba9a2f46e84a002db5577499f94e6933a0f8fc54cec620db"
+        },
+        "voice": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "fallback_policy",
+            "source_speed",
+            "audio_time_map",
+            "automatic_subtitles",
+            "clips"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "registered_voice_clips",
+                "captured_scene_audio",
+                "captured_or_registered_fallback"
+              ]
+            },
+            "fallback_policy": {
+              "enum": [
+                "registered_clips_are_explicitly_selected_for_this_exemplar",
+                "registered_clips_only_when_accepted_capture_has_no_audio",
+                "registered_clips_when_capture_has_no_usable_speech",
+                "no_fallback"
+              ]
+            },
+            "source_speed": {
+              "const": 1.0
+            },
+            "audio_time_map": {
+              "const": "identity"
+            },
+            "automatic_subtitles": {
+              "const": false
+            },
+            "clips": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "scene",
+                  "scene_window_s",
+                  "start_s",
+                  "text",
+                  "source",
+                  "source_sha256",
+                  "source_duration_s"
+                ],
+                "properties": {
+                  "scene": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4
+                  },
+                  "scene_window_s": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ],
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "start_s": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "source": {
+                    "type": "string",
+                    "pattern": "^audio/voice/t2-voice-v0\\.5/voix_fr_scene[1-4]\\.wav$"
+                  },
+                  "source_sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  "source_duration_s": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9
+                  }
+                }
+              },
+              "minItems": 4,
+              "maxItems": 4
+            }
+          }
+        },
+        "music": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "selection_mode",
+            "requested_candidate_id",
+            "selected_candidate_id",
+            "previous_candidate_id",
+            "candidate_count",
+            "source_page",
+            "source_audio_url",
+            "source_sha256",
+            "content_id_status",
+            "template_default_selection",
+            "source_audio_publish"
+          ],
+          "properties": {
+            "selection_mode": {
+              "enum": [
+                "explicit_user_choice",
+                "deterministic_no_immediate_repeat"
+              ]
+            },
+            "requested_candidate_id": {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "auto"
+              ]
+            },
+            "selected_candidate_id": {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D"
+              ]
+            },
+            "previous_candidate_id": {
+              "enum": [
+                null,
+                "A",
+                "B",
+                "C",
+                "D"
+              ]
+            },
+            "candidate_count": {
+              "const": 4
+            },
+            "source_page": {
+              "type": "string",
+              "format": "uri"
+            },
+            "source_audio_url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "source_sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "content_id_status": {
+              "enum": [
+                "registered",
+                "not_displayed_on_source_page"
+              ]
+            },
+            "template_default_selection": {
+              "const": false
+            },
+            "source_audio_publish": {
+              "const": false
+            }
+          }
+        },
+        "mix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "music_open_gain_db",
+            "music_under_voice_gain_db",
+            "duck_depth_db",
+            "duck_attack_ms",
+            "duck_release_ms",
+            "duck_attack_curve",
+            "duck_release_curve",
+            "voice_gain_db",
+            "sfx",
+            "master_target_lufs",
+            "master_true_peak_dbtp_max",
+            "delivery_audio"
+          ],
+          "properties": {
+            "music_open_gain_db": {
+              "const": -3.0
+            },
+            "music_under_voice_gain_db": {
+              "const": -10.0
+            },
+            "duck_depth_db": {
+              "const": -7.0
+            },
+            "duck_attack_ms": {
+              "const": 120
+            },
+            "duck_release_ms": {
+              "const": 450
+            },
+            "duck_attack_curve": {
+              "const": "linear_db"
+            },
+            "duck_release_curve": {
+              "const": "linear_db"
+            },
+            "voice_gain_db": {
+              "const": 0.0
+            },
+            "sfx": {
+              "const": "none"
+            },
+            "master_target_lufs": {
+              "const": -16.0
+            },
+            "master_true_peak_dbtp_max": {
+              "const": -2.0
+            },
+            "delivery_audio": {
+              "const": "AAC stereo 48 kHz 192 kb/s"
+            }
+          }
+        },
+        "publication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "output_file",
+            "publish_exactly_one_mp4",
+            "publish_standalone_audio"
+          ],
+          "properties": {
+            "output_file": {
+              "const": "VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4"
+            },
+            "publish_exactly_one_mp4": {
+              "const": true
+            },
+            "publish_standalone_audio": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "visualPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "renderer",
+        "intermediate_uri",
+        "approved_release_tag",
+        "approved_file_sha256",
+        "approved_video_stream_sha256",
+        "rebuild_from_job",
+        "preserve_900_frames"
+      ],
+      "properties": {
+        "renderer": {
+          "const": "engine/render_text_motion.py"
+        },
+        "intermediate_uri": {
+          "const": "output/T2_AVANT_APRES_TEXTES_DYNAMIQUES_V0_3_0.mp4"
+        },
+        "approved_release_tag": {
+          "const": "t2-avant-apres-v0.3.0-text-motion"
+        },
+        "approved_file_sha256": {
+          "const": "67c447dae81241fc9ecc34ee9edfbf8c354a6ddf76e7fa465a62cdac59550ada"
+        },
+        "approved_video_stream_sha256": {
+          "const": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5"
+        },
+        "rebuild_from_job": {
+          "const": true
+        },
+        "preserve_900_frames": {
+          "const": true
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "t1_reference_commit",
+        "t1_mode",
+        "control_plane",
+        "render_plane",
+        "cloudflare_job_id"
+      ],
+      "properties": {
+        "t1_reference_commit": {
+          "const": "c656510ab81d31d413dc4dfd74b42671532cd978"
+        },
+        "t1_mode": {
+          "const": "read_only"
+        },
+        "control_plane": {
+          "enum": [
+            "github_actions_manual",
+            "cloudflare_worker"
+          ]
+        },
+        "render_plane": {
+          "const": "github_actions"
+        },
+        "cloudflare_job_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     }
   }

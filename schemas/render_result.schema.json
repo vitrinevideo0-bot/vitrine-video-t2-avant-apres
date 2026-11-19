@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vitrine.video/schemas/T2/render_result.schema.json",
+  "title": "T2 Avant / Après — RenderResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "job_id",
+    "idempotency_key",
+    "job_sha256",
+    "template_id",
+    "template_version",
+    "profile_used",
+    "control_plane",
+    "render_plane",
+    "inputs",
+    "output",
+    "quality",
+    "artifacts",
+    "metrics",
+    "warnings"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "status": {"const": "COMPLETED"},
+    "job_id": {"type": "string", "minLength": 1},
+    "idempotency_key": {"type": "string", "minLength": 1},
+    "job_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "template_id": {"const": "restaurants_maquis_T2_avant_apres_v0_1_0"},
+    "template_version": {"const": "0.1.0"},
+    "profile_used": {"const": "T2_GITHUB_ACTIONS_COMPLETE"},
+    "control_plane": {"enum": ["github_actions_manual", "cloudflare_worker"]},
+    "render_plane": {"const": "github_actions"},
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["merchant_payload_sha256", "capture_sha256", "music_source_sha256", "voice_source_sha256"],
+      "properties": {
+        "merchant_payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "capture_sha256": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["S1", "S2", "S3", "S4"],
+          "properties": {
+            "S1": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "S2": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "S3": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "S4": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        },
+        "music_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "voice_source_sha256": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uri", "mime_type", "width", "height", "fps", "frames", "duration_ms",
+        "bytes", "sha256", "video_stream_sha256", "audio_present", "audio_codec",
+        "sample_rate_hz", "channels"
+      ],
+      "properties": {
+        "uri": {"type": "string", "minLength": 1},
+        "mime_type": {"const": "video/mp4"},
+        "width": {"const": 720},
+        "height": {"const": 1280},
+        "fps": {"const": "30/1"},
+        "frames": {"const": 900},
+        "duration_ms": {"type": "integer", "minimum": 29950, "maximum": 30050},
+        "bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "video_stream_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "audio_present": {"const": true},
+        "audio_codec": {"const": "aac"},
+        "sample_rate_hz": {"const": 48000},
+        "channels": {"const": 2}
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "visual_900_frames", "voice_speed_1x", "ducking_pass", "no_clipping", "no_standalone_audio"],
+      "properties": {
+        "status": {"const": "PASS"},
+        "visual_900_frames": {"const": true},
+        "voice_speed_1x": {"const": true},
+        "ducking_pass": {"const": true},
+        "no_clipping": {"const": true},
+        "no_standalone_audio": {"const": true}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mix_report", "server_validation", "render_job"],
+      "properties": {
+        "mix_report": {"type": "string", "minLength": 1},
+        "server_validation": {"type": "string", "minLength": 1},
+        "render_job": {"type": "string", "minLength": 1}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["elapsed_ms", "github_run_id"],
+      "properties": {
+        "elapsed_ms": {"type": "integer", "minimum": 0},
+        "github_run_id": {"type": ["string", "null"]}
+      }
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  }
+}

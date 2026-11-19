@@ -1,31 +1,41 @@
 # Architecture serveur T2
 
-La structure technique reprend le modèle du dépôt T1 public, sans le modifier et sans réutiliser sa musique, ses voix ou ses médias.
+La structure reprend les mécanismes génériques utiles du dépôt T1 public au commit verrouillé `c656510ab81d31d413dc4dfd74b42671532cd978`, sans modifier T1 et sans attribuer à T1 une implémentation Cloudflare absente de ses sources publiques.
+
+Le métier, les textes et les médias restent ceux de T2 **« Avant / Après »**.
 
 ## Sources de vérité
 
-- `baseline/T1_BASELINE.lock.json` : dépôt et commit T1 de référence ;
-- `form/questions_T2.json` : questions commerçant ;
-- `capture-guide/consignes_T2.json` : quatre guides validés ;
-- `config/T2_avant_apres_template_v0_1_0.json` : chronologie et transitions ;
-- `schemas/render_job.schema.json` : contrat strict du RenderJob (`merchant_payload`, quatre `captures`, sortie) ;
-- `engine/render_silent.py` : référence v0.2 du montage sans texte ;
-- `config/T2_runtime_contract_v0_3_0.json` : liaison formulaire, caméras, scènes et future voix ;
-- `config/T2_text_motion_v0_3_0.json` : police, blocs et fenêtres des textes dynamiques ;
-- `engine/render_text_motion.py` : rendu v0.3 des informations commerçant ;
-- `.github/workflows/server-render-silent.yml` : seul chemin de production de la vidéo actuelle.
+- `form/questions_T2.json` — six questions commerçant ;
+- `config/T2_capture_flow_v1_0_0.json` — machine d’état exécutable des douze écrans ;
+- `cloudflare/public/app.js` — consommateur réel des deux contrats précédents ;
+- `config/T2_runtime_contract_v0_6_0.json` — liaisons formulaire, captures, audio, serveur et publication ;
+- `schemas/render_job.schema.json` — RenderJob historique `1.0.0` et profil complet additif `1.1.0` ;
+- `schemas/render_result.schema.json` / `schemas/render_error.schema.json` — sorties terminales strictes ;
+- `config/T2_text_motion_v0_3_0.json` et `baseline/T2_VISUAL_PIPELINE.lock.json` — visuel v0.3 inchangé ;
+- `config/T2_complete_voice_mix_v0_5_0.json` — quatre voix, musique B et ducking inchangés ;
+- `.github/workflows/server-render-unified.yml` — seul chemin complet de production ;
+- `cloudflare/src/index.ts` — plan de contrôle, sans moteur vidéo.
 
-## Règle d’étape
+## Passage formulaire → captures → RenderJob → résultat
 
-La musique et la voix ne sont pas encore mixées dans l’étape actuelle. Les quatre captures conservent toutefois une timeline audio identité à 1,0× ; la future voix et le ducking musical sont réservés dans le contrat, puis seront activés seulement après les validations prévues.
+1. l’application charge les six questions et crée `merchant_payload` ;
+2. elle exécute S1A/S1B/S1C … S4A/S4B/S4C, caméra et micro à vitesse identité ;
+3. chaque prise acceptée est stockée dans R2 avec métadonnées et SHA-256 ;
+4. le Worker enrichit le template canonique avec ces données, sans réécrire le plan visuel ;
+5. `repository_dispatch` déclenche GitHub Actions ;
+6. GitHub matérialise et revalide les captures, puis reconstruit les 900 images depuis le même RenderJob ;
+7. le mixeur choisit pour chaque scène la voix capturée exploitable ou son fallback enregistré, à 1× ;
+8. la source musicale B est vérifiée par SHA-256, puis duckée de −3 dB à −10 dB sous parole ;
+9. un QC indépendant valide l’unique MP4 ;
+10. `RenderResult` ou `RenderError` est renvoyé au Worker et publié avec les preuves GitHub.
 
-## Passage questions → RenderJob → montage
+## Frontières
 
-Le mécanisme reprend les noms publics de T1 au commit verrouillé :
+- **Navigateur** : saisie, caméra/micro, relecture, SHA-256.
+- **Cloudflare Worker/R2** : sécurité, idempotence, stockage, orchestration, statuts.
+- **GitHub Actions** : OpenCV, FFmpeg, rendu, mixage, QC, artefact/Release.
 
-1. les six réponses sont normalisées dans `merchant_payload` ;
-2. les quatre prises sont liées à `captures.S1`…`captures.S4` avec les durées 6 000, 8 000, 7 000 et 9 000 ms ;
-3. `tools/build_render_job.py` valide le tout avec `schemas/render_job.schema.json` ;
-4. `engine/render_silent.py` lit les captures et la sortie depuis ce RenderJob.
+Le code Python refuse explicitement tout rendu complet lorsque `GITHUB_ACTIONS != true`.
 
-Le profil v0.2 garde `render_business_text=false`. Le profil v0.3 utilise `render_business_text=true`, lit les mêmes champs et les dessine après les transitions. `render_audio=false` reste imposé uniquement pendant le contrôle des textes.
+Voir [T2_UNIFIED_RUNTIME_CLOUDFLARE.md](T2_UNIFIED_RUNTIME_CLOUDFLARE.md) pour l’API, les secrets, les tests et le déploiement.

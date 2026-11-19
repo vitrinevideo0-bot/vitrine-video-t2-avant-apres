@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "id": "T2_reference_capture_media_v1_0_0",
+  "purpose": "complete media metadata for the four existing T2 reference captures",
+  "metadata_source": "GitHub Actions probe plus locked rush SHA-256",
+  "captures": {
+    "S1": {
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 3840,
+      "height": 2160,
+      "fps": 25.0,
+      "frame_count": 229,
+      "rotation_degrees": 0,
+      "source_has_audio": false,
+      "audio_codec": null
+    },
+    "S2": {
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 2160,
+      "height": 3840,
+      "fps": 25.0,
+      "frame_count": 406,
+      "rotation_degrees": 0,
+      "source_has_audio": false,
+      "audio_codec": null
+    },
+    "S3": {
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": 25.0,
+      "frame_count": 275,
+      "rotation_degrees": 0,
+      "source_has_audio": false,
+      "audio_codec": null
+    },
+    "S4": {
+      "mime_type": "video/mp4",
+      "video_codec": "h264",
+      "width": 1080,
+      "height": 1920,
+      "fps": 24.0,
+      "frame_count": 223,
+      "rotation_degrees": 0,
+      "source_has_audio": true,
+      "audio_codec": "aac"
+    }
+  },
+  "semantics": {
+    "source_has_audio": "technical stream presence",
+    "render_job_has_audio": "accepted capture audio selected as a voice source; false for the locked synthetic-voice exemplar"
+  }
+}

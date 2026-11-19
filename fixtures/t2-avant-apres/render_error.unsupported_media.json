@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "status": "FAILED",
+  "job_id": "t2-complete-invalid-media",
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "code": "T2_UNSUPPORTED_MEDIA",
+  "message": "S2 doit être une vidéo MP4 décodable.",
+  "retryable": true,
+  "stage": "VALIDATING",
+  "scene_id": "S2",
+  "control_plane": "cloudflare_worker",
+  "render_plane": "github_actions",
+  "details": {
+    "observed_video_codec": "hevc",
+    "accepted_video_codec": [
+      "h264"
+    ]
+  }
+}

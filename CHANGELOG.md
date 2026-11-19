@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.6.0 — runtime unifié T2 et plan de contrôle Cloudflare
+
+- application mobile exécutable alimentée par les six questions et le contrat canonique des douze écrans ;
+- caméra + microphone, décompte transitoire, auto-stop 6/8/7/9 s, relecture sonore 1×, `REFAIRE` et acceptation ;
+- Worker Cloudflare + R2 : authentification pilote, idempotence, SHA-256, statuts, dispatch GitHub et callbacks ;
+- RenderJob complet `1.1.0` reliant commerçant, captures, visuel, voix, musique B, ducking et publication ;
+- trois modes voix, dont fallback par scène lorsque la prise ne contient aucune parole exploitable ;
+- formats caméra MP4, WebM et QuickTime, revalidés avec `ffprobe` sur GitHub ;
+- rendu, FFmpeg, mixage et QC toujours exclusivement sur GitHub Actions ;
+- contrats stricts `RenderResult` et `RenderError` ;
+- verrou du pipeline visuel v0.3 et preuve des 900 images, tout en gardant les données commerçant dynamiques ;
+- 52 tests Python, test d’intégration Worker/R2 et dry-build Wrangler ;
+- tests préexistants conservés octet pour octet ; T1 reste intact en lecture seule.
+
 ## 0.5.0 — exemplaire complet voix française + musique B
 
 - choix utilisateur B enregistré pour cet exemplaire unique, sans créer de défaut musical T2 ;

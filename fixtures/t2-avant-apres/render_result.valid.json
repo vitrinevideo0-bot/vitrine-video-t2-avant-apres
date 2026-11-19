@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "status": "COMPLETED",
+  "job_id": "t2-complete-b14ce737fd2d967a",
+  "idempotency_key": "t2-avant-apres-v0.6.0-unified-runtime-b14ce737fd2d967a",
+  "job_sha256": "dd47f9530752c059c1061468ea65c742676392a37a2ee761107c4925aae3f3a8",
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "template_version": "0.1.0",
+  "profile_used": "T2_GITHUB_ACTIONS_COMPLETE",
+  "control_plane": "github_actions_manual",
+  "render_plane": "github_actions",
+  "inputs": {
+    "merchant_payload_sha256": "203822087129da47e95148237dc905e93f951d39de5da1fc5669652f9cc88acd",
+    "capture_sha256": {
+      "S1": "9f9703887befc2c2000ed67a45a0189debaf4111c2d7903bc84a62a4ec4025f8",
+      "S2": "487c790cfec035467c4d2dc5dceffb23c1074e641c97d6620ae3d490901769c7",
+      "S3": "bd96b04f7c5317a7a73b4eb8a57db6713e0d68230a57c263aafc99324d207425",
+      "S4": "e1f54df1d88d82aabfb15c830130084c02d22ab737ba07719439dbcbd0e4801d"
+    },
+    "music_source_sha256": "1f137af6975816230a2a56b5995d23cf162cfe1256422675cb4b1c0638d1d3ec",
+    "voice_source_sha256": [
+      "ae5deb1a2e7e423010374c5347a0c4cd66db32c972a5ec12e062c6655bba2673",
+      "aeb711bba8f0bca564244ae9093429e1f1a046a8fac3282581f950fbb224c72a",
+      "aad8283f7e5adcffc7e18bc69886d25f16f02821f12a8b8093061c935f4499c7",
+      "e6488bcb215f9eb26a0839151de7bdf41046fcf2b538f478f42ed9c2dadac2b6"
+    ]
+  },
+  "output": {
+    "uri": "output/t2-complete-v0.6.0/VIDEO_T2_COMPLET_VOIX_MUSIQUE_B_A_VALIDER.mp4",
+    "mime_type": "video/mp4",
+    "width": 720,
+    "height": 1280,
+    "fps": "30/1",
+    "frames": 900,
+    "duration_ms": 30000,
+    "bytes": 10462472,
+    "sha256": "cbdec982b6add1d609afe5c032181df87817a6170def7b469c7b81518478dba4",
+    "video_stream_sha256": "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5",
+    "audio_present": true,
+    "audio_codec": "aac",
+    "sample_rate_hz": 48000,
+    "channels": 2
+  },
+  "quality": {
+    "status": "PASS",
+    "visual_900_frames": true,
+    "voice_speed_1x": true,
+    "ducking_pass": true,
+    "no_clipping": true,
+    "no_standalone_audio": true
+  },
+  "artifacts": {
+    "mix_report": "T2_VOICE_MUSIC_LEVELS_VALIDATION_V0_5_0.json",
+    "server_validation": "T2_GITHUB_SERVER_VALIDATION_V0_5_0.json",
+    "render_job": "render_job_complete_demo.json"
+  },
+  "metrics": {
+    "elapsed_ms": 0,
+    "github_run_id": null
+  },
+  "warnings": [
+    "Reference fixture only; a production RenderResult is regenerated on GitHub Actions."
+  ]
+}
