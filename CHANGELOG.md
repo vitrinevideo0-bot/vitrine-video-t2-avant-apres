@@ -11,7 +11,8 @@
 - rendu, FFmpeg, mixage et QC toujours exclusivement sur GitHub Actions ;
 - contrats stricts `RenderResult` et `RenderError` ;
 - verrou du pipeline visuel v0.3 et preuve des 900 images, tout en gardant les données commerçant dynamiques ;
-- 52 tests Python, test d’intégration Worker/R2 et dry-build Wrangler ;
+- intégrité visuelle bloquée sur le flux H.264 copié bit à bit ; empreinte du conteneur MP4 conservée comme provenance non visuelle ;
+- 53 tests Python, test d’intégration Worker/R2 et dry-build Wrangler ;
 - tests préexistants conservés octet pour octet ; T1 reste intact en lecture seule.
 
 ## 0.5.0 — exemplaire complet voix française + musique B

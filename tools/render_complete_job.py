@@ -21,7 +21,14 @@ if str(ROOT / "audio/scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "audio/scripts"))
 
 from engine.render_text_motion import render as render_visual
-from mix_t2_voice_music_v0_5 import is_reference_exemplar, only_streams, probe, sha256, stream_hash
+from mix_t2_voice_music_v0_5 import (
+    is_reference_exemplar,
+    only_streams,
+    probe,
+    reference_visual_integrity,
+    sha256,
+    stream_hash,
+)
 from tools.verify_visual_pipeline import verify as verify_visual_pipeline
 
 JOB_SCHEMA = ROOT / "schemas/render_job.schema.json"
@@ -165,13 +172,12 @@ def execute(job_path: Path, output_dir: Path) -> Path:
         observed_file_hash = sha256(visual)
         observed_stream_hash = stream_hash(visual, "0:v:0")
         reference_exemplar = is_reference_exemplar(job)
-        if reference_exemplar and observed_file_hash != job["visual_plan"]["approved_file_sha256"]:
-            raise RuntimeError(
-                f"Le master visuel de référence diffère du verrou v0.3: {observed_file_hash}"
-            )
-        if reference_exemplar and observed_stream_hash != job["visual_plan"]["approved_video_stream_sha256"]:
-            raise RuntimeError(
-                f"Le flux vidéo de référence diffère du verrou v0.3: {observed_stream_hash}"
+        if reference_exemplar:
+            reference_visual_integrity(
+                observed_file_sha256=observed_file_hash,
+                observed_video_stream_sha256=observed_stream_hash,
+                approved_file_sha256=job["visual_plan"]["approved_file_sha256"],
+                approved_video_stream_sha256=job["visual_plan"]["approved_video_stream_sha256"],
             )
 
         stage = "MIXING_AUDIO"

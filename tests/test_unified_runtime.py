@@ -16,7 +16,7 @@ AUDIO_SCRIPTS = ROOT / "audio/scripts"
 if str(AUDIO_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(AUDIO_SCRIPTS))
 
-from mix_t2_voice_music_v0_5 import SR, captured_audio_qc
+from mix_t2_voice_music_v0_5 import SR, captured_audio_qc, reference_visual_integrity
 from tools.cloudflare_runtime import validate_api_base
 from tools.render_complete_job import execute
 from tools.verify_visual_pipeline import verify as verify_visual_pipeline
@@ -136,6 +136,23 @@ class T2UnifiedRuntimeTest(unittest.TestCase):
         lock = verify_visual_pipeline()
         self.assertEqual(lock["approved_reference"]["frames"], 900)
         self.assertEqual(lock["approved_reference"]["video_stream_sha256"], "2ed8b3813410df8b9497da7b00877b208bed115038965f73989f00550d3941f5")
+
+    def test_reference_visual_enforces_stream_not_container_packaging(self) -> None:
+        integrity = reference_visual_integrity(
+            observed_file_sha256="1" * 64,
+            observed_video_stream_sha256="2" * 64,
+            approved_file_sha256="3" * 64,
+            approved_video_stream_sha256="2" * 64,
+        )
+        self.assertFalse(integrity["container_file_sha256_matches"])
+        self.assertTrue(integrity["video_stream_sha256_matches"])
+        with self.assertRaisesRegex(RuntimeError, "flux vidéo"):
+            reference_visual_integrity(
+                observed_file_sha256="3" * 64,
+                observed_video_stream_sha256="4" * 64,
+                approved_file_sha256="3" * 64,
+                approved_video_stream_sha256="2" * 64,
+            )
 
     def test_captured_voice_usability_gate_falls_back_on_silence(self) -> None:
         silence = np.zeros(SR, dtype=np.float64)
