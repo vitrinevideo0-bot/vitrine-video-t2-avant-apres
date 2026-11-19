@@ -1,0 +1,58 @@
+{
+  "version": "0.1.0",
+  "mention_langues_commune": "Tu peux parler pendant que tu filmes, dans la langue que tu veux : fon, yoruba, français, anglais ou une autre langue que tu maîtrises.",
+  "mention_silence_facultatif": "Tu peux aussi ne pas parler si tu préfères.",
+  "libelle_exemple": "EXEMPLE DE PHRASE (FACULTATIF)",
+  "bouton_principal": "COMMENCER À FILMER",
+  "audio": {
+    "parole_obligatoire": false,
+    "conserver_voix_capturee": true,
+    "sous_titres_automatiques": false
+  },
+  "scenes": [
+    {
+      "n": 1,
+      "total": 4,
+      "secondes": 6,
+      "titre": "L'AVANT",
+      "consigne": "Filme ton plat ou les ingrédients avant de commencer. Montre tout le produit, puis rapproche doucement ton téléphone. Garde-le bien droit.",
+      "a_filmer": ["Le plat ou les ingrédients avant la préparation.", "Le produit entier pendant au moins trois secondes.", "Un rapprochement lent du téléphone."],
+      "a_eviter": ["Montrer directement le plat déjà terminé.", "Filmer dans un endroit trop sombre.", "Bouger le téléphone trop vite."],
+      "ce_que_tu_dois_faire": "Commence un peu loin pour montrer tout le produit, puis rapproche doucement ton téléphone.",
+      "exemple_facultatif": "Voici le poulet, l'alloco et les épices avant la préparation."
+    },
+    {
+      "n": 2,
+      "total": 4,
+      "secondes": 8,
+      "titre": "LA TRANSFORMATION",
+      "consigne": "Filme un geste de préparation du plat. Tu peux verser, mélanger, retourner ou griller quelque chose. Montre bien le geste du début jusqu'à la fin.",
+      "a_filmer": ["Un seul geste de préparation, du début jusqu'à la fin.", "Le plat ou les ingrédients bien visibles au milieu de l'image.", "La vapeur, la sauce ou la cuisson, si tu peux les filmer sans danger."],
+      "a_eviter": ["Changer de plat pendant la vidéo.", "Changer de place au milieu de la prise.", "Mettre tes doigts devant la caméra.", "Approcher ton téléphone trop près du feu ou de l'huile chaude."],
+      "ce_que_tu_dois_faire": "Garde ton téléphone stable et filme un seul geste jusqu'à ce qu'il soit terminé.",
+      "exemple_facultatif": "Regardez, nous retournons le poulet sur le feu pour bien le griller."
+    },
+    {
+      "n": 3,
+      "total": 4,
+      "secondes": 7,
+      "titre": "LA RÉVÉLATION",
+      "consigne": "Cache d'abord le plat avec un couvercle, une assiette ou ta main. Ensuite, découvre le plat d'un seul geste et laisse-le bien visible pendant deux secondes.",
+      "a_filmer": ["Le plat caché au début.", "Un seul geste pour découvrir le plat.", "Le plat terminé, entièrement visible pendant au moins deux secondes."],
+      "a_eviter": ["Montrer le plat avant de commencer la prise.", "Garder la caméra cachée trop longtemps.", "Bouger le téléphone juste après avoir découvert le plat."],
+      "ce_que_tu_dois_faire": "Cache le plat, découvre-le doucement, puis garde ton téléphone immobile pour bien montrer le résultat.",
+      "exemple_facultatif": "Voilà notre poulet braisé avec alloco, le plat est prêt !"
+    },
+    {
+      "n": 4,
+      "total": 4,
+      "secondes": 9,
+      "titre": "L'APRÈS",
+      "consigne": "Filme le plat terminé pendant que tu le poses devant un client ou que tu le présentes à la caméra. À la fin, laisse le plat bien visible sans bouger.",
+      "a_filmer": ["Le plat terminé, servi ou présenté.", "Une main, un sourire ou la personne qui sert, avec son accord.", "Un comptoir propre ou un joli arrière-plan.", "Le plat immobile et bien visible pendant les trois dernières secondes."],
+      "a_eviter": ["Filmer une personne qui ne veut pas apparaître.", "Filmer avec la lumière derrière toi.", "Cacher le plat avec ta main ou un objet."],
+      "ce_que_tu_dois_faire": "Présente le plat, puis garde ton téléphone stable pour qu'on voie bien le résultat.",
+      "exemple_facultatif": "Notre poulet braisé avec alloco est prêt. Venez goûter !"
+    }
+  ]
+}

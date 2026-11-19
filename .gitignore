@@ -1,0 +1,18 @@
+# Médias sources téléchargés localement — jamais redistribués comme stock brut
+rushes/cache/
+
+# Rendus intermédiaires
+output/*.silent.mp4
+output/*.wav
+output/*.tmp.mp4
+output/*.avi
+.tmp/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Système
+.DS_Store

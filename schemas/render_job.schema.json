@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vitrine.video/schemas/T2/render_job.schema.json",
+  "title": "T2 RenderJob",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["template_id", "business", "rush_manifest", "output"],
+  "properties": {
+    "template_id": {"const": "restaurants_maquis_T2_avant_apres_v0_1_0"},
+    "business": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nom", "produit", "prix", "whatsapp", "quartier"],
+      "properties": {
+        "nom": {"type": "string", "minLength": 1, "maxLength": 40},
+        "produit": {"type": "string", "minLength": 1, "maxLength": 32},
+        "prix": {"type": "string", "minLength": 1, "maxLength": 7, "pattern": "^[0-9 .]+$"},
+        "whatsapp": {"type": "string", "minLength": 4, "maxLength": 20},
+        "quartier": {"type": "string", "minLength": 1, "maxLength": 40},
+        "accroche": {"type": "string", "minLength": 0, "maxLength": 48}
+      }
+    },
+    "rush_manifest": {"type": "string", "minLength": 1},
+    "output": {"type": "string", "pattern": "\\.mp4$"}
+  }
+}

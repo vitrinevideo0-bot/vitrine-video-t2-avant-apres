@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "template_id": "T2",
+  "render_template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "version": "0.1.0",
+  "status": "pilot_transition_validation",
+  "sector": "restaurants_maquis",
+  "name": "Avant / Après",
+  "output": {
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "frames": 900,
+    "duration_seconds": 30,
+    "pixel_format": "yuv420p",
+    "audio_sample_rate": 44100
+  },
+  "merchant_fields": {
+    "additionalProperties": false,
+    "required": ["nom", "produit", "prix", "whatsapp", "quartier"],
+    "properties": {
+      "nom": {"type": "string", "minLength": 1, "maxLength": 40},
+      "produit": {"type": "string", "minLength": 1, "maxLength": 32},
+      "prix": {"type": "string", "minLength": 1, "maxLength": 7, "pattern": "^[0-9 .]+$"},
+      "whatsapp": {"type": "string", "minLength": 4, "maxLength": 20},
+      "quartier": {"type": "string", "minLength": 1, "maxLength": 40},
+      "accroche": {"type": "string", "minLength": 0, "maxLength": 48}
+    }
+  },
+  "scenes": [
+    {"id": "S1", "title": "L'AVANT", "seconds": 6, "start": 0, "end": 6},
+    {"id": "S2", "title": "LA TRANSFORMATION", "seconds": 8, "start": 6, "end": 14},
+    {"id": "S3", "title": "LA RÉVÉLATION", "seconds": 7, "start": 14, "end": 21},
+    {"id": "S4", "title": "L'APRÈS", "seconds": 9, "start": 21, "end": 30}
+  ],
+  "capture_states": ["A_GUIDE", "B_RECORDING", "C_REVIEW"],
+  "stable_screen_count": 12,
+  "countdown_is_transient": true,
+  "transition_budget": {
+    "event_count": 6,
+    "duration_each_seconds": 0.42,
+    "total_seconds": 2.52,
+    "per_reference_seconds": 0.84,
+    "events": [
+      {"id": "T01", "window": [0.0, 0.42], "reference": 1, "effect": "asymmetric_oblique_open"},
+      {"id": "T02", "window": [5.79, 6.21], "reference": 2, "effect": "center_window_expand"},
+      {"id": "T03", "window": [9.79, 10.21], "reference": 3, "effect": "warm_luminance_flash"},
+      {"id": "T04", "window": [13.79, 14.21], "reference": 1, "effect": "three_oblique_shutters"},
+      {"id": "T05", "window": [17.29, 17.71], "reference": 3, "effect": "staggered_horizontal_bands"},
+      {"id": "T06", "window": [20.79, 21.21], "reference": 2, "effect": "diagonal_desaturated_to_color"}
+    ]
+  },
+  "typography": {
+    "display_family": "Playfair Display",
+    "weight": 900,
+    "horizontal_scale": 0.66,
+    "license": "SIL Open Font License 1.1",
+    "ui_family": "system sans-serif"
+  },
+  "audio": {
+    "capture_voice_optional": true,
+    "preserve_recorded_voice": true,
+    "automatic_subtitles": false,
+    "demo_music": "original_programmatic_120_bpm"
+  }
+}

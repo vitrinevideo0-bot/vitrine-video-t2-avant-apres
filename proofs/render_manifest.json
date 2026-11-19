@@ -1,0 +1,103 @@
+{
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "version": "0.1.0",
+  "output": "output/T2_AVANT_APRES_DEMO_V0_1_0.mp4",
+  "sha256": "0688a821ed0072e2bbb42e46b6fc0b5486ce36d878c116f5d2b0656fbe42ea64",
+  "bytes": 10752995,
+  "observed": {
+    "width": 720,
+    "height": 1280,
+    "fps": 30.0,
+    "frames": 900,
+    "duration_seconds": 30.0
+  },
+  "transition_events": [
+    {
+      "id": "T01",
+      "window": [
+        0.0,
+        0.42
+      ],
+      "reference": 1,
+      "effect": "asymmetric_oblique_open"
+    },
+    {
+      "id": "T02",
+      "window": [
+        5.79,
+        6.21
+      ],
+      "reference": 2,
+      "effect": "center_window_expand"
+    },
+    {
+      "id": "T03",
+      "window": [
+        9.79,
+        10.21
+      ],
+      "reference": 3,
+      "effect": "warm_luminance_flash"
+    },
+    {
+      "id": "T04",
+      "window": [
+        13.79,
+        14.21
+      ],
+      "reference": 1,
+      "effect": "three_oblique_shutters"
+    },
+    {
+      "id": "T05",
+      "window": [
+        17.29,
+        17.71
+      ],
+      "reference": 3,
+      "effect": "staggered_horizontal_bands"
+    },
+    {
+      "id": "T06",
+      "window": [
+        20.79,
+        21.21
+      ],
+      "reference": 2,
+      "effect": "diagonal_desaturated_to_color"
+    }
+  ],
+  "transition_balance_seconds": {
+    "reference_1": 0.84,
+    "reference_2": 0.84,
+    "reference_3": 0.84
+  },
+  "source_rushes_verified": [
+    {
+      "scene": 1,
+      "pexels_id": 7652493,
+      "sha256": "9f9703887befc2c2000ed67a45a0189debaf4111c2d7903bc84a62a4ec4025f8"
+    },
+    {
+      "scene": 2,
+      "pexels_id": 5794186,
+      "sha256": "487c790cfec035467c4d2dc5dceffb23c1074e641c97d6620ae3d490901769c7"
+    },
+    {
+      "scene": 3,
+      "pexels_id": 8094293,
+      "sha256": "bd96b04f7c5317a7a73b4eb8a57db6713e0d68230a57c263aafc99324d207425"
+    },
+    {
+      "scene": 4,
+      "pexels_id": 8448099,
+      "sha256": "e1f54df1d88d82aabfb15c830130084c02d22ab737ba07719439dbcbd0e4801d"
+    }
+  ],
+  "audio": {
+    "music": "original_programmatic_120_bpm",
+    "source_samples": 0,
+    "production_contract_preserves_merchant_voice": true,
+    "automatic_subtitles": false
+  }
+}

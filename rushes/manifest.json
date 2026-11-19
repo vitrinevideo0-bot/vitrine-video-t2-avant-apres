@@ -1,0 +1,58 @@
+{
+  "license": {
+    "name": "Pexels License",
+    "url": "https://www.pexels.com/license/",
+    "raw_redistribution": false,
+    "note": "Les fichiers source sont téléchargés localement pour le rendu et ne sont pas publiés dans le dépôt. Seul le montage transformé est distribué."
+  },
+  "sources": [
+    {
+      "scene": 1,
+      "pexels_id": 7652493,
+      "author": "ShotPot",
+      "title": "Close-Up Shot of Ingredients Separately in Each Bowl",
+      "page": "https://www.pexels.com/video/close-up-shot-of-ingredients-separately-in-each-bowl-7652493/",
+      "download": "https://www.pexels.com/download/video/7652493/",
+      "local_file": "rushes/cache/7652493.mp4",
+      "sha256": "9f9703887befc2c2000ed67a45a0189debaf4111c2d7903bc84a62a4ec4025f8",
+      "source_metadata": {"width": 3840, "height": 2160, "fps": 25.0, "duration": 9.16},
+      "edit": {"start": 0.5, "duration": 6.0}
+    },
+    {
+      "scene": 2,
+      "pexels_id": 5794186,
+      "author": "Tima Miroshnichenko",
+      "title": "Vertical Video of a Man Cooking in a Food Truck",
+      "page": "https://www.pexels.com/video/vertical-video-of-a-man-in-black-t-shirt-cooking-in-the-food-truck-5794186/",
+      "download": "https://www.pexels.com/download/video/5794186/",
+      "local_file": "rushes/cache/5794186.mp4",
+      "sha256": "487c790cfec035467c4d2dc5dceffb23c1074e641c97d6620ae3d490901769c7",
+      "source_metadata": {"width": 2160, "height": 3840, "fps": 25.0, "duration": 16.24},
+      "edit": {"start": 3.0, "duration": 8.0}
+    },
+    {
+      "scene": 3,
+      "pexels_id": 8094293,
+      "author": "Mikhail Nilov",
+      "title": "Chef Preparing Food with a Bamboo Steamer",
+      "page": "https://www.pexels.com/video/chef-preparing-food-8094293/",
+      "download": "https://www.pexels.com/download/video/8094293/",
+      "local_file": "rushes/cache/8094293.mp4",
+      "sha256": "bd96b04f7c5317a7a73b4eb8a57db6713e0d68230a57c263aafc99324d207425",
+      "source_metadata": {"width": 1920, "height": 1080, "fps": 25.0, "duration": 11.0},
+      "edit": {"start": 4.0, "duration": 7.0}
+    },
+    {
+      "scene": 4,
+      "pexels_id": 8448099,
+      "author": "Los Muertos Crew",
+      "title": "A Person Holding a Plate of Tacos",
+      "page": "https://www.pexels.com/video/a-person-holding-a-plate-of-tacos-8448099/",
+      "download": "https://www.pexels.com/download/video/8448099/",
+      "local_file": "rushes/cache/8448099.mp4",
+      "sha256": "e1f54df1d88d82aabfb15c830130084c02d22ab737ba07719439dbcbd0e4801d",
+      "source_metadata": {"width": 1080, "height": 1920, "fps": 24.0, "duration": 9.2916666667},
+      "edit": {"start": 0.2, "duration": 9.0}
+    }
+  ]
+}

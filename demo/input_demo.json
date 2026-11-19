@@ -1,0 +1,13 @@
+{
+  "template_id": "restaurants_maquis_T2_avant_apres_v0_1_0",
+  "business": {
+    "nom": "MAQUIS DÉMO",
+    "produit": "POULET BRAISÉ",
+    "prix": "2500",
+    "whatsapp": "01 97 00 00 00",
+    "quartier": "QUARTIER CENTRAL",
+    "accroche": "DU FEU À L'ASSIETTE"
+  },
+  "rush_manifest": "rushes/manifest.json",
+  "output": "output/T2_AVANT_APRES_DEMO_V0_1_0.mp4"
+}

@@ -1,0 +1,22 @@
+name: Validation T2
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Contrat T2
+        run: python tools/validate_contract.py
+      - name: Tests unitaires
+        run: python -m unittest discover -s tests -v

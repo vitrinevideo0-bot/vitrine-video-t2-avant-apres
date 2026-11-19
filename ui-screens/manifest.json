@@ -1,0 +1,132 @@
+{
+  "stable_screen_count": 12,
+  "states": [
+    "A_GUIDE",
+    "B_RECORDING",
+    "C_REVIEW"
+  ],
+  "screens": [
+    {
+      "scene": 1,
+      "state": "A_GUIDE",
+      "file": "T2_CAPTURE_S1_A_GUIDE.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "dbd0cc844cf9f5d979b574388acf68eace7ca453829c5490f5bb710804d6492a"
+    },
+    {
+      "scene": 1,
+      "state": "B_RECORDING",
+      "file": "T2_CAPTURE_S1_B_RECORDING.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "bd441409c225d0c1683384e2ce6e0fae29962885d3b3fe7ea80dee07d761f950"
+    },
+    {
+      "scene": 1,
+      "state": "C_REVIEW",
+      "file": "T2_CAPTURE_S1_C_REVIEW.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "f17708c217b71c17f3c9d057a842fdf19e8ac125122f6b204c6e791e95beae4f"
+    },
+    {
+      "scene": 2,
+      "state": "A_GUIDE",
+      "file": "T2_CAPTURE_S2_A_GUIDE.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "c4e836ce1e51c9afdba26254965036a30821bb8edb8fcf955839e1824ef5780f"
+    },
+    {
+      "scene": 2,
+      "state": "B_RECORDING",
+      "file": "T2_CAPTURE_S2_B_RECORDING.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "50bdcf34b69523f4422db8ab207dcefd7d87578ef815effb6e2b2ee59ad76c03"
+    },
+    {
+      "scene": 2,
+      "state": "C_REVIEW",
+      "file": "T2_CAPTURE_S2_C_REVIEW.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "ae89dd9c0fedbb2c80d76e8b1becd3800cbdcbbedcc5622f1b8a1639f6dfcb95"
+    },
+    {
+      "scene": 3,
+      "state": "A_GUIDE",
+      "file": "T2_CAPTURE_S3_A_GUIDE.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "c091d8ecb5c4e9bb6da11f08cdb738dae1ab7fb94bbb757b2623b75984baddef"
+    },
+    {
+      "scene": 3,
+      "state": "B_RECORDING",
+      "file": "T2_CAPTURE_S3_B_RECORDING.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "c55c98294f06098c369c588dceb1d74aaf7ccea77ab6ead52e2938ac55bce65e"
+    },
+    {
+      "scene": 3,
+      "state": "C_REVIEW",
+      "file": "T2_CAPTURE_S3_C_REVIEW.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "687bec46628df633733d2afcb08a9a88b8de2b16d5f423ec370d070521680731"
+    },
+    {
+      "scene": 4,
+      "state": "A_GUIDE",
+      "file": "T2_CAPTURE_S4_A_GUIDE.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "c4248592c8bfdb5df390017ad0c9dbd17ef1694444fc58fa460aa138bb0e50c5"
+    },
+    {
+      "scene": 4,
+      "state": "B_RECORDING",
+      "file": "T2_CAPTURE_S4_B_RECORDING.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "8322458aeefe5edebad555ba5a762faa06c89ca243bbfa2f989928bdb288c2ee"
+    },
+    {
+      "scene": 4,
+      "state": "C_REVIEW",
+      "file": "T2_CAPTURE_S4_C_REVIEW.png",
+      "size": [
+        720,
+        1280
+      ],
+      "sha256": "1e564d09a9bc622b721956a1edae723925be172bac9366684975c51560e71fbb"
+    }
+  ],
+  "board": "T2_PLANCHE_12_ECRANS.png",
+  "board_sha256": "22e83e1410c5c8f67c286a361403d56728492298e02f4d11d701b0242e5d5acf"
+}
